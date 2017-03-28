@@ -1,0 +1,63 @@
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title>xpDoctor</title>
+
+    <!-- app css -->
+    <link rel="stylesheet" data-th-href="${portal.assetUrl({'_path=css/main.css'})}"/>
+
+    <!--Import Google Icon Font-->
+    <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <!-- JQuery -->
+    <script data-th-src="${portal.assetUrl({'_path=js/jquery-3.1.1.min.js'})}"></script>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" data-th-href="${portal.assetUrl({'_path=css/bootstrap.min.css'})}"/>
+    <script data-th-src="${portal.assetUrl({'_path=js/tether.min.js'})}"></script>
+    <script data-th-src="${portal.assetUrl({'_path=js/bootstrap.min.js'})}"></script>
+
+    <script data-th-src="${jsUrl}"></script>
+
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        var repoLoaderServiceUrl = [[${repoLoaderServiceUrl}]];
+        /*]]>*/
+    </script>
+
+</head>
+<body>
+
+
+<main>
+    <nav class="navbar navbar-fixed-top navbar-dark bg-primary">
+        <a class="navbar-brand" href="#">xpDoctor</a>
+    </nav>
+
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-3">
+                <form>
+
+
+                </form>
+            </div>
+            <div class="col-sm-9">
+                <h2>content</h2>
+                <pre data-th-text="${result}"></pre>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div id="messageBox" class="row messageBox">
+    <span id="repoMessage"></span>
+</div>
+
+</body>
+</html>
