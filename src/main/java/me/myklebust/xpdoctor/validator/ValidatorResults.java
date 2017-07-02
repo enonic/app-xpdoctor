@@ -1,21 +1,58 @@
 package me.myklebust.xpdoctor.validator;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
+import java.util.Collection;
+import java.util.List;
+
+import com.google.common.collect.Lists;
 
 public class ValidatorResults
 {
-    private final Multimap<ValidatorEntry, ValidationError> errors = HashMultimap.create();
+    private List<ValidatorResult> validatorResultsList;
 
-    void add( final ValidatorEntry validatorEntry, final ValidationError error )
+    private ValidatorResults( final Builder builder )
     {
-        this.errors.put( validatorEntry, error );
+        validatorResultsList = builder.validatorResultsList;
     }
 
-
-    public Multimap<ValidatorEntry, ValidationError> getErrors()
+    public static Builder create()
     {
-        return errors;
+        return new Builder();
     }
 
+    public List<ValidatorResult> getResults()
+    {
+        return validatorResultsList;
+    }
+
+    public static final class Builder
+    {
+        private List<ValidatorResult> validatorResultsList = Lists.newArrayList();
+
+        private Builder()
+        {
+        }
+
+        public Builder add( final ValidatorResult val )
+        {
+            validatorResultsList.add( val );
+            return this;
+        }
+
+        public Builder add( final Collection<ValidatorResult> val )
+        {
+            validatorResultsList.addAll( val );
+            return this;
+        }
+
+        public Builder add( final ValidatorResults val )
+        {
+            validatorResultsList.addAll( val.getResults() );
+            return this;
+        }
+
+        public ValidatorResults build()
+        {
+            return new ValidatorResults( this );
+        }
+    }
 }

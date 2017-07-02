@@ -1,14 +1,12 @@
 package me.myklebust.xpdoctor.validator.nodevalidator;
 
-import me.myklebust.xpdoctor.validator.RepairOptions;
-import me.myklebust.xpdoctor.validator.ValidatorResult;
+import me.myklebust.xpdoctor.validator.ValidatorResults;
 
-import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodeId;
 
 public interface NodeValidator
 {
-    ValidatorResult validate( final Node node );
+    ValidatorResults validate();
 
-    boolean repair( final NodeId nodeId, final RepairOptions options );
+    boolean repair( final NodeId nodeId );
 }

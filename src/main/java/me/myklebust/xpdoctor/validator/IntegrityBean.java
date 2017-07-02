@@ -4,21 +4,21 @@ import java.util.Set;
 
 import com.google.common.collect.Sets;
 
-import me.myklebust.xpdoctor.validator.mapper.ValidatorResultsMapper;
+import me.myklebust.xpdoctor.validator.mapper.RepoResultsMapper;
 import me.myklebust.xpdoctor.validator.nodevalidator.NodeValidator;
-import me.myklebust.xpdoctor.validator.nodevalidator.ParentExistsNodeValidator;
-import me.myklebust.xpdoctor.validator.nodevalidator.UniquePathNodeValidator;
+import me.myklebust.xpdoctor.validator.nodevalidator.parentexists.ParentExistsNodeValidator;
+import me.myklebust.xpdoctor.validator.nodevalidator.uniquepath.UniquePathNodeValidator;
+import me.myklebust.xpdoctor.validator.nodevalidator.unloadable.LoadableNodeValidator;
 
 import com.enonic.xp.branch.Branch;
+import com.enonic.xp.branch.Branches;
 import com.enonic.xp.context.Context;
 import com.enonic.xp.context.ContextAccessor;
 import com.enonic.xp.context.ContextBuilder;
-import com.enonic.xp.node.FindNodesByQueryResult;
-import com.enonic.xp.node.Node;
-import com.enonic.xp.node.NodeNotFoundException;
-import com.enonic.xp.node.NodeQuery;
 import com.enonic.xp.node.NodeService;
+import com.enonic.xp.repository.Repositories;
 import com.enonic.xp.repository.RepositoryId;
+import com.enonic.xp.repository.RepositoryService;
 import com.enonic.xp.script.bean.BeanContext;
 import com.enonic.xp.script.bean.ScriptBean;
 import com.enonic.xp.security.PrincipalKey;
@@ -32,97 +32,48 @@ public class IntegrityBean
 {
     private NodeService nodeService;
 
-    private final int batchSize = 1000;
+    private RepositoryService repoService;
 
     private final Set<NodeValidator> nodeValidators = Sets.newHashSet();
 
     @SuppressWarnings("unused")
-    public Object execute( final String repositoryId, final String branch )
+    public Object execute()
     {
-        System.out.println( "Executing stuff" );
+        final RepoValidationResults.Builder results = RepoValidationResults.create();
 
-        final Context context = createContext( RepositoryId.from( repositoryId ), Branch.from( branch ) );
+        final Repositories repositories = this.repoService.list();
+        repositories.forEach( ( repo ) -> {
 
-        final ValidatorResults results = context.callWith( this::doExecute );
+            final RepoValidationResult.Builder repoBuilder = RepoValidationResult.create( repo.getId() );
 
-        return new ValidatorResultsMapper( results );
+            final Branches branches = repo.getBranches();
+            branches.forEach( branch -> {
+                final ValidatorResults validationResults = createContext( repo.getId(), branch ).callWith( this::doExecute );
+                final BranchValidationResult.Builder branchResult = BranchValidationResult.create( branch ).results( validationResults );
+                repoBuilder.add( branchResult.build() );
+            } );
+
+            results.add( repoBuilder.build() );
+        } );
+
+        return new RepoResultsMapper( results.build() );
     }
 
     private ValidatorResults doExecute()
     {
-        return executeNodeValidators();
+        final ValidatorResults.Builder result = ValidatorResults.create();
+
+        runNodeValidators( result );
+
+        return result.build();
     }
 
-    private ValidatorResults executeNodeValidators()
-    {
-        final long totalEntries = getTotalEntries();
-
-        final ValidatorResults results = new ValidatorResults();
-
-        int processed = 0;
-
-        while ( processed <= totalEntries )
-        {
-            processed = executeBatch( processed, results );
-        }
-        return results;
-    }
-
-    private int executeBatch( int processed, final ValidatorResults results )
-    {
-        System.out.println( "Processing [" + processed + "] to [" + ( processed + batchSize ) + "]" );
-
-        final FindNodesByQueryResult result = getBatch( processed );
-
-        result.getNodeIds().forEach( ( nodeId ) -> {
-
-            try
-            {
-                final Node node = this.nodeService.getById( nodeId );
-
-                runNodeValidators( results, node );
-            }
-            catch ( final NodeNotFoundException e )
-            {
-                // results.add( new ValidatorEntry( null, nodeId ), ValidationError.NOT_IN_STORAGE );
-            }
-
-        } );
-
-        processed += batchSize;
-        return processed;
-    }
-
-    private void runNodeValidators( final ValidatorResults results, final Node node )
+    private void runNodeValidators( final ValidatorResults.Builder results )
     {
         this.nodeValidators.forEach( validator -> {
-            final ValidatorResult validatorResult = validator.validate( node );
-            if ( validatorResult != null )
-            {
-                results.add( ValidatorEntry.create( validatorResult.getPath(), validatorResult.getNodeId() ), validatorResult.getError() );
-            }
+            final ValidatorResults validate = validator.validate();
+            results.add( validate );
         } );
-    }
-
-    private FindNodesByQueryResult getBatch( final int processed )
-    {
-        return nodeService.findByQuery( NodeQuery.create().
-            size( batchSize ).
-            from( processed ).
-            build() );
-    }
-
-    private long getTotalEntries()
-    {
-        final NodeQuery nodeQuery = NodeQuery.create().
-            size( 0 ).
-            build();
-
-        final FindNodesByQueryResult result = nodeService.findByQuery( nodeQuery );
-
-        System.out.println( "Found : " + result.getTotalHits() + " entries to process" );
-
-        return result.getTotalHits();
     }
 
     private Context createContext( final RepositoryId repositoryId, final Branch branch )
@@ -143,7 +94,9 @@ public class IntegrityBean
     public void initialize( final BeanContext context )
     {
         this.nodeService = context.getService( NodeService.class ).get();
+        this.repoService = context.getService( RepositoryService.class ).get();
         nodeValidators.add( new ParentExistsNodeValidator( this.nodeService ) );
-        nodeValidators.add( new UniquePathNodeValidator( this.nodeService ) );
+        nodeValidators.add( new UniquePathNodeValidator( this.nodeService, this.repoService ) );
+        nodeValidators.add( new LoadableNodeValidator( this.nodeService ) );
     }
 }

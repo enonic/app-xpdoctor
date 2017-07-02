@@ -1,0 +1,2703 @@
+{
+  "results": {
+    "cms-repo": {
+      "master": {
+        "totalIssues": 39,
+        "results": [
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-2-onsdag-2017-04-05-19-35",
+            "entries": [
+              {
+                "timestamp": "2017-04-05T19:35:10.942Z",
+                "nodeId": "630a6d7c-31ba-4af6-b5d6-99cd210ad265",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-04-05T19:35:11.015Z",
+                "nodeId": "c441ed65-d8fc-4cf8-abe6-8c2a2d3d4623",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-3-lordag-2017-04-08-18-05",
+            "entries": [
+              {
+                "timestamp": "2017-04-08T18:05:05.180Z",
+                "nodeId": "7263d941-8f49-4880-abbd-59657d01f5af",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-04-08T18:05:05.115Z",
+                "nodeId": "05872ce4-42a9-4fed-9efc-b6a479183539",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-3-sondag-2017-04-09-18-05",
+            "entries": [
+              {
+                "timestamp": "2017-04-09T18:05:04.935Z",
+                "nodeId": "402dc3d7-464f-49a7-98b6-cf50b625e9b7",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-04-09T18:05:05.006Z",
+                "nodeId": "74329279-cecb-4e11-8197-ad169d4fe973",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-3-sondag-2017-04-09-20-05",
+            "entries": [
+              {
+                "timestamp": "2017-04-09T20:05:06.284Z",
+                "nodeId": "b8765362-0b78-489a-be2b-8e347754e881",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-04-09T20:05:06.224Z",
+                "nodeId": "1ec53853-5bcf-4242-a091-8ce6617a62fb",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-3-sondag-2017-04-09-19-35",
+            "entries": [
+              {
+                "timestamp": "2017-04-09T19:35:05.932Z",
+                "nodeId": "f49f6f8c-8515-468a-b3ce-00c1bdddff81",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-04-09T19:35:05.578Z",
+                "nodeId": "e323b43b-efee-4af0-a321-ab6221636d92",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-3-mandag-2017-04-10-08-35",
+            "entries": [
+              {
+                "timestamp": "2017-04-10T08:35:06.211Z",
+                "nodeId": "bb267641-21df-4082-9b59-9dffaa5cbb6a",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-04-10T08:35:06.156Z",
+                "nodeId": "bc39708c-9b22-47d6-b5ed-479afc61af30",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-3-mandag-2017-04-10-19-05",
+            "entries": [
+              {
+                "timestamp": "2017-04-10T19:05:05.395Z",
+                "nodeId": "c10e6397-1591-4f00-85c7-ce97c73c5474",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-04-10T19:05:05.445Z",
+                "nodeId": "9dc3f187-8c0a-4b8f-b806-f3c0b159f106",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-3-mandag-2017-04-17-19-35",
+            "entries": [
+              {
+                "timestamp": "2017-04-17T19:35:08.927Z",
+                "nodeId": "3942832d-1a8e-4e87-ac35-ee226193b25b",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-04-17T19:35:08.996Z",
+                "nodeId": "60b27ad9-3309-4e0e-ad5f-ff2b68c3f51e",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/rbk-2/import/tournament/regionsligaen-avd-5-2017/season/fotballsesongen-2017/table/round-0-mandag-2017-04-17-03-40",
+            "entries": [
+              {
+                "timestamp": "2017-04-17T03:40:28.628Z",
+                "nodeId": "453576ac-6bff-4260-b39d-9edf718cace8",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-04-17T03:40:28.539Z",
+                "nodeId": "ca10db73-cb7c-4434-a8b7-530426e8e279",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/rbk-2/import/tournament/regionsligaen-avd-5-2017/season/fotballsesongen-2017/table/round-2-sondag-2017-04-23-03-40",
+            "entries": [
+              {
+                "timestamp": "2017-04-23T03:40:28.415Z",
+                "nodeId": "dbc485ec-4fe3-45a9-a399-1a8b90666db4",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-04-23T03:40:28.384Z",
+                "nodeId": "d367263b-8034-4eb6-bf2d-2f17ddff6387",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-5-mandag-2017-04-24-19-05",
+            "entries": [
+              {
+                "timestamp": "2017-04-24T19:05:04.428Z",
+                "nodeId": "24738f00-102d-4f9d-ae1a-87b69764b5ab",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-04-24T19:05:04.495Z",
+                "nodeId": "49d28e3b-9aa4-4989-aa93-7504baf2749d",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-6-mandag-2017-05-01-19-05",
+            "entries": [
+              {
+                "timestamp": "2017-05-01T19:05:05.011Z",
+                "nodeId": "2d5d393b-7b6b-4821-b81c-76aa8cabf87c",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-05-01T19:05:04.937Z",
+                "nodeId": "3c198703-1788-480a-91fa-112ce869c1c1",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-5-lordag-2017-04-29-18-05",
+            "entries": [
+              {
+                "timestamp": "2017-04-29T18:05:08.044Z",
+                "nodeId": "809593bb-121f-4988-921e-3b27bfc9577d",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-04-29T18:05:07.932Z",
+                "nodeId": "7fef8019-7df8-43e8-b43d-5ee948c74231",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-5-sondag-2017-04-30-20-05",
+            "entries": [
+              {
+                "timestamp": "2017-04-30T20:05:09.096Z",
+                "nodeId": "9e9c842f-e56d-4e43-a523-44d80011369d",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-04-30T20:05:09.160Z",
+                "nodeId": "dc9cc1b1-ce59-46f2-9061-c8676d7a0588",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/rbk-2/import/tournament/regionsligaen-avd-5-2017/season/fotballsesongen-2017/table/round-3-onsdag-2017-05-03-03-40",
+            "entries": [
+              {
+                "timestamp": "2017-05-03T03:40:31.817Z",
+                "nodeId": "b111f605-54a6-41c0-b949-3329304cc858",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-05-03T03:40:31.766Z",
+                "nodeId": "df5e9b44-1387-4b73-876d-9a39f6651a5c",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-7-sondag-2017-05-07-20-05",
+            "entries": [
+              {
+                "timestamp": "2017-05-07T20:05:08.148Z",
+                "nodeId": "1a955545-eba8-48eb-a5c1-730b67e82018",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-05-07T20:05:07.838Z",
+                "nodeId": "a8572672-8e89-4fbf-99de-60f6f795ad8e",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-6-lordag-2017-05-06-18-05",
+            "entries": [
+              {
+                "timestamp": "2017-05-06T18:05:07.475Z",
+                "nodeId": "2aac6f5d-a63b-4c71-9e62-47d776b0b25b",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-05-06T18:05:07.352Z",
+                "nodeId": "e21d2cf7-3564-477c-bf32-992d78a3b5fe",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-7-fredag-2017-05-12-20-35",
+            "entries": [
+              {
+                "timestamp": "2017-05-12T20:35:04.712Z",
+                "nodeId": "f46bafbe-f4ac-4bee-9e5a-c63d05d8bb04",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-05-12T20:35:04.551Z",
+                "nodeId": "eaeaa433-6dc1-4a9f-95df-6a8dd55b3f8a",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-8-lordag-2017-05-13-16-05",
+            "entries": [
+              {
+                "timestamp": "2017-05-13T16:05:07.368Z",
+                "nodeId": "bc4751ca-70fe-4a35-878b-2b81aa726b2e",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-05-13T16:05:07.300Z",
+                "nodeId": "6d1cfb33-5500-47bf-9c2c-16bab7a3dc60",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-8-lordag-2017-05-13-18-05",
+            "entries": [
+              {
+                "timestamp": "2017-05-13T18:05:09.215Z",
+                "nodeId": "ecbfadc0-c1ef-43c0-83e4-1c7cb05c1141",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-05-13T18:05:09.291Z",
+                "nodeId": "6a890494-905f-4f6c-9472-423e798f079d",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-10-lordag-2017-05-20-18-05",
+            "entries": [
+              {
+                "timestamp": "2017-05-20T18:05:12.245Z",
+                "nodeId": "2358c318-db45-4e61-9c80-b75db73b2403",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-05-20T18:05:12.473Z",
+                "nodeId": "a7d0224f-c60e-494b-9c05-0040745f61ed",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/salmar-akademiet/rosenborg-g16-nasjonal/import/tournament/nasjonal-g16-avd.02-var-2017/season/fotballsesongen-2017/table/round-4-sondag-2017-05-28-03-40",
+            "entries": [
+              {
+                "timestamp": "2017-05-28T03:40:12.676Z",
+                "nodeId": "090bd7d3-5c76-461a-8eb3-effca10079c6",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-05-28T03:40:12.699Z",
+                "nodeId": "d299005b-b01e-49ae-9d3a-6adee2897d8a",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-11-sondag-2017-05-28-20-05",
+            "entries": [
+              {
+                "timestamp": "2017-05-28T20:05:06.610Z",
+                "nodeId": "fb289d06-cb0f-4d84-bde4-d6681e467370",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-05-28T20:05:06.667Z",
+                "nodeId": "6a3b4f2a-a69e-433c-a80e-a0704ef1b530",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-10-sondag-2017-05-28-18-05",
+            "entries": [
+              {
+                "timestamp": "2017-05-28T18:05:07.211Z",
+                "nodeId": "f7e0f79e-3549-40c2-b118-b6d69dcdf139",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-05-28T18:05:07.302Z",
+                "nodeId": "5c1aadb5-08e7-45b1-81d3-0b9379680220",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/salmar-akademiet/rosenborg-g16-nasjonal/import/tournament/nasjonal-g16-avd.02-var-2017/season/fotballsesongen-2017/table/round-5-sondag-2017-06-04-03-40",
+            "entries": [
+              {
+                "timestamp": "2017-06-04T03:40:14.904Z",
+                "nodeId": "69311bac-c1a5-4613-981f-e1e9fbeb6f2a",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-06-04T03:40:14.950Z",
+                "nodeId": "d873aac8-fefa-4857-bc5f-1ee5b72c5f62",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/salmar-akademiet/rosenborg-m39/import/tournament/menn-39-34-2017/season/fotballsesongen-2017/table/round-3-fredag-2017-06-02-03-40",
+            "entries": [
+              {
+                "timestamp": "2017-06-02T03:40:23.625Z",
+                "nodeId": "0972bfeb-dcf4-4d65-9e55-70bee78b8828",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-06-02T03:40:23.665Z",
+                "nodeId": "865f520e-4408-4d45-a7a7-c5d9048f53bc",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-11-lordag-2017-06-03-15-35",
+            "entries": [
+              {
+                "timestamp": "2017-06-03T15:35:06.882Z",
+                "nodeId": "d04eb7cc-fdb3-4da4-a2a4-04fee62a040c",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-06-03T15:35:06.496Z",
+                "nodeId": "03d25725-8c03-4246-bf25-861a551666b6",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-9-tirsdag-2017-05-16-20-35",
+            "entries": [
+              {
+                "timestamp": "2017-05-16T20:35:08.353Z",
+                "nodeId": "d242d932-4b48-43fd-adb9-57d311dc62d5",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-05-16T20:35:08.407Z",
+                "nodeId": "d694cadd-0b9c-429e-accc-eb59fe53afbb",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/salmar-akademiet/rosenborg-m39/import/tournament/menn-39-34-2017/season/fotballsesongen-2017/table/round-2-lordag-2017-05-20-03-40",
+            "entries": [
+              {
+                "timestamp": "2017-05-20T03:40:25.343Z",
+                "nodeId": "e0df06ac-f601-4ef5-92aa-7c7234c0299a",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-05-20T03:40:25.291Z",
+                "nodeId": "94901c1a-8424-48db-aee3-a4e46909dbd8",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/salmar-akademiet/rosenborg-m39/import/tournament/menn-39-34-2017/season/fotballsesongen-2017/table/round-5-torsdag-2017-06-08-03-40",
+            "entries": [
+              {
+                "timestamp": "2017-06-08T03:40:24.435Z",
+                "nodeId": "ec1372ac-d498-44c1-ac6c-e18f0fd7f0af",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-06-08T03:40:23.927Z",
+                "nodeId": "94c23c6b-a754-4bc9-a9b0-34fd4e0859d7",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/rbk-2/import/tournament/regionsligaen-avd-5-2017/season/fotballsesongen-2017/table/round-8-tirsdag-2017-06-06-03-40",
+            "entries": [
+              {
+                "timestamp": "2017-06-06T03:40:29.006Z",
+                "nodeId": "350be1af-d3f1-4405-93f2-ed458b89ef20",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-06-06T03:40:29.055Z",
+                "nodeId": "238f2bb3-2fcb-4da8-8acf-ad04aefeba31",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-13-mandag-2017-06-19-19-05",
+            "entries": [
+              {
+                "timestamp": "2017-06-19T19:05:06.471Z",
+                "nodeId": "9d800e87-24b1-48d0-8793-531d25721a65",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-06-19T19:05:06.420Z",
+                "nodeId": "c3b2caf3-24b3-498a-ae0b-9d72ae8f9b98",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/salmar-akademiet/rosenborg-g16-nasjonal/import/tournament/nasjonal-g16-avd.02-var-2017/season/fotballsesongen-2017/table/round-6-onsdag-2017-06-14-03-40",
+            "entries": [
+              {
+                "timestamp": "2017-06-14T03:40:15.036Z",
+                "nodeId": "e50e8957-08be-43af-be7a-6ef6f5da224c",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-06-14T03:40:15.092Z",
+                "nodeId": "f1fe9be3-feb8-473e-a5a0-881954c503ca",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-13-sondag-2017-06-18-20-05",
+            "entries": [
+              {
+                "timestamp": "2017-06-18T20:05:07.943Z",
+                "nodeId": "790716ab-db54-458d-950f-1e942d70d540",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-06-18T20:05:08.070Z",
+                "nodeId": "21189e83-d40d-4d47-a1b1-56ee4b139ca6",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/salmar-akademiet/rosenborg-g16-nasjonal/import/tournament/nasjonal-g16-avd.02-var-2017/season/fotballsesongen-2017/table/round-6-mandag-2017-06-19-03-40",
+            "entries": [
+              {
+                "timestamp": "2017-06-19T03:40:15.833Z",
+                "nodeId": "5355b8d0-cc68-43f0-bdad-b1f78e4dc7b8",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-06-19T03:40:15.889Z",
+                "nodeId": "9fb05ae0-aecc-4c20-bff6-6f2d513f07eb",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/rbk-2/import/tournament/regionsligaen-avd-5-2017/season/fotballsesongen-2017/table/round-9-sondag-2017-06-11-03-40",
+            "entries": [
+              {
+                "timestamp": "2017-06-11T03:40:31.860Z",
+                "nodeId": "fab344fc-2d1a-4056-bbc3-1520cca2185c",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-06-11T03:40:31.900Z",
+                "nodeId": "32f50672-8ad1-4c0e-b1fc-c121385ee7de",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/salmar-akademiet/rosenborg-m39/import/tournament/menn-39-34-2017/season/fotballsesongen-2017/table/round-1-tirsdag-2017-06-20-03-40",
+            "entries": [
+              {
+                "timestamp": "2017-06-20T03:40:38.015Z",
+                "nodeId": "938a30a8-f334-4d44-b796-3a935f137e80",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-06-20T03:40:37.956Z",
+                "nodeId": "965464cb-d1d3-4936-aa50-79783fdbcb20",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/salmar-akademiet/rosenborg-g16-nasjonal/import/tournament/nasjonal-g16-avd.02-host-2017/season/fotballsesongen-2017/table/round-0-tirsdag-2017-06-27-03-40",
+            "entries": [
+              {
+                "timestamp": "2017-06-27T03:40:11.342Z",
+                "nodeId": "f7da49a0-4a94-40af-b707-caa299e0341a",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-06-27T03:40:11.310Z",
+                "nodeId": "aa29b5e3-f769-4d68-95c5-7f3d94b2263a",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/season/uefa-europe-league-2017-2018",
+            "entries": [
+              {
+                "timestamp": "2017-06-30T05:00:33.879Z",
+                "nodeId": "a5d9b9f1-6489-492a-bf06-dd7f67bc999f",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-06-30T05:00:33.885Z",
+                "nodeId": "6b1758ac-48d4-40fe-b34d-2eefa498e804",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "draft": {
+        "totalIssues": 87,
+        "results": [
+          {
+            "type": "NotUniquePath",
+            "nodePath": "/content/rbk/nyheter/__unnamed__d865bbdc-01b3-4805-9515-23baf51fb3d4/_MG_5929_web.jpg",
+            "id": "1c7d46c2-d94a-40a4-9820-2b5ac02628b4"
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/nye-fotballsko",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T14:13:47.478Z",
+                "nodeId": "a5d50aa1-e904-4d98-a9fa-fff4ee744765",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T14:13:46.608Z",
+                "nodeId": "2f9e9195-66f4-4ccb-a157-c81de74c117d",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/uavgjort-pa-stjordal/1o63c0pf2pqaf17ctk62uyljkd",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T14:13:52.765Z",
+                "nodeId": "d8d7e065-6c91-417f-aa6b-ba7dbcda97f4",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T14:13:52.765Z",
+                "nodeId": "5f39aea6-b042-4450-a8e4-1062791bbd4b",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/uavgjort-pa-stjordal",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T14:13:54.431Z",
+                "nodeId": "0c849b71-93bf-4173-80ec-5635fe4d3f8d",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T14:13:54.497Z",
+                "nodeId": "ffff71fd-408c-404b-95b9-5ad9bd111e8d",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/sapara-i-fanklub-tv",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T14:54:00.579Z",
+                "nodeId": "aae99efa-c390-41a5-b5ea-93bc898060fe",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T14:54:07.214Z",
+                "nodeId": "7df154f1-b7b0-4261-8dba-774cafd2bf94",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/sapara-i-fanklub-tv/tjc3mevhlizl17nneevez0nji",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T14:54:06.175Z",
+                "nodeId": "f6b46d4f-7cdf-4932-a6d9-d8cb74f3159c",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T14:54:06.225Z",
+                "nodeId": "eaa3fd67-d842-4484-b417-30f506905be3",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/sapara-i-fanklub-tv/ty9a0skkdfjq1o5snm093w49k",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T14:54:07.086Z",
+                "nodeId": "32d6115c-76e2-41b8-92f8-2310ee8f80a1",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T14:54:07.194Z",
+                "nodeId": "76c763a4-2045-4a91-acc5-657a82c28929",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/roar-strand-i-fanklubtv",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T15:14:22.324Z",
+                "nodeId": "03eaf7b5-9776-4fb6-98fd-45994b53f5f3",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T15:14:22.370Z",
+                "nodeId": "58adb207-63c8-449c-8bbd-8596e33bbe38",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/atte-for-norge/1k74527bvedpe19gqaf9zcpho7",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T16:23:42.584Z",
+                "nodeId": "f0f38d1c-cc71-411c-864e-f4294b574e3c",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T16:23:42.264Z",
+                "nodeId": "17ce01aa-4c4e-473a-b232-bd9e6d3d9780",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/atte-for-norge",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T16:23:42.654Z",
+                "nodeId": "36d786d5-280c-4485-ac52-437a7629cc12",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T16:23:45.363Z",
+                "nodeId": "ae094bd8-156f-4f85-9adf-35cc26a72682",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/na-eller-aldri/1vmeizdtvv0ys174koudq5ckjb",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T16:15:34.089Z",
+                "nodeId": "8205f1e2-bc5d-4275-864d-5e54edafa41b",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T16:15:33.979Z",
+                "nodeId": "1d082597-87e8-46b8-926c-fbce85e518af",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/na-eller-aldri",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T16:15:34.127Z",
+                "nodeId": "e9698eda-5570-455b-9342-181e7261e12b",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T16:15:34.024Z",
+                "nodeId": "08387a69-1399-4cf9-bae3-4635d63de711",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/na-eller-aldri/1ex3kmui7g0cx1e9ms02zaam6x",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T16:15:33.192Z",
+                "nodeId": "865ca53d-38ea-4717-8f22-8dcaca758273",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T16:15:33.294Z",
+                "nodeId": "68733a48-7eb7-46af-af51-82177cf912f1",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/tidspunkt-for-cupkampen-mot-vif-klare",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T11:10:23.325Z",
+                "nodeId": "014b70aa-5973-475a-b137-0fff4d6210fb",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T11:10:24.201Z",
+                "nodeId": "bf778680-7628-4907-a9ab-8dad9719e794",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/strandberg-reiser-hjem/1kf35xuvv5z9l1vdq4hwem9dy1",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T09:54:55.821Z",
+                "nodeId": "7701a32b-137b-47d1-88a7-80fd3f9b35e1",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T09:54:55.823Z",
+                "nodeId": "20d9fd28-7bc9-46eb-ae7b-82b091c01e71",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/strandberg-reiser-hjem",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T09:54:56.023Z",
+                "nodeId": "d3b70600-856c-4ede-acba-73cb270de3ec",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T09:54:56.045Z",
+                "nodeId": "eaab012f-a271-486e-a8c0-e50df1367ad1",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/rosenborg-porto-0-1",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T14:12:36.530Z",
+                "nodeId": "a5944728-3d84-400d-8a06-4536b3f6267d",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T14:12:36.686Z",
+                "nodeId": "7e63a262-8b53-45a6-bca2-09bb674dbafb",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/guttene-slo-tilbake",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T14:44:00.386Z",
+                "nodeId": "9e23a652-aa8a-4512-8c09-89d3023381f0",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T14:44:00.099Z",
+                "nodeId": "d9524177-4f7d-44fa-a322-5ce2b2d54681",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/annans-first-session",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T14:32:33.278Z",
+                "nodeId": "ac4fa61f-c00d-47c0-aa5f-ab60c918445a",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T14:32:33.370Z",
+                "nodeId": "54e68343-931b-4044-8b73-14be8a588f42",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/annans-first-session/1hl2z10xlou811vwec7l0ue5e1",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T14:32:33.334Z",
+                "nodeId": "6c32821a-7b92-41df-9f40-3822a20897fa",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T14:32:33.229Z",
+                "nodeId": "2267a115-b06f-47d0-8c5b-321c6eb788c4",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/mikael-lustig-joins-the-club",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T14:32:35.314Z",
+                "nodeId": "9b6827dd-abc2-40f9-896a-dda1c755b151",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T14:32:35.386Z",
+                "nodeId": "3cb08dc1-532a-4d8d-a005-d1f18696e506",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/provde-a-styre/vwclupmjxyzg10j4ocfukzwsm",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T13:30:24.235Z",
+                "nodeId": "a99eb8e9-15f6-4cc8-a322-19e308c9162a",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T13:30:23.614Z",
+                "nodeId": "4770f7df-f93e-4e25-b603-bee6ee3845c8",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/provde-a-styre",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T13:30:25.007Z",
+                "nodeId": "4c183c96-1704-4630-be3d-72094a92a1b9",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T13:30:24.416Z",
+                "nodeId": "87452c00-9fac-45f6-a2da-aa50f9e60841",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/rbk-moter-djurgarden",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T14:21:47.195Z",
+                "nodeId": "4ec65719-b861-46f9-ae40-61153017becb",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T14:21:47.004Z",
+                "nodeId": "0caeeb5d-ff1d-4745-98e3-840e3d023817",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/rbk-moter-djurgarden/a5wf97igg2v71lmpbdxufvpdw",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T14:21:46.969Z",
+                "nodeId": "5c6f56c7-e21e-4b5e-bc64-5402879691da",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T14:21:47.049Z",
+                "nodeId": "f8eb1aed-0e59-4eb0-9802-b11510942cf2",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/dette-skriver-svenskene",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T14:32:00.157Z",
+                "nodeId": "6efad6cd-a8b2-42cf-aef4-80fe037b35e6",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T14:32:00.322Z",
+                "nodeId": "1a71a268-883f-4189-bf49-298177653319",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/dette-skriver-svenskene/1x20d26513mq612ngron9vi9b9",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T14:31:59.489Z",
+                "nodeId": "094160f7-034a-4bf2-8b5f-dac9a4a196a5",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T14:31:59.540Z",
+                "nodeId": "c9e3c222-4f2f-474c-840e-e9f8bd96ecf8",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/terpet-avslutninger",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T14:22:49.133Z",
+                "nodeId": "df7396d4-a763-4a84-a412-0f39358a799a",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T14:23:23.598Z",
+                "nodeId": "65be4965-bd70-4c26-a1c7-4940428322e0",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/mushaga-og-henriksen-avanserte/rwkljqc2e17z1ds5l47xdnlun",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T14:23:11.217Z",
+                "nodeId": "56326214-6a58-4bf9-bc72-0607b008ca25",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T14:23:11.571Z",
+                "nodeId": "fad7de1c-e39c-4d9d-9e9c-379cfe939a1c",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/mushaga-og-henriksen-avanserte/uo7aze667ndf1akyzkdp296p3",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T14:23:15.191Z",
+                "nodeId": "928b6133-4385-4c60-a6ee-dae510653e1f",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T14:23:15.213Z",
+                "nodeId": "bcb7ace0-c4fb-44ce-89b0-d5aea69eb6e6",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/mushaga-og-henriksen-avanserte",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T14:23:15.496Z",
+                "nodeId": "6552eec4-ae78-4560-9383-c23dd6335ca6",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T14:23:15.457Z",
+                "nodeId": "d4ba9656-298e-49ad-b18d-2106a66f5560",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/opens-against-valerenga",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T13:30:35Z",
+                "nodeId": "5f05d8c3-0d2b-47e7-9abc-1642f8496200",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T13:30:46.964Z",
+                "nodeId": "134cc5bc-af72-496d-93df-52dfa4f087a9",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/opens-against-valerenga/mt9vr5b8fot615thqwotyjfwe",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T13:30:34.411Z",
+                "nodeId": "ea332813-5903-4ba0-b6c6-54aa36f80e10",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T13:30:34.914Z",
+                "nodeId": "35a69ae9-40de-4412-859b-611280747fe9",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/highlights-rosenborg-brondby",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T14:02:27.184Z",
+                "nodeId": "6ae0d997-eb47-47fb-86e3-f767b2192b95",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T14:02:27.062Z",
+                "nodeId": "15f6a8b9-108f-4120-9125-2856dd23b4a7",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/highlights-rosenborg-brondby/9t84uftf7eu41keqrqmtpq1fu",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T14:02:27.086Z",
+                "nodeId": "02c0f743-fe3e-4716-bea4-f0e2e393154c",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T14:02:26.969Z",
+                "nodeId": "e4f2faef-a635-4098-b2d8-93b78d374559",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/rosenborg-to-manchester",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T14:11:53.214Z",
+                "nodeId": "bbb371df-edaa-4a59-87be-e51391791411",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T14:11:53.360Z",
+                "nodeId": "405a815f-cfea-4fd7-8fbc-307e8101567f",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T14:11:53.601Z",
+                "nodeId": "5c8d9f33-df30-4c7f-95c7-f467620e5b53",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/rosenborg-to-manchester/2i0gfaqgbiol1wcvj8q72w31y",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T14:11:53.296Z",
+                "nodeId": "4fd56934-0e3d-4848-81a0-076e52a6e5c5",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T14:11:53.550Z",
+                "nodeId": "563557dc-9f66-452e-b405-e1d5b03a1a91",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T14:11:53.143Z",
+                "nodeId": "6367062d-292d-4d68-a765-6a04632d54c7",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/lago-pa-laget",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T14:11:53.898Z",
+                "nodeId": "e04470be-cef7-45ea-9b48-a0af84740fce",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T14:11:54.128Z",
+                "nodeId": "146558eb-4721-4c11-b3f2-9dbaf7d0e5eb",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/strand-og-co-fornoyde/1tlviw27xdwaq1ut7maeifalb5",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T14:20:55.090Z",
+                "nodeId": "d5f53d70-a75a-4268-bbaa-aa3f1783561b",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T14:20:55.026Z",
+                "nodeId": "7a4d6890-a890-4eec-9ee2-56725a4e44d6",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/strand-og-co-fornoyde/1rkebxzjx4q3i1ng6285zfkp1r",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T14:20:57.923Z",
+                "nodeId": "9e34f8b6-91e6-42aa-882b-7746eccd9f5e",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T14:20:57.763Z",
+                "nodeId": "8e1bab3d-a50e-49b6-ae3b-2140e5ea4f95",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/strand-og-co-fornoyde",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T14:20:58.014Z",
+                "nodeId": "db9e5977-dbef-4603-8665-8f7e65cbdbb1",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T14:20:58.156Z",
+                "nodeId": "1ea4bfb4-bd84-4fd3-bb7c-119c75146e30",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/import-arkiv/spillerne-gjorde-sitt-beste",
+            "entries": [
+              {
+                "timestamp": "2016-12-28T14:20:57.674Z",
+                "nodeId": "0e01d395-83d6-4649-be52-be03215339b4",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2016-12-28T14:20:57.774Z",
+                "nodeId": "57df7635-acea-44a0-8891-04f5fde5c1ed",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-2-onsdag-2017-04-05-19-35",
+            "entries": [
+              {
+                "timestamp": "2017-04-05T19:35:11.015Z",
+                "nodeId": "c441ed65-d8fc-4cf8-abe6-8c2a2d3d4623",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-04-05T19:35:10.942Z",
+                "nodeId": "630a6d7c-31ba-4af6-b5d6-99cd210ad265",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-3-lordag-2017-04-08-18-05",
+            "entries": [
+              {
+                "timestamp": "2017-04-08T18:05:05.180Z",
+                "nodeId": "7263d941-8f49-4880-abbd-59657d01f5af",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-04-08T18:05:05.115Z",
+                "nodeId": "05872ce4-42a9-4fed-9efc-b6a479183539",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/nm-menn-ordinaere-runder-2017/season",
+            "entries": [
+              {
+                "timestamp": "2017-04-08T01:20:15.425Z",
+                "nodeId": "c9613656-6d4c-41b6-b556-c40c00233a61",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-04-08T01:20:14.242Z",
+                "nodeId": "07fd41b2-21ea-4343-be18-f8c053ab6d45",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/nm-menn-ordinaere-runder-2017/season/fotballsesongen-2017",
+            "entries": [
+              {
+                "timestamp": "2017-04-08T01:20:15.436Z",
+                "nodeId": "03ed13a5-cd8c-45a2-bb11-d276f1fff4b0",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-04-17T01:20:45.274Z",
+                "nodeId": "e208c80e-d628-452e-8e48-d19096b0e163",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/nm-menn-ordinaere-runder-2017",
+            "entries": [
+              {
+                "timestamp": "2017-04-08T01:20:15.410Z",
+                "nodeId": "d62f9d7d-d7ef-4784-a47e-50d6eb4a56fd",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-04-08T01:20:14.037Z",
+                "nodeId": "c8de38be-15fd-49df-9c60-333e7eaa97d4",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-3-sondag-2017-04-09-18-05",
+            "entries": [
+              {
+                "timestamp": "2017-04-09T18:05:05.006Z",
+                "nodeId": "74329279-cecb-4e11-8197-ad169d4fe973",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-04-09T18:05:04.935Z",
+                "nodeId": "402dc3d7-464f-49a7-98b6-cf50b625e9b7",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-3-sondag-2017-04-09-19-35",
+            "entries": [
+              {
+                "timestamp": "2017-04-09T19:35:05.932Z",
+                "nodeId": "f49f6f8c-8515-468a-b3ce-00c1bdddff81",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-04-09T19:35:05.578Z",
+                "nodeId": "e323b43b-efee-4af0-a321-ab6221636d92",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-3-sondag-2017-04-09-20-05",
+            "entries": [
+              {
+                "timestamp": "2017-04-09T20:05:06.224Z",
+                "nodeId": "1ec53853-5bcf-4242-a091-8ce6617a62fb",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-04-09T20:05:06.284Z",
+                "nodeId": "b8765362-0b78-489a-be2b-8e347754e881",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-3-mandag-2017-04-10-08-35",
+            "entries": [
+              {
+                "timestamp": "2017-04-10T08:35:06.211Z",
+                "nodeId": "bb267641-21df-4082-9b59-9dffaa5cbb6a",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-04-10T08:35:06.156Z",
+                "nodeId": "bc39708c-9b22-47d6-b5ed-479afc61af30",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-3-mandag-2017-04-10-19-05",
+            "entries": [
+              {
+                "timestamp": "2017-04-10T19:05:05.445Z",
+                "nodeId": "9dc3f187-8c0a-4b8f-b806-f3c0b159f106",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-04-10T19:05:05.395Z",
+                "nodeId": "c10e6397-1591-4f00-85c7-ce97c73c5474",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-3-mandag-2017-04-17-19-35",
+            "entries": [
+              {
+                "timestamp": "2017-04-17T19:35:08.996Z",
+                "nodeId": "60b27ad9-3309-4e0e-ad5f-ff2b68c3f51e",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-04-17T19:35:08.927Z",
+                "nodeId": "3942832d-1a8e-4e87-ac35-ee226193b25b",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/rbk-2/import/tournament/regionsligaen-avd-5-2017/season/fotballsesongen-2017/table/round-0-mandag-2017-04-17-03-40",
+            "entries": [
+              {
+                "timestamp": "2017-04-17T03:40:28.628Z",
+                "nodeId": "453576ac-6bff-4260-b39d-9edf718cace8",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-04-17T03:40:28.539Z",
+                "nodeId": "ca10db73-cb7c-4434-a8b7-530426e8e279",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/rbk-2/import/tournament/regionsligaen-avd-5-2017/season/fotballsesongen-2017/table/round-2-sondag-2017-04-23-03-40",
+            "entries": [
+              {
+                "timestamp": "2017-04-23T03:40:28.384Z",
+                "nodeId": "d367263b-8034-4eb6-bf2d-2f17ddff6387",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-04-23T03:40:28.415Z",
+                "nodeId": "dbc485ec-4fe3-45a9-a399-1a8b90666db4",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-5-mandag-2017-04-24-19-05",
+            "entries": [
+              {
+                "timestamp": "2017-04-24T19:05:04.495Z",
+                "nodeId": "49d28e3b-9aa4-4989-aa93-7504baf2749d",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-04-24T19:05:04.428Z",
+                "nodeId": "24738f00-102d-4f9d-ae1a-87b69764b5ab",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/salmar-akademiet/rosenborg-g19/import/tournament/nm-g19-telenor-cup-2017",
+            "entries": [
+              {
+                "timestamp": "2017-04-25T01:20:32.899Z",
+                "nodeId": "f018fdaa-a63d-4a85-a407-020b33dc9cef",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-04-25T01:20:32.179Z",
+                "nodeId": "e019a36c-7968-4f58-a61c-b083e747fd8c",
+                "branches": [
+                  "draft"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-6-mandag-2017-05-01-19-05",
+            "entries": [
+              {
+                "timestamp": "2017-05-01T19:05:05.011Z",
+                "nodeId": "2d5d393b-7b6b-4821-b81c-76aa8cabf87c",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-05-01T19:05:04.937Z",
+                "nodeId": "3c198703-1788-480a-91fa-112ce869c1c1",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-5-lordag-2017-04-29-18-05",
+            "entries": [
+              {
+                "timestamp": "2017-04-29T18:05:07.932Z",
+                "nodeId": "7fef8019-7df8-43e8-b43d-5ee948c74231",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-04-29T18:05:08.044Z",
+                "nodeId": "809593bb-121f-4988-921e-3b27bfc9577d",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-5-sondag-2017-04-30-20-05",
+            "entries": [
+              {
+                "timestamp": "2017-04-30T20:05:09.160Z",
+                "nodeId": "dc9cc1b1-ce59-46f2-9061-c8676d7a0588",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-04-30T20:05:09.096Z",
+                "nodeId": "9e9c842f-e56d-4e43-a523-44d80011369d",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/rbk-2/import/tournament/regionsligaen-avd-5-2017/season/fotballsesongen-2017/table/round-3-onsdag-2017-05-03-03-40",
+            "entries": [
+              {
+                "timestamp": "2017-05-03T03:40:31.817Z",
+                "nodeId": "b111f605-54a6-41c0-b949-3329304cc858",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-05-03T03:40:31.766Z",
+                "nodeId": "df5e9b44-1387-4b73-876d-9a39f6651a5c",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-7-sondag-2017-05-07-20-05",
+            "entries": [
+              {
+                "timestamp": "2017-05-07T20:05:08.148Z",
+                "nodeId": "1a955545-eba8-48eb-a5c1-730b67e82018",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-05-07T20:05:07.838Z",
+                "nodeId": "a8572672-8e89-4fbf-99de-60f6f795ad8e",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-6-lordag-2017-05-06-18-05",
+            "entries": [
+              {
+                "timestamp": "2017-05-06T18:05:07.475Z",
+                "nodeId": "2aac6f5d-a63b-4c71-9e62-47d776b0b25b",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-05-06T18:05:07.352Z",
+                "nodeId": "e21d2cf7-3564-477c-bf32-992d78a3b5fe",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-7-fredag-2017-05-12-20-35",
+            "entries": [
+              {
+                "timestamp": "2017-05-12T20:35:04.551Z",
+                "nodeId": "eaeaa433-6dc1-4a9f-95df-6a8dd55b3f8a",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-05-12T20:35:04.712Z",
+                "nodeId": "f46bafbe-f4ac-4bee-9e5a-c63d05d8bb04",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-8-lordag-2017-05-13-16-05",
+            "entries": [
+              {
+                "timestamp": "2017-05-13T16:05:07.368Z",
+                "nodeId": "bc4751ca-70fe-4a35-878b-2b81aa726b2e",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-05-13T16:05:07.300Z",
+                "nodeId": "6d1cfb33-5500-47bf-9c2c-16bab7a3dc60",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-8-lordag-2017-05-13-18-05",
+            "entries": [
+              {
+                "timestamp": "2017-05-13T18:05:09.215Z",
+                "nodeId": "ecbfadc0-c1ef-43c0-83e4-1c7cb05c1141",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-05-13T18:05:09.291Z",
+                "nodeId": "6a890494-905f-4f6c-9472-423e798f079d",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-10-lordag-2017-05-20-18-05",
+            "entries": [
+              {
+                "timestamp": "2017-05-20T18:05:12.473Z",
+                "nodeId": "a7d0224f-c60e-494b-9c05-0040745f61ed",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-05-20T18:05:12.245Z",
+                "nodeId": "2358c318-db45-4e61-9c80-b75db73b2403",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/salmar-akademiet/rosenborg-g16-nasjonal/import/tournament/nasjonal-g16-avd.02-var-2017/season/fotballsesongen-2017/table/round-4-sondag-2017-05-28-03-40",
+            "entries": [
+              {
+                "timestamp": "2017-05-28T03:40:12.676Z",
+                "nodeId": "090bd7d3-5c76-461a-8eb3-effca10079c6",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-05-28T03:40:12.699Z",
+                "nodeId": "d299005b-b01e-49ae-9d3a-6adee2897d8a",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-11-sondag-2017-05-28-20-05",
+            "entries": [
+              {
+                "timestamp": "2017-05-28T20:05:06.610Z",
+                "nodeId": "fb289d06-cb0f-4d84-bde4-d6681e467370",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-05-28T20:05:06.667Z",
+                "nodeId": "6a3b4f2a-a69e-433c-a80e-a0704ef1b530",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-10-sondag-2017-05-28-18-05",
+            "entries": [
+              {
+                "timestamp": "2017-05-28T18:05:07.302Z",
+                "nodeId": "5c1aadb5-08e7-45b1-81d3-0b9379680220",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-05-28T18:05:07.211Z",
+                "nodeId": "f7e0f79e-3549-40c2-b118-b6d69dcdf139",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/salmar-akademiet/rosenborg-g16-nasjonal/import/tournament/nasjonal-g16-avd.02-var-2017/season/fotballsesongen-2017/table/round-5-sondag-2017-06-04-03-40",
+            "entries": [
+              {
+                "timestamp": "2017-06-04T03:40:14.904Z",
+                "nodeId": "69311bac-c1a5-4613-981f-e1e9fbeb6f2a",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-06-04T03:40:14.950Z",
+                "nodeId": "d873aac8-fefa-4857-bc5f-1ee5b72c5f62",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/salmar-akademiet/rosenborg-m39/import/tournament/menn-39-34-2017/season/fotballsesongen-2017/table/round-3-fredag-2017-06-02-03-40",
+            "entries": [
+              {
+                "timestamp": "2017-06-02T03:40:23.665Z",
+                "nodeId": "865f520e-4408-4d45-a7a7-c5d9048f53bc",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-06-02T03:40:23.625Z",
+                "nodeId": "0972bfeb-dcf4-4d65-9e55-70bee78b8828",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-11-lordag-2017-06-03-15-35",
+            "entries": [
+              {
+                "timestamp": "2017-06-03T15:35:06.496Z",
+                "nodeId": "03d25725-8c03-4246-bf25-861a551666b6",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-06-03T15:35:06.882Z",
+                "nodeId": "d04eb7cc-fdb3-4da4-a2a4-04fee62a040c",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-9-tirsdag-2017-05-16-20-35",
+            "entries": [
+              {
+                "timestamp": "2017-05-16T20:35:08.353Z",
+                "nodeId": "d242d932-4b48-43fd-adb9-57d311dc62d5",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-05-16T20:35:08.407Z",
+                "nodeId": "d694cadd-0b9c-429e-accc-eb59fe53afbb",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/salmar-akademiet/rosenborg-m39/import/tournament/menn-39-34-2017/season/fotballsesongen-2017/table/round-2-lordag-2017-05-20-03-40",
+            "entries": [
+              {
+                "timestamp": "2017-05-20T03:40:25.343Z",
+                "nodeId": "e0df06ac-f601-4ef5-92aa-7c7234c0299a",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-05-20T03:40:25.291Z",
+                "nodeId": "94901c1a-8424-48db-aee3-a4e46909dbd8",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/salmar-akademiet/rosenborg-m39/import/tournament/menn-39-34-2017/season/fotballsesongen-2017/table/round-5-torsdag-2017-06-08-03-40",
+            "entries": [
+              {
+                "timestamp": "2017-06-08T03:40:24.435Z",
+                "nodeId": "ec1372ac-d498-44c1-ac6c-e18f0fd7f0af",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-06-08T03:40:23.927Z",
+                "nodeId": "94c23c6b-a754-4bc9-a9b0-34fd4e0859d7",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/rbk-2/import/tournament/regionsligaen-avd-5-2017/season/fotballsesongen-2017/table/round-8-tirsdag-2017-06-06-03-40",
+            "entries": [
+              {
+                "timestamp": "2017-06-06T03:40:29.055Z",
+                "nodeId": "238f2bb3-2fcb-4da8-8acf-ad04aefeba31",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-06-06T03:40:29.006Z",
+                "nodeId": "350be1af-d3f1-4405-93f2-ed458b89ef20",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-13-mandag-2017-06-19-19-05",
+            "entries": [
+              {
+                "timestamp": "2017-06-19T19:05:06.420Z",
+                "nodeId": "c3b2caf3-24b3-498a-ae0b-9d72ae8f9b98",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-06-19T19:05:06.471Z",
+                "nodeId": "9d800e87-24b1-48d0-8793-531d25721a65",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/nm-menn-ordinaere-runder-2017/season/fotballsesongen-2017/match/round-1-strindheim-tf-x-rosenborg",
+            "entries": [
+              {
+                "timestamp": "2017-06-14T01:20:18.621Z",
+                "nodeId": "c1717f9e-7f77-4b0b-b861-9d0a64689d57",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2017-06-29T01:20:14.922Z",
+                "nodeId": "21deca6b-a2f8-497c-8232-8ad19500ad8d",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/salmar-akademiet/rosenborg-g16-nasjonal/import/tournament/nasjonal-g16-avd.02-var-2017/season/fotballsesongen-2017/table/round-6-onsdag-2017-06-14-03-40",
+            "entries": [
+              {
+                "timestamp": "2017-06-14T03:40:15.036Z",
+                "nodeId": "e50e8957-08be-43af-be7a-6ef6f5da224c",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-06-14T03:40:15.092Z",
+                "nodeId": "f1fe9be3-feb8-473e-a5a0-881954c503ca",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/eliteserien-2017/season/fotballsesongen-2017/table/round-13-sondag-2017-06-18-20-05",
+            "entries": [
+              {
+                "timestamp": "2017-06-18T20:05:08.070Z",
+                "nodeId": "21189e83-d40d-4d47-a1b1-56ee4b139ca6",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-06-18T20:05:07.943Z",
+                "nodeId": "790716ab-db54-458d-950f-1e942d70d540",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/salmar-akademiet/rosenborg-g16-nasjonal/import/tournament/nasjonal-g16-avd.02-var-2017/season/fotballsesongen-2017/table/round-6-mandag-2017-06-19-03-40",
+            "entries": [
+              {
+                "timestamp": "2017-06-19T03:40:15.833Z",
+                "nodeId": "5355b8d0-cc68-43f0-bdad-b1f78e4dc7b8",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-06-19T03:40:15.889Z",
+                "nodeId": "9fb05ae0-aecc-4c20-bff6-6f2d513f07eb",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/rbk-2/import/tournament/regionsligaen-avd-5-2017/season/fotballsesongen-2017/table/round-9-sondag-2017-06-11-03-40",
+            "entries": [
+              {
+                "timestamp": "2017-06-11T03:40:31.860Z",
+                "nodeId": "fab344fc-2d1a-4056-bbc3-1520cca2185c",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-06-11T03:40:31.900Z",
+                "nodeId": "32f50672-8ad1-4c0e-b1fc-c121385ee7de",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/salmar-akademiet/rosenborg-m39/import/tournament/menn-39-34-2017/season/fotballsesongen-2017/table/round-1-tirsdag-2017-06-20-03-40",
+            "entries": [
+              {
+                "timestamp": "2017-06-20T03:40:37.956Z",
+                "nodeId": "965464cb-d1d3-4936-aa50-79783fdbcb20",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-06-20T03:40:38.015Z",
+                "nodeId": "938a30a8-f334-4d44-b796-3a935f137e80",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/salmar-akademiet/rosenborg-g16-nasjonal/import/tournament/nasjonal-g16-avd.02-host-2017/season/fotballsesongen-2017/table/round-0-tirsdag-2017-06-27-03-40",
+            "entries": [
+              {
+                "timestamp": "2017-06-27T03:40:11.310Z",
+                "nodeId": "aa29b5e3-f769-4d68-95c5-7f3d94b2263a",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-06-27T03:40:11.342Z",
+                "nodeId": "f7da49a0-4a94-40af-b707-caa299e0341a",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/lag/import/tournament/nm-menn-ordinaere-runder-2017/season/fotballsesongen-2017/match/round-2-tynset-x-rosenborg",
+            "entries": [
+              {
+                "timestamp": "2017-06-28T05:21:36.306Z",
+                "nodeId": "9d6d3047-440c-493c-a4cb-30bd5d992e8d",
+                "branches": [
+                  "draft"
+                ]
+              },
+              {
+                "timestamp": "2017-06-29T01:20:22.389Z",
+                "nodeId": "2079bdab-ae40-45f9-833d-7168a72c3a0b",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          },
+          {
+            "type": "NotUniquePath",
+            "path": "/content/rbk/season/uefa-europe-league-2017-2018",
+            "entries": [
+              {
+                "timestamp": "2017-06-30T05:00:33.879Z",
+                "nodeId": "a5d9b9f1-6489-492a-bf06-dd7f67bc999f",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              },
+              {
+                "timestamp": "2017-06-30T05:00:33.885Z",
+                "nodeId": "6b1758ac-48d4-40fe-b34d-2eefa498e804",
+                "branches": [
+                  "draft",
+                  "master"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "system-repo": {
+      "master": {
+        "totalIssues": 0,
+        "results": []
+      }
+    }
+  }
+}

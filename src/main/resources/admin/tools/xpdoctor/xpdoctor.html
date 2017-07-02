@@ -26,6 +26,7 @@
     <script th:inline="javascript">
         /*<![CDATA[*/
         var repoLoaderServiceUrl = [[${repoLoaderServiceUrl}]];
+        var uniquePathValidatorUrl = [[${uniquePathValidatorUrl}]];
         /*]]>*/
     </script>
 
@@ -41,14 +42,8 @@
 
     <div class="container-fluid">
         <div class="row">
-            <div class="col-sm-3">
-                <form>
-
-
-                </form>
-            </div>
-            <div class="col-sm-9">
-                <h2>content</h2>
+            <div class="col-sm-12">
+                <h2>Results</h2>
                 <pre data-th-text="${result}"></pre>
             </div>
         </div>
