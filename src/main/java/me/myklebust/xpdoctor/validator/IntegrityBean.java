@@ -27,6 +27,7 @@ import com.enonic.xp.security.User;
 import com.enonic.xp.security.UserStoreKey;
 import com.enonic.xp.security.auth.AuthenticationInfo;
 
+@SuppressWarnings("unused")
 public class IntegrityBean
     implements ScriptBean
 {
@@ -47,7 +48,7 @@ public class IntegrityBean
             final RepoValidationResult.Builder repoBuilder = RepoValidationResult.create( repo.getId() );
 
             final Branches branches = repo.getBranches();
-            branches.forEach( branch -> {
+            branches.stream().forEach( branch -> {
                 final ValidatorResults validationResults = createContext( repo.getId(), branch ).callWith( this::doExecute );
                 final BranchValidationResult.Builder branchResult = BranchValidationResult.create( branch ).results( validationResults );
                 repoBuilder.add( branchResult.build() );

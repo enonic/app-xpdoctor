@@ -19,21 +19,19 @@
     <link rel="stylesheet" data-th-href="${portal.assetUrl({'_path=css/bootstrap.min.css'})}"/>
     <script data-th-src="${portal.assetUrl({'_path=js/tether.min.js'})}"></script>
     <script data-th-src="${portal.assetUrl({'_path=js/bootstrap.min.js'})}"></script>
-
-    <script data-th-src="${jsUrl}"></script>
-
+    <script type="text/javascript" data-th-src="${portal.assetUrl({'_path=js/renderjson.js'})}"></script>
+    <script data-th-src="${portal.assetUrl({'_path=js/main.js'})}"></script>
 
     <script th:inline="javascript">
         /*<![CDATA[*/
         var repoLoaderServiceUrl = [[${repoLoaderServiceUrl}]];
         var uniquePathValidatorUrl = [[${uniquePathValidatorUrl}]];
+        var validatorResult = [[${result}]];
         /*]]>*/
     </script>
 
 </head>
 <body>
-
-
 <main>
     <nav class="navbar navbar-fixed-top navbar-dark bg-primary">
         <a class="navbar-brand" href="#">xpDoctor</a>
@@ -44,7 +42,7 @@
         <div class="row">
             <div class="col-sm-12">
                 <h2>Results</h2>
-                <pre data-th-text="${result}"></pre>
+                <div id="result"></div>
             </div>
         </div>
     </div>

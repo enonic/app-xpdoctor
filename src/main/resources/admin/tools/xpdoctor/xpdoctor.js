@@ -10,7 +10,6 @@ exports.get = function (req) {
 
     var model = {
         result: JSON.stringify(result, null, 4),
-        jsUrl: portal.assetUrl({path: "/js/main.js"}),
         assetsUrl: portal.assetUrl({path: ""}),
         repoLoaderServiceUrl: getServiceUrl('repo-loader-service'),
         uniquePathValidatorUrl: getServiceUrl('unique-path-validator')

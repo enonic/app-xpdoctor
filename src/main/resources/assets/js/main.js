@@ -3,8 +3,13 @@ var model = {
 };
 
 $(function () {
-    initializeModel();
-    getRepoList(model.selectors.repo);
+    renderjson.set_show_to_level("all");
+    var renderedHtml = renderjson(JSON.parse(validatorResult));
+
+    console.log("HTML", renderedHtml);
+    $('#result').append(renderedHtml);
+    // initializeModel();
+    //getRepoList(model.selectors.repo);
 });
 
 var initializeModel = function () {
