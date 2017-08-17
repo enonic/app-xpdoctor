@@ -65,6 +65,7 @@ public class BatchedQueryExecutor
         final NodeQuery.Builder query = NodeQuery.create().
             from( from ).
             size( size );
+
         if ( this.filters != null )
         {
             query.addQueryFilters( this.filters );

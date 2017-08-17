@@ -32,6 +32,11 @@ public class ValidatorResults
         {
         }
 
+        public int size()
+        {
+            return validatorResultsList.size();
+        }
+
         public Builder add( final ValidatorResult val )
         {
             validatorResultsList.add( val );

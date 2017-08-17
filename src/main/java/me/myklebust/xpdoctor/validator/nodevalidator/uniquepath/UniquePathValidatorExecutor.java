@@ -29,6 +29,9 @@ import com.enonic.xp.repository.RepositoryService;
 
 public class UniquePathValidatorExecutor
 {
+
+    public static final int BATCH_SIZE = 1_000;
+
     private final NodeService nodeService;
 
     private final RepositoryService repositoryService;
@@ -45,16 +48,21 @@ public class UniquePathValidatorExecutor
 
     public ValidatorResults execute()
     {
+        LOG.info( "Running UniquePathValidatorExecutor..." );
+
         final BatchedQueryExecutor executor = BatchedQueryExecutor.create().
-            batchSize( 5_000 ).
+            batchSize( BATCH_SIZE ).
             nodeService( this.nodeService ).
             build();
 
         final ValidatorResults.Builder results = ValidatorResults.create();
 
+        int execute = 0;
         while ( executor.hasMore() )
         {
+            LOG.info( "Checking nodes " + execute + "->" + ( execute + BATCH_SIZE ) + " of " + executor.getTotalHits() );
             results.add( checkNodes( executor.execute() ) );
+            execute += BATCH_SIZE;
         }
 
         return results.build();

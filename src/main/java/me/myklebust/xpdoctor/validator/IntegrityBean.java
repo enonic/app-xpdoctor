@@ -2,6 +2,9 @@ package me.myklebust.xpdoctor.validator;
 
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.collect.Sets;
 
 import me.myklebust.xpdoctor.validator.mapper.RepoResultsMapper;
@@ -37,18 +40,26 @@ public class IntegrityBean
 
     private final Set<NodeValidator> nodeValidators = Sets.newHashSet();
 
+    private final Logger LOG = LoggerFactory.getLogger( IntegrityBean.class );
+
     @SuppressWarnings("unused")
     public Object execute()
     {
-        final RepoValidationResults.Builder results = RepoValidationResults.create();
+        LOG.info( "Starting Integrity check..." );
 
+        final RepoValidationResults.Builder results = RepoValidationResults.create();
         final Repositories repositories = this.repoService.list();
-        repositories.forEach( ( repo ) -> {
+
+        repositories.stream().forEach( ( repo ) -> {
+
+            LOG.info( "Checking repo: [ " + repo.getId() + "]" );
 
             final RepoValidationResult.Builder repoBuilder = RepoValidationResult.create( repo.getId() );
 
             final Branches branches = repo.getBranches();
+
             branches.stream().forEach( branch -> {
+                LOG.info( "Checking branch: [ " + branch + "]" );
                 final ValidatorResults validationResults = createContext( repo.getId(), branch ).callWith( this::doExecute );
                 final BranchValidationResult.Builder branchResult = BranchValidationResult.create( branch ).results( validationResults );
                 repoBuilder.add( branchResult.build() );

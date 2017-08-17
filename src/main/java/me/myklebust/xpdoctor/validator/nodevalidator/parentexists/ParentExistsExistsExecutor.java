@@ -19,6 +19,9 @@ import com.enonic.xp.node.NodeService;
 
 public class ParentExistsExistsExecutor
 {
+
+    public static final int BATCH_SIZE = 1_000;
+
     private final NodeService nodeService;
 
     private final Logger LOG = LoggerFactory.getLogger( ParentExistsExistsExecutor.class );
@@ -30,15 +33,21 @@ public class ParentExistsExistsExecutor
 
     public ValidatorResults execute()
     {
+        LOG.info( "Running LoadableNodeExecutor..." );
+
         final BatchedQueryExecutor executor = BatchedQueryExecutor.create().
+            batchSize( BATCH_SIZE ).
             nodeService( this.nodeService ).
             build();
 
         final ValidatorResults.Builder results = ValidatorResults.create();
 
+        int execute = 0;
         while ( executor.hasMore() )
         {
+            LOG.info( "Checking nodes " + execute + "->" + ( execute + BATCH_SIZE ) + " of " + executor.getTotalHits() );
             results.add( checkNodes( executor.execute() ) );
+            execute += BATCH_SIZE;
         }
 
         return results.build();
