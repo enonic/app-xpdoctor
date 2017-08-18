@@ -6,6 +6,7 @@ import java.util.Map;
 import com.google.common.collect.Maps;
 
 import me.myklebust.xpdoctor.validator.BranchValidationResult;
+import me.myklebust.xpdoctor.validator.RepairResult;
 import me.myklebust.xpdoctor.validator.RepoValidationResult;
 import me.myklebust.xpdoctor.validator.RepoValidationResults;
 import me.myklebust.xpdoctor.validator.ValidatorResult;
@@ -55,7 +56,7 @@ public class RepoResultsMapper
         gen.array( "results" );
         for ( final ValidatorResult entry : allResults )
         {
-            entry.serialize( gen );
+            serialize( gen, entry );
         }
 
         gen.end();
@@ -72,6 +73,27 @@ public class RepoResultsMapper
 
         serialize( gen, types );
     }
+
+    private void serialize( final MapGenerator gen, final ValidatorResult result )
+    {
+        gen.map();
+        gen.value( "type", result.type() );
+        gen.value( "id", result.nodeId() );
+        gen.value( "message", result.message() );
+        gen.value( "path", result.nodePath() );
+        serialize( gen, result.repairResult() );
+        gen.value( "timestamp", result.timestamp() );
+        gen.end();
+    }
+
+    private void serialize( final MapGenerator gen, final RepairResult repairResult )
+    {
+        gen.map( "repair" );
+        gen.value( "message", repairResult.message() );
+        gen.value( "status", repairResult.status() );
+        gen.end();
+    }
+
 
     private void serialize( final MapGenerator gen, final Map<String, Integer> types )
     {

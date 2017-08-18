@@ -116,7 +116,7 @@ public class UniquePathValidatorExecutor
                 addNotUniqueEntry( result, nodeId );
             }
 
-            return result.build();
+           // return result.build();
         }
 
         return null;

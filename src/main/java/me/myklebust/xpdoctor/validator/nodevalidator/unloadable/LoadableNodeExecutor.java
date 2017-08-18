@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
 
 import me.myklebust.xpdoctor.validator.ValidatorResult;
+import me.myklebust.xpdoctor.validator.ValidatorResultImpl;
 import me.myklebust.xpdoctor.validator.ValidatorResults;
 import me.myklebust.xpdoctor.validator.nodevalidator.BatchedQueryExecutor;
 
@@ -17,16 +18,20 @@ import com.enonic.xp.node.NodeService;
 
 public class LoadableNodeExecutor
 {
+    private final static String TYPE = "Unloadable node";
 
     public static final int BATCH_SIZE = 1_000;
 
     private final NodeService nodeService;
+
+    private final LoadableNodeDoctor doctor;
 
     private Logger LOG = LoggerFactory.getLogger( LoadableNodeExecutor.class );
 
     public LoadableNodeExecutor( final NodeService nodeService )
     {
         this.nodeService = nodeService;
+        this.doctor = new LoadableNodeDoctor( this.nodeService );
     }
 
     public ValidatorResults execute()
@@ -47,7 +52,7 @@ public class LoadableNodeExecutor
             LOG.info( "Checking nodes " + execute + "->" + ( execute + BATCH_SIZE ) + " of " + executor.getTotalHits() );
             final NodeIds nodesToCheck = executor.execute();
 
-            results.add( checkNodes( nodesToCheck ) );
+            results.add( checkNodes( nodesToCheck, false ) );
             execute += BATCH_SIZE;
         }
 
@@ -56,7 +61,7 @@ public class LoadableNodeExecutor
         return results.build();
     }
 
-    private List<ValidatorResult> checkNodes( final NodeIds nodeIds )
+    private List<ValidatorResult> checkNodes( final NodeIds nodeIds, final boolean repair )
     {
         List<ValidatorResult> results = Lists.newArrayList();
 
@@ -68,10 +73,17 @@ public class LoadableNodeExecutor
             }
             catch ( Exception e )
             {
-                results.add( UnloadableNodeResult.create().
+                final ValidatorResultImpl result = ValidatorResultImpl.create().
                     nodeId( nodeId ).
-                    exception( e ).
-                    build() );
+                    nodePath( null ).
+                    nodeVersionId( null ).
+                    timestamp( null ).
+                    type( TYPE ).
+                    message( e.getMessage() ).
+                    repairResult( this.doctor.repaidNode( nodeId, repair ) ).
+                    build();
+
+                results.add( result );
             }
         }
         return results;

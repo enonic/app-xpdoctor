@@ -1,10 +1,24 @@
 package me.myklebust.xpdoctor.validator;
 
-import com.enonic.xp.script.serializer.MapGenerator;
+import java.time.Instant;
+
+import com.enonic.xp.node.NodeId;
+import com.enonic.xp.node.NodePath;
+import com.enonic.xp.node.NodeVersionId;
 
 public interface ValidatorResult
 {
-    void serialize( MapGenerator gen );
+    RepairResult repairResult();
+
+    NodeId nodeId();
+
+    NodeVersionId nodeVersionId();
+
+    NodePath nodePath();
+
+    Instant timestamp();
+
+    String message();
 
     String type();
 }

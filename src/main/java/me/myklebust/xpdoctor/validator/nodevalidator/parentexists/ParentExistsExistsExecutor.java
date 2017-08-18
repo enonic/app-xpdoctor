@@ -81,10 +81,10 @@ public class ParentExistsExistsExecutor
 
         if ( parent == null )
         {
-            results.add( ParentNotExistsResult.create().
-                nodeId( node.id() ).
-                nodePath( node.path() ).
-                build() );
+           // results.add( ParentNotExistsResult.create().
+           //     nodeId( node.id() ).
+           //     nodePath( node.path() ).
+           //     build() );
         }
     }
 

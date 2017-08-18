@@ -7,7 +7,7 @@ import com.enonic.xp.node.NodePath;
 import com.enonic.xp.script.serializer.MapGenerator;
 
 public class ParentNotExistsResult
-    implements ValidatorResult
+
 {
 
     public static final String TYPE = "ParentNotExists";
@@ -37,7 +37,6 @@ public class ParentNotExistsResult
         return nodePath;
     }
 
-    @Override
     public String type()
     {
         return TYPE;
@@ -72,7 +71,6 @@ public class ParentNotExistsResult
         }
     }
 
-    @Override
     public void serialize( final MapGenerator gen )
     {
         gen.map();

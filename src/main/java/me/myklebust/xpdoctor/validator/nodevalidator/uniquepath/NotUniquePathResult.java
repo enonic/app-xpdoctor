@@ -5,15 +5,13 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 
-import me.myklebust.xpdoctor.validator.ValidatorResult;
-
 import com.enonic.xp.branch.Branch;
 import com.enonic.xp.branch.Branches;
 import com.enonic.xp.node.NodePath;
 import com.enonic.xp.script.serializer.MapGenerator;
 
 public class NotUniquePathResult
-    implements ValidatorResult
+
 {
 
     public static final String TYPE_NAME = "NotUniquePath";
@@ -33,13 +31,12 @@ public class NotUniquePathResult
         return new Builder( nodePath );
     }
 
-    @Override
+
     public String type()
     {
         return TYPE_NAME;
     }
 
-    @Override
     public void serialize( final MapGenerator gen )
     {
         gen.map();
