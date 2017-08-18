@@ -9,6 +9,7 @@ import com.google.common.collect.Sets;
 
 import me.myklebust.xpdoctor.validator.mapper.RepoResultsMapper;
 import me.myklebust.xpdoctor.validator.nodevalidator.NodeValidator;
+import me.myklebust.xpdoctor.validator.nodevalidator.uniquepath.UniquePathNodeValidator;
 import me.myklebust.xpdoctor.validator.nodevalidator.unloadable.LoadableNodeValidator;
 
 import com.enonic.xp.branch.Branch;
@@ -106,7 +107,7 @@ public class IntegrityBean
         this.nodeService = context.getService( NodeService.class ).get();
         this.repoService = context.getService( RepositoryService.class ).get();
         //this.nodeValidators.add( new ParentExistsNodeValidator( this.nodeService ) );
-        //this.nodeValidators.add( new UniquePathNodeValidator( this.nodeService, this.repoService ) );
+        this.nodeValidators.add( new UniquePathNodeValidator( this.nodeService, this.repoService ) );
         this.nodeValidators.add( new LoadableNodeValidator( this.nodeService ) );
     }
 }

@@ -1,19 +1,23 @@
 package me.myklebust.xpdoctor.validator.nodevalidator.uniquepath;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
+import me.myklebust.xpdoctor.validator.RepairResultImpl;
+import me.myklebust.xpdoctor.validator.RepairStatus;
 import me.myklebust.xpdoctor.validator.ValidatorResult;
+import me.myklebust.xpdoctor.validator.ValidatorResultImpl;
 import me.myklebust.xpdoctor.validator.ValidatorResults;
 import me.myklebust.xpdoctor.validator.nodevalidator.BatchedQueryExecutor;
 
-import com.enonic.xp.branch.Branches;
 import com.enonic.xp.context.ContextAccessor;
 import com.enonic.xp.node.FindNodesByQueryResult;
 import com.enonic.xp.node.GetActiveNodeVersionsParams;
@@ -100,8 +104,6 @@ public class UniquePathValidatorExecutor
             return null;
         }
 
-        final NotUniquePathResult.Builder result = NotUniquePathResult.create( node.path() );
-
         final FindNodesByQueryResult queryResult = this.nodeService.findByQuery( NodeQuery.create().
             path( node.path() ).
             size( -1 ).
@@ -109,20 +111,42 @@ public class UniquePathValidatorExecutor
 
         this.handledPaths.add( node.path() );
 
-        if ( queryResult.getTotalHits() > 1 )
-        {
-            for ( final NodeId nodeId : queryResult.getNodeIds() )
-            {
-                addNotUniqueEntry( result, nodeId );
-            }
+        final boolean pathIsNotUnique = queryResult.getTotalHits() > 1;
 
-           // return result.build();
+        if ( pathIsNotUnique )
+        {
+            return createNonUniqueEntry( node, queryResult );
         }
 
         return null;
     }
 
-    private void addNotUniqueEntry( final NotUniquePathResult.Builder result, final NodeId nodeId )
+    private ValidatorResult createNonUniqueEntry( final Node node, final FindNodesByQueryResult queryResult )
+    {
+        final ValidatorResultImpl.Builder result = ValidatorResultImpl.create().
+            nodeId( node.id() ).
+            nodePath( node.path() ).
+            nodeVersionId( node.getNodeVersionId() ).
+            timestamp( node.getTimestamp() ).
+            type( "Non-unique path" );
+
+        final ArrayList<String> messages = Lists.newArrayList();
+
+        for ( final NodeId nodeId : queryResult.getNodeIds() )
+        {
+            messages.add( addNotUniqueEntry( nodeId ) );
+        }
+
+        System.out.println( "Messages: " + Joiner.on( ";" ).join( messages ) );
+
+        result.message( Joiner.on( ";" ).join( messages ) );
+
+        result.repairResult( RepairResultImpl.create().message( "not started" ).repairStatus( RepairStatus.UNKNOW ).build() );
+
+        return result.build();
+    }
+
+    private String addNotUniqueEntry( final NodeId nodeId )
     {
         final Node foundNode = this.nodeService.getById( nodeId );
 
@@ -130,11 +154,8 @@ public class UniquePathValidatorExecutor
 
         final GetActiveNodeVersionsResult activeVersions = getBranches( nodeId, repository );
 
-        result.add( NotUniqueEntry.create().
-            nodeId( nodeId ).
-            instant( foundNode.getTimestamp() ).
-            branches( Branches.from( activeVersions.getNodeVersions().keySet() ) ).
-            build() );
+        return String.format( "Path: [%s], Branches: [%s]", foundNode.path(),
+                              Joiner.on( "," ).join( activeVersions.getNodeVersions().keySet() ) );
     }
 
     private GetActiveNodeVersionsResult getBranches( final NodeId nodeId, final Repository repository )
@@ -144,6 +165,4 @@ public class UniquePathValidatorExecutor
             branches( repository.getBranches() ).
             build() );
     }
-
-
 }
