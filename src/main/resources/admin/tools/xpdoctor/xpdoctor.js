@@ -6,15 +6,19 @@ exports.get = function (req) {
 
     var view = resolve('xpdoctor.html');
 
-    var result = dataValidator.execute();
+    var wsUrl = portal.serviceUrl({service: 'event-bus', type: 'absolute'})
+    wsUrl = 'ws' + wsUrl.substring(wsUrl.indexOf(':'));
 
     var model = {
-        result: JSON.stringify(result, null, 4),
+        validators: createValidatorsModel(),
         assetsUrl: portal.assetUrl({path: ""}),
-        repoLoaderServiceUrl: getServiceUrl('repo-loader-service'),
-        uniquePathValidatorUrl: getServiceUrl('unique-path-validator')
+        validatorServiceUrl: getServiceUrl('validator-service'),
+        statusServiceUrl: getServiceUrl('status-service'),
+        stateServiceUrl: getServiceUrl('state-service'),
+        wsUrl: wsUrl
     };
 
+    log.info("Model: %s", JSON.stringify(model, null, 4));
 
     return {
         contentType: 'text/html',
@@ -23,18 +27,8 @@ exports.get = function (req) {
 
 };
 
-var validate = function () {
-
-    var targets = [
-        {
-            repoId: "cms-repo",
-            branches: ["draft, master"]
-        }, {
-            repoId: "system-repo",
-            branches: ["master"]
-        }];
-
-    var result = dataValidator.execute("cms-repo", "master");
+var createValidatorsModel = function () {
+    return dataValidator.validators().validators;
 };
 
 var getServiceUrl = function (name) {

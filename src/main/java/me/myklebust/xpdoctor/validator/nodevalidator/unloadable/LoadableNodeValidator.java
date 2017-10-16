@@ -1,41 +1,54 @@
 package me.myklebust.xpdoctor.validator.nodevalidator.unloadable;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
+import me.myklebust.xpdoctor.validator.Validator;
 import me.myklebust.xpdoctor.validator.ValidatorResults;
-import me.myklebust.xpdoctor.validator.nodevalidator.AbstractNodeValidator;
 
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeService;
+import com.enonic.xp.task.ProgressReporter;
 
+@Component(immediate = true)
 public class LoadableNodeValidator
-    extends AbstractNodeValidator
+    implements Validator
 {
+    private NodeService nodeService;
 
     @Override
     public String name()
     {
-        return "Lodable";
+        return "LoadableNodeValidator";
     }
 
     @Override
     public String getDescription()
     {
-        return "Validates that a node is loadable";
-    }
-
-    public LoadableNodeValidator( final NodeService nodeService )
-    {
-        super( nodeService );
+        return "Validates that a node is loadable. If a node is not loadable, its usually caused by a missing file in repo/node";
     }
 
     @Override
-    public ValidatorResults validate()
+    public String getRepairStrategy()
     {
-        return new LoadableNodeExecutor( this.nodeService ).execute();
+        return "To repaid a node with a missing file, I try rolling back to previous version to see if any of these works.";
+    }
+
+    @Override
+    public ValidatorResults validate( final ProgressReporter reporter )
+    {
+        return new LoadableNodeExecutor( this.nodeService, reporter ).execute();
     }
 
     @Override
     public boolean repair( final NodeId nodeId )
     {
         return false;
+    }
+
+    @Reference
+    public void setNodeService( final NodeService nodeService )
+    {
+        this.nodeService = nodeService;
     }
 }

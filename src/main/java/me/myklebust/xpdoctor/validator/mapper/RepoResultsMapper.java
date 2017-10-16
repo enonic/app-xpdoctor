@@ -28,23 +28,31 @@ public class RepoResultsMapper
     @Override
     public void serialize( final MapGenerator gen )
     {
-        gen.map( "results" );
+        gen.array( "repositories" );
         results.getRepositories().forEach( repo -> serialize( gen, repo ) );
         gen.end();
     }
 
-    private void serialize( final MapGenerator gen, final RepoValidationResult result )
+    private void serialize( final MapGenerator gen, final RepoValidationResult repo )
     {
-        gen.map( result.getRepositoryId().toString() );
-        result.getBranches().forEach( branch -> serialize( gen, branch ) );
+        gen.map();
+        gen.value( "id", repo.getRepositoryId().toString() );
+        gen.array( "branches" );
+        repo.getBranches().forEach( branch -> serialize( gen, branch ) );
+        gen.end();
         gen.end();
     }
 
     private void serialize( final MapGenerator gen, final BranchValidationResult result )
     {
-        gen.map( result.getBranch().toString() );
+        gen.map();
+        gen.value( "branch", result.getBranch().toString() );
         serialize( gen, result.getResults() );
         gen.end();
+
+        //gen.map( result.getBranch().toString() );
+
+        //gen.end();
     }
 
     private void serialize( final MapGenerator gen, final ValidatorResults results )

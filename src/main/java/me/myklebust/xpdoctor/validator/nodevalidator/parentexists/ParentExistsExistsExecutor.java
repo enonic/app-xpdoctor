@@ -9,6 +9,7 @@ import com.google.common.collect.Lists;
 
 import me.myklebust.xpdoctor.validator.ValidatorResult;
 import me.myklebust.xpdoctor.validator.ValidatorResults;
+import me.myklebust.xpdoctor.validator.nodevalidator.AbstractNodeExecutor;
 import me.myklebust.xpdoctor.validator.nodevalidator.BatchedQueryExecutor;
 
 import com.enonic.xp.node.Node;
@@ -16,24 +17,27 @@ import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeIds;
 import com.enonic.xp.node.NodePath;
 import com.enonic.xp.node.NodeService;
+import com.enonic.xp.task.ProgressReporter;
 
 public class ParentExistsExistsExecutor
+    extends AbstractNodeExecutor
 {
-
     public static final int BATCH_SIZE = 1_000;
 
     private final NodeService nodeService;
 
     private final Logger LOG = LoggerFactory.getLogger( ParentExistsExistsExecutor.class );
 
-    public ParentExistsExistsExecutor( final NodeService nodeService )
+    public ParentExistsExistsExecutor( final NodeService nodeService, final ProgressReporter reporter )
     {
+        super( reporter );
         this.nodeService = nodeService;
     }
 
     public ValidatorResults execute()
     {
         LOG.info( "Running LoadableNodeExecutor..." );
+        reportStart();
 
         final BatchedQueryExecutor executor = BatchedQueryExecutor.create().
             batchSize( BATCH_SIZE ).
@@ -46,6 +50,8 @@ public class ParentExistsExistsExecutor
         while ( executor.hasMore() )
         {
             LOG.info( "Checking nodes " + execute + "->" + ( execute + BATCH_SIZE ) + " of " + executor.getTotalHits() );
+            reportProgress( executor.getTotalHits(), execute );
+
             results.add( checkNodes( executor.execute() ) );
             execute += BATCH_SIZE;
         }
@@ -81,10 +87,10 @@ public class ParentExistsExistsExecutor
 
         if ( parent == null )
         {
-           // results.add( ParentNotExistsResult.create().
-           //     nodeId( node.id() ).
-           //     nodePath( node.path() ).
-           //     build() );
+            // results.add( ParentNotExistsResult.create().
+            //     nodeId( node.id() ).
+            //     nodePath( node.path() ).
+            //     build() );
         }
     }
 

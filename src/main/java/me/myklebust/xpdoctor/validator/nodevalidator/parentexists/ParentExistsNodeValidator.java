@@ -1,14 +1,22 @@
 package me.myklebust.xpdoctor.validator.nodevalidator.parentexists;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
+import me.myklebust.xpdoctor.validator.Validator;
 import me.myklebust.xpdoctor.validator.ValidatorResults;
-import me.myklebust.xpdoctor.validator.nodevalidator.AbstractNodeValidator;
 
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeService;
+import com.enonic.xp.task.ProgressReporter;
 
+@Component(immediate = true)
 public class ParentExistsNodeValidator
-    extends AbstractNodeValidator
+    implements Validator
 {
+    private NodeService nodeService;
+
+
     @Override
     public String name()
     {
@@ -21,15 +29,16 @@ public class ParentExistsNodeValidator
         return "Validates that a node has a valid parent";
     }
 
-    public ParentExistsNodeValidator( final NodeService nodeService )
+    @Override
+    public String getRepairStrategy()
     {
-        super( nodeService );
+        return "";
     }
 
     @Override
-    public ValidatorResults validate()
+    public ValidatorResults validate( final ProgressReporter reporter )
     {
-        return new ParentExistsExistsExecutor( this.nodeService ).execute();
+        return new ParentExistsExistsExecutor( this.nodeService, reporter ).execute();
     }
 
     @Override
@@ -38,4 +47,9 @@ public class ParentExistsNodeValidator
         return false;
     }
 
+    @Reference
+    public void setNodeService( final NodeService nodeService )
+    {
+        this.nodeService = nodeService;
+    }
 }

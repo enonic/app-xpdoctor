@@ -16,6 +16,7 @@ import me.myklebust.xpdoctor.validator.RepairStatus;
 import me.myklebust.xpdoctor.validator.ValidatorResult;
 import me.myklebust.xpdoctor.validator.ValidatorResultImpl;
 import me.myklebust.xpdoctor.validator.ValidatorResults;
+import me.myklebust.xpdoctor.validator.nodevalidator.AbstractNodeExecutor;
 import me.myklebust.xpdoctor.validator.nodevalidator.BatchedQueryExecutor;
 
 import com.enonic.xp.context.ContextAccessor;
@@ -30,10 +31,11 @@ import com.enonic.xp.node.NodeQuery;
 import com.enonic.xp.node.NodeService;
 import com.enonic.xp.repository.Repository;
 import com.enonic.xp.repository.RepositoryService;
+import com.enonic.xp.task.ProgressReporter;
 
 public class UniquePathValidatorExecutor
+    extends AbstractNodeExecutor
 {
-
     public static final int BATCH_SIZE = 1_000;
 
     private final NodeService nodeService;
@@ -44,8 +46,10 @@ public class UniquePathValidatorExecutor
 
     private final Logger LOG = LoggerFactory.getLogger( UniquePathValidatorExecutor.class );
 
-    public UniquePathValidatorExecutor( final NodeService nodeService, final RepositoryService repositoryService )
+    public UniquePathValidatorExecutor( final NodeService nodeService, final RepositoryService repositoryService,
+                                        final ProgressReporter reporter )
     {
+        super( reporter );
         this.nodeService = nodeService;
         this.repositoryService = repositoryService;
     }
@@ -53,6 +57,7 @@ public class UniquePathValidatorExecutor
     public ValidatorResults execute()
     {
         LOG.info( "Running UniquePathValidatorExecutor..." );
+        reportStart();
 
         final BatchedQueryExecutor executor = BatchedQueryExecutor.create().
             batchSize( BATCH_SIZE ).
@@ -65,6 +70,8 @@ public class UniquePathValidatorExecutor
         while ( executor.hasMore() )
         {
             LOG.info( "Checking nodes " + execute + "->" + ( execute + BATCH_SIZE ) + " of " + executor.getTotalHits() );
+            reportProgress( executor.getTotalHits(), execute );
+
             results.add( checkNodes( executor.execute() ) );
             execute += BATCH_SIZE;
         }
