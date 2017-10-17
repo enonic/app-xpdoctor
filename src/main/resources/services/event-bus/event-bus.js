@@ -2,18 +2,25 @@ var webSocketLib = require('/lib/xp/websocket');
 var eventLib = require('/lib/xp/event');
 var channel = 'result';
 
+var listenerAdded = false;
+
 function handleGet(req) {
 
-    eventLib.listener({
-        type: app.name + ".*",
-        localOnly: false,
-        callback: function (event) {
+    if (!listenerAdded) {
 
-            log.info("(event-bus) EVENT: %s", JSON.stringify(event));
+        eventLib.listener({
+            type: app.name + ".*",
+            localOnly: false,
+            callback: function (event) {
 
-            sendToGroup(channel, {type: 'jobFinished', data: event.data.result});
-        }
-    });
+                log.info("(event-bus) EVENT: %s", JSON.stringify(event));
+
+                sendToGroup(channel, {type: 'jobFinished', data: event.data.result});
+            }
+        });
+
+        listenerAdded = true;
+    }
 
     if (!req.webSocket) {
         return {

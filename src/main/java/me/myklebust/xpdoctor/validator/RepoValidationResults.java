@@ -8,8 +8,11 @@ public class RepoValidationResults
 {
     private final List<RepoValidationResult> repositories;
 
+    private final Long timestamp;
+
     private RepoValidationResults( final Builder builder )
     {
+        this.timestamp = System.currentTimeMillis();
         repositories = builder.repositories;
     }
 
@@ -21,6 +24,11 @@ public class RepoValidationResults
     public List<RepoValidationResult> getRepositories()
     {
         return repositories;
+    }
+
+    public Long getTimestamp()
+    {
+        return timestamp;
     }
 
     public static final class Builder

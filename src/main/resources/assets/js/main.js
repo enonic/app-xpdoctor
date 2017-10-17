@@ -21,9 +21,9 @@ var ws = {
 
 var state = {
     taskId: null,
-    taskState: null
+    taskState: null,
+    resultTimestamp: 0
 };
-
 
 $(function () {
 
@@ -39,8 +39,30 @@ $(function () {
 
     setInterval(getStatus, 1000);
     setInterval(getState, 1000);
+    setInterval(getLastResult, 3000);
 });
 
+var getLastResult = function () {
+
+    jQuery.ajax({
+        url: lastResultServiceUrl,
+        cache: false,
+        type: 'GET',
+        success: function (result) {
+            if (result.result && result.result.timestamp > state.resultTimestamp) {
+
+                state.resultTimestamp = result.result.timestamp;
+
+                var renderResults = renderResult(result.result);
+                $(model.div.resultTab).html(renderResults.infoHtml + renderResults.tableHtml);
+                $('#resultTable').DataTable({
+                    "pageLength": 10
+                });
+            }
+        }
+    });
+
+};
 
 function wsConnect() {
     console.log("Connecting to WS");
@@ -112,27 +134,21 @@ var renderResult = function (results) {
     tableHtml += " </thead>";
     tableHtml += "  <tbody>";
 
-    var infoHtml = "";
 
-
-    // infoHtml += "<ul>";
     results.repositories.forEach(function (repo) {
         repo.branches.forEach(function (branch) {
-            // infoHtml += "<li class='branchResult'>";
-            // infoHtml += repo.id + "[" + branch.branch + "] - " + branch.totalIssues + " issues";
-            // infoHtml += "</li>";
-
             tableHtml += renderBranchResults(repo, branch);
-
             totalIssues += branch.results.length;
         });
     });
-    // infoHtml += "</ul>";
 
+    var date = new Date(results.timestamp);
 
-    infoHtml = "<h2 class='resultSummary'>Total issues found: " + totalIssues + "</h2>" + infoHtml;
+    var infoHtml = "";
+    infoHtml += "<h2 class='resultSummary'>Total issues found: " + totalIssues + "</h2>";
+    infoHtml += "<p>Finished: " + date.toISOString() + "</p>";
 
-    tableHtml += " </tbody>";
+    tableHtml += "</tbody>";
     tableHtml += "</table>";
 
     return {infoHtml: infoHtml, tableHtml: tableHtml};

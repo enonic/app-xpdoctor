@@ -2,12 +2,12 @@ var dataValidator = require('/lib/dataValidator.js');
 
 exports.get = function (req) {
 
-    var taskId = dataValidator.execute();
+    var result = dataValidator.lastResult();
 
     return {
         contentType: 'application/json',
         body: {
-            taskId: taskId
+            result: result
         }
     }
 };

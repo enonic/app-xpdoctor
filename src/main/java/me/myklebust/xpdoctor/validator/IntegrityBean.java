@@ -26,12 +26,24 @@ public class IntegrityBean
 
     private EventPublisher eventPublisher;
 
+    private RepoValidationResults lastResult;
+
     @Override
     public void initialize( final BeanContext context )
     {
         this.validatorService = context.getService( ValidatorService.class ).get();
         this.taskService = context.getService( TaskService.class ).get();
         this.eventPublisher = context.getService( EventPublisher.class ).get();
+    }
+
+    public Object getLastResult()
+    {
+        if ( lastResult != null )
+        {
+            return new RepoResultsMapper( this.lastResult );
+        }
+
+        return null;
     }
 
     @SuppressWarnings("unused")
@@ -50,12 +62,13 @@ public class IntegrityBean
         return new ValidatorsMapper( validators );
     }
 
-
     private void validatorTask( final ProgressReporter progressReporter )
     {
         try
         {
             final RepoValidationResults result = this.validatorService.execute( new ValidatorParams( progressReporter ) );
+
+            this.lastResult = result;
 
             final Object serializedResult = getSerializedResult( result );
             System.out.println( "Result: " + serializedResult );

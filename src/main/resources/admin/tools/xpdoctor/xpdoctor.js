@@ -15,6 +15,7 @@ exports.get = function (req) {
         validatorServiceUrl: getServiceUrl('validator-service'),
         statusServiceUrl: getServiceUrl('status-service'),
         stateServiceUrl: getServiceUrl('state-service'),
+        lastResultServiceUrl: getServiceUrl('last-result-service'),
         wsUrl: wsUrl
     };
 

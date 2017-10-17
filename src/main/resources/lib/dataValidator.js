@@ -5,6 +5,11 @@ exports.execute = function () {
     return __.toNativeObject(result);
 };
 
+exports.lastResult = function () {
+    var result = bean.getLastResult();
+    return __.toNativeObject(result);
+};
+
 
 exports.validators = function () {
     var result = bean.validators();

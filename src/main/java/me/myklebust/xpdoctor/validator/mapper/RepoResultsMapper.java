@@ -28,6 +28,7 @@ public class RepoResultsMapper
     @Override
     public void serialize( final MapGenerator gen )
     {
+        gen.value( "timestamp", results.getTimestamp() );
         gen.array( "repositories" );
         results.getRepositories().forEach( repo -> serialize( gen, repo ) );
         gen.end();
