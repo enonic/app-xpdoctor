@@ -28,7 +28,6 @@ class LoadableNodeDoctor
     RepairResult repaidNode( final NodeId nodeId, final boolean repairNow )
     {
         LOG.info( "Trying to repaid un-loadable node with id [" + nodeId + "]" );
-
         LOG.info( "Checking for older versions of node with id: [" + nodeId + "]......" );
 
         final BatchedVersionExecutor executor = BatchedVersionExecutor.create( this.nodeService ).
@@ -36,9 +35,12 @@ class LoadableNodeDoctor
             batchSize( 10 ).
             build();
 
+        LOG.info( "Found: " + executor.getTotalHits() + " versions of node" );
+
         while ( executor.hasMore() )
         {
             final NodeVersionsMetadata result = executor.execute();
+
             final NodeVersion workingVersion = findNewestWorkingVersion( result );
 
             if ( workingVersion != null )

@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
+import me.myklebust.xpdoctor.validator.RepairResult;
 import me.myklebust.xpdoctor.validator.ValidatorResult;
 import me.myklebust.xpdoctor.validator.ValidatorResultImpl;
 import me.myklebust.xpdoctor.validator.ValidatorResults;
@@ -53,7 +54,7 @@ public class LoadableNodeExecutor
 
         int execute = 0;
 
-        while ( executor.hasMore() )
+        while ( !executor.hasMore() )
         {
             LOG.info( "Checking nodes " + execute + "->" + ( execute + BATCH_SIZE ) + " of " + executor.getTotalHits() );
             reportProgress( executor.getTotalHits(), execute );
@@ -74,12 +75,24 @@ public class LoadableNodeExecutor
 
         for ( final NodeId nodeId : nodeIds )
         {
+            doCheckNode( repair, results, nodeId );
+        }
+        return results;
+    }
+
+    private void doCheckNode( final boolean repair, final List<ValidatorResult> results, final NodeId nodeId )
+    {
+        try
+        {
+            this.nodeService.getById( nodeId );
+        }
+        catch ( Exception e )
+        {
+            final RepairResult repairResult;
             try
             {
-                this.nodeService.getById( nodeId );
-            }
-            catch ( Exception e )
-            {
+                repairResult = this.doctor.repaidNode( nodeId, repair );
+
                 final ValidatorResultImpl result = ValidatorResultImpl.create().
                     nodeId( nodeId ).
                     nodePath( null ).
@@ -87,12 +100,15 @@ public class LoadableNodeExecutor
                     timestamp( null ).
                     type( TYPE ).
                     message( e.getMessage() ).
-                    repairResult( this.doctor.repaidNode( nodeId, repair ) ).
+                    repairResult( repairResult ).
                     build();
 
                 results.add( result );
             }
+            catch ( Exception e1 )
+            {
+                LOG.error( "Failed to repair", e1 );
+            }
         }
-        return results;
     }
 }

@@ -15,6 +15,9 @@
     <!-- JQuery -->
     <script data-th-src="${portal.assetUrl({'_path=js/jquery-3.1.1.min.js'})}"></script>
 
+    <!-- Roboto -->
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+
     <!-- Bootstrap -->
     <link rel="stylesheet" data-th-href="${portal.assetUrl({'_path=css/bootstrap.min.css'})}"/>
     <script data-th-src="${portal.assetUrl({'_path=js/tether.min.js'})}"></script>
@@ -24,6 +27,10 @@
     <script data-th-src="${portal.assetUrl({'_path=js/bootstrap.min.js'})}"></script>
     <script type="text/javascript" data-th-src="${portal.assetUrl({'_path=js/renderjson.js'})}"></script>
     <script data-th-src="${portal.assetUrl({'_path=js/main.js'})}"></script>
+
+    <!-- DataTables -->
+    <script data-th-src="${portal.assetUrl({'_path=js/jquery.dataTables.min.js'})}"></script>
+    <link rel="stylesheet" data-th-href="${portal.assetUrl({'_path=css/jquery.dataTables.min.css'})}"></link>
 
     <script data-th-inline="javascript">
         /*<![CDATA[*/
@@ -42,65 +49,63 @@
         <a class="navbar-brand" href="#">xpDoctor</a>
     </nav>
 
-
     <div class="container-fluid">
         <div class="mainTab" id="mainTab">
             <div class="row">
-
-                <div class="col-sm-4">
-                    <!-- Validators view -->
-                    <div data-th-each="item,iterStat : ${validators}" data-th-remove="tag">
-                        <div class="item">
-                            <div class="itemHeading">
-                                <h3 data-th-text="${item.name}"></h3>
-                            </div>
-                            <div class="itemInfo">
-                                <div class="itemContent">
-                                    <p class="itemDescr" data-th-text="${item.description}"></p>
-                                    <p class="itemDescr" data-th-text="${item.repairStrategy}"></p>
-                                </div>
-                                <div class="itemForm">
-                                    <div class="form-check">
-                                        <label class="form-check-label">
-                                            <input class="form-check-input" type="checkbox" value="" checked>
-                                            Enable
-                                        </label>
+                <div class="col-sm-12">
+                    <div class="executorWrapper">
+                        <div class="executor">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="validators">
+                                        <h3>Validators:</h3>
+                                        <ul>
+                                            <div data-th-each="item,iterStat : ${validators}" data-th-remove="tag">
+                                                <li data-th-text="${item.name}"></li>
+                                            </div>
+                                        </ul>
                                     </div>
-                                    <div class="form-check">
-                                        <label class="form-check-label">
-                                            <input class="form-check-input" type="checkbox" value="">
-                                            Auto repair
-                                        </label>
+                                    <div class="actions">
+                                        <div class="executorButton">
+                                            <button id="btnRunValidator" type="button" class="btn btn-success">
+                                                <span class="buttonDescr">Start</span>
+                                                <i class="material-icons">play_arrow</i>
+                                            </button>
+                                        </div>
+                                        <div class="itemForm">
+                                            <div class="form-check">
+                                                <label class="form-check-label">
+                                                    <input class="form-check-input" type="checkbox" value="" checked>
+                                                    Auto repair
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-6">
+                                    <div class="progressReporter" id="progressReporter">
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <div class="executor">
-                        <button id="btnRunValidator" type="button" class="btn btn-success">
-                            <span class="buttonDescr">Start</span>
-                            <i class="material-icons">play_arrow</i>
-                        </button>
-                    </div>
                 </div>
+            </div>
 
-                <div class="col-sm-8">
+            <!-- RESULT -->
+            <div class="row">
+                <div class="column-sm-12">
                     <div class="resultTab" id="resultTab">
                     </div>
                 </div>
-
             </div>
 
 
         </div>
-
-
     </div>
-</main>
 
-<div class="progressReporter" id="progressReporter">
-</div>
+</main>
 
 </body>
 </html>

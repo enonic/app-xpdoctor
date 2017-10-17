@@ -57,11 +57,14 @@ public class IntegrityBean
         {
             final RepoValidationResults result = this.validatorService.execute( new ValidatorParams( progressReporter ) );
 
+            final Object serializedResult = getSerializedResult( result );
+            System.out.println( "Result: " + serializedResult );
+
             eventPublisher.publish( Event.create( "com.enonic.app.xpdoctor.jobFinished" ).
                 distributed( true ).
                 localOrigin( true ).
                 timestamp( Instant.now().toEpochMilli() ).
-                value( "result", getSerializedResult( result ) ).
+                value( "result", serializedResult ).
                 build() );
         }
         catch ( Exception e )

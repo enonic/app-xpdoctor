@@ -59,7 +59,7 @@ function onWsOpen() {
         if (ws.connected) {
             this.ws.connection.send('{"action":"KeepAlive"}');
         }
-    }, 30 * 1000);
+    }, 10 * 1000);
     ws.connected = true;
 }
 
@@ -82,22 +82,88 @@ function onWsMessage(event) {
 
 var handleJobFinished = function (message) {
     var results = JSON.parse(message.data);
-    $(model.div.resultTab).html(renderResult(results));
+
+    var renderResults = renderResult(results);
+    $(model.div.resultTab).html(renderResults.infoHtml + renderResults.tableHtml);
+
+    $('#resultTable').DataTable({
+        "pageLength": 10
+    });
 };
 
 var renderResult = function (results) {
 
-    console.log("REPORISOTREI: ", results.repositories);
+    console.log("Result: ", results);
 
-    var html = "";
+    var totalIssues = 0;
+
+    var tableHtml = "";
+    tableHtml += "<table id='resultTable' class='table'>\n";
+    tableHtml += " <thead>";
+    tableHtml += "  <th>repo</th>";
+    tableHtml += "  <th>branch</th>";
+    tableHtml += "  <th>type</th>";
+    tableHtml += "  <th>id</th>";
+    tableHtml += "  <th>path</th>";
+    tableHtml += "  <th>message</th>";
+    tableHtml += "  <th>repairStatus</th>";
+    tableHtml += "  <th>repairMessage</th>";
+    tableHtml += "  <th>Operations</th>";
+    tableHtml += " </thead>";
+    tableHtml += "  <tbody>";
+
+    var infoHtml = "";
+
+
+    // infoHtml += "<ul>";
     results.repositories.forEach(function (repo) {
+        repo.branches.forEach(function (branch) {
+            // infoHtml += "<li class='branchResult'>";
+            // infoHtml += repo.id + "[" + branch.branch + "] - " + branch.totalIssues + " issues";
+            // infoHtml += "</li>";
 
-        html += "<h2>" + repo + "</h2>";
+            tableHtml += renderBranchResults(repo, branch);
+
+            totalIssues += branch.results.length;
+        });
+    });
+    // infoHtml += "</ul>";
 
 
+    infoHtml = "<h2 class='resultSummary'>Total issues found: " + totalIssues + "</h2>" + infoHtml;
+
+    tableHtml += " </tbody>";
+    tableHtml += "</table>";
+
+    return {infoHtml: infoHtml, tableHtml: tableHtml};
+};
+
+
+var renderBranchResults = function (repo, branch) {
+
+    var rowHtml = "";
+
+    branch.results.forEach(function (entry) {
+        rowHtml += "<tr>";
+        rowHtml += "<td>" + repo.id + "</td>";
+        rowHtml += "<td>" + branch.branch + "</td>";
+        rowHtml += "<td>" + entry.type + "</td>";
+        rowHtml += "<td>" + entry.id + "</td>";
+        rowHtml += "<td>" + entry.path + "</td>";
+        rowHtml += "<td>" + entry.message + "</td>";
+        rowHtml += "<td>" + entry.repair.status + "</td>";
+        rowHtml += "<td>" + entry.repair.message + "</td>";
+
+        if (entry.repair.status === "IS_REPAIRABLE") {
+            rowHtml += "<td class='repairOption'><i class='material-icons'>build</i></td>";
+        } else {
+            rowHtml += "<td></td>";
+        }
+
+        rowHtml += "</tr>";
     });
 
-    return html;
+    return rowHtml;
 };
 
 var doValidation = function () {
@@ -138,18 +204,25 @@ var getState = function () {
         type: 'GET',
         success: function (result) {
 
-            $(model.div.status).show();
+            var statusDiv = $(model.div.status);
 
             if (result.state === "RUNNING") {
                 state.taskId = result.taskId;
                 $(model.buttons.runValidator).prop("disabled", true);
                 $(model.buttons.runValidator + " > i").html("update");
                 $(model.buttons.runValidator + " > span").html("Running");
-                toggleState($(model.div.status), "ok");
+                statusDiv.show();
+                toggleState(statusDiv, "ok");
             } else {
                 if (result.state === "FAILED") {
-                    toggleState($(model.div.status), "error");
+                    toggleState(statusDiv, "error");
+                    statusDiv.show();
+                } else if (result.state === "FINISHED") {
+                    statusDiv.show();
+                } else {
+                    statusDiv.hide();
                 }
+
                 $(model.buttons.runValidator).prop("disabled", false);
                 $(model.buttons.runValidator + " > i").html("play_arrow");
                 $(model.buttons.runValidator + " > span").html("Start");
