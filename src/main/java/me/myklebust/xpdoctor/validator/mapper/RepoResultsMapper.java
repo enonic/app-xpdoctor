@@ -29,6 +29,7 @@ public class RepoResultsMapper
     public void serialize( final MapGenerator gen )
     {
         gen.value( "timestamp", results.getTimestamp() );
+        gen.value( "totalIssues", results.getTotalIssues() );
         gen.array( "repositories" );
         results.getRepositories().forEach( repo -> serialize( gen, repo ) );
         gen.end();
@@ -51,9 +52,6 @@ public class RepoResultsMapper
         serialize( gen, result.getResults() );
         gen.end();
 
-        //gen.map( result.getBranch().toString() );
-
-        //gen.end();
     }
 
     private void serialize( final MapGenerator gen, final ValidatorResults results )

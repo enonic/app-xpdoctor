@@ -12,10 +12,13 @@ public class RepoValidationResult
 
     private final List<BranchValidationResult> branches;
 
+    private final int totalIssues;
+
     private RepoValidationResult( final Builder builder )
     {
         repositoryId = builder.repositoryId;
         branches = builder.branches;
+        totalIssues = builder.totalIssues;
     }
 
     public RepositoryId getRepositoryId()
@@ -26,6 +29,11 @@ public class RepoValidationResult
     public List<BranchValidationResult> getBranches()
     {
         return branches;
+    }
+
+    public int getTotalIssues()
+    {
+        return totalIssues;
     }
 
     public static Builder create( final RepositoryId repoId )
@@ -39,6 +47,8 @@ public class RepoValidationResult
 
         private List<BranchValidationResult> branches = Lists.newArrayList();
 
+        private int totalIssues = 0;
+
         private Builder( final RepositoryId repoId )
         {
             this.repositoryId = repoId;
@@ -47,6 +57,7 @@ public class RepoValidationResult
         public Builder add( final BranchValidationResult val )
         {
             branches.add( val );
+            totalIssues += val.getResults().getResults().size();
             return this;
         }
 

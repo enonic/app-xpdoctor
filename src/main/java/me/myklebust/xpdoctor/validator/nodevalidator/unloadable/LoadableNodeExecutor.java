@@ -54,7 +54,7 @@ public class LoadableNodeExecutor
 
         int execute = 0;
 
-        while ( !executor.hasMore() )
+        while ( executor.hasMore() )
         {
             LOG.info( "Checking nodes " + execute + "->" + ( execute + BATCH_SIZE ) + " of " + executor.getTotalHits() );
             reportProgress( executor.getTotalHits(), execute );

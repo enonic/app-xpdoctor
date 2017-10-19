@@ -8,7 +8,8 @@ var model = {
         status: "#progressReporter",
         results: "#results",
         resultTab: "#resultTab",
-        mainTab: "#mainTab"
+        mainTab: "#mainTab",
+        executor: "#executor"
     }
 };
 
@@ -50,14 +51,8 @@ var getLastResult = function () {
         type: 'GET',
         success: function (result) {
             if (result.result && result.result.timestamp > state.resultTimestamp) {
-
                 state.resultTimestamp = result.result.timestamp;
-
-                var renderResults = renderResult(result.result);
-                $(model.div.resultTab).html(renderResults.infoHtml + renderResults.tableHtml);
-                $('#resultTable').DataTable({
-                    "pageLength": 10
-                });
+                displayResults(result);
             }
         }
     });
@@ -104,56 +99,67 @@ function onWsMessage(event) {
 
 var handleJobFinished = function (message) {
     var results = JSON.parse(message.data);
+    displayResults(results);
+};
 
-    var renderResults = renderResult(results);
+
+var displayResults = function (result) {
+
+    if (!result.result) {
+        return;
+    }
+
+    var renderResults = renderResult(result.result);
+
     $(model.div.resultTab).html(renderResults.infoHtml + renderResults.tableHtml);
-
     $('#resultTable').DataTable({
         "pageLength": 10
     });
+
 };
 
 var renderResult = function (results) {
 
     console.log("Result: ", results);
 
-    var totalIssues = 0;
-
-    var tableHtml = "";
-    tableHtml += "<table id='resultTable' class='table'>\n";
-    tableHtml += " <thead>";
-    tableHtml += "  <th>repo</th>";
-    tableHtml += "  <th>branch</th>";
-    tableHtml += "  <th>type</th>";
-    tableHtml += "  <th>id</th>";
-    tableHtml += "  <th>path</th>";
-    tableHtml += "  <th>message</th>";
-    tableHtml += "  <th>repairStatus</th>";
-    tableHtml += "  <th>repairMessage</th>";
-    tableHtml += "  <th>Operations</th>";
-    tableHtml += " </thead>";
-    tableHtml += "  <tbody>";
-
-
-    results.repositories.forEach(function (repo) {
-        repo.branches.forEach(function (branch) {
-            tableHtml += renderBranchResults(repo, branch);
-            totalIssues += branch.results.length;
-        });
-    });
-
-    var date = new Date(results.timestamp);
-
     var infoHtml = "";
-    infoHtml += "<h2 class='resultSummary'>Total issues found: " + totalIssues + "</h2>";
-    infoHtml += "<p>Finished: " + date.toISOString() + "</p>";
+    infoHtml += "<h2 class='resultSummary'>Total issues found: " + results.totalIssues + "</h2>";
+    infoHtml += "<p>Finished: " + new Date(results.timestamp).toDateString() + "</p>";
 
-    tableHtml += "</tbody>";
-    tableHtml += "</table>";
+    var issueTable = renderIssueTable(results);
 
-    return {infoHtml: infoHtml, tableHtml: tableHtml};
+    return {infoHtml: infoHtml, tableHtml: issueTable};
 };
 
+var renderIssueTable = function (results) {
+    var errorsHtml = "";
+
+    if (results.totalIssues > 0) {
+        errorsHtml += "<table id='resultTable' class='table'>\n";
+        errorsHtml += " <thead>";
+        errorsHtml += "  <th>repo</th>";
+        errorsHtml += "  <th>branch</th>";
+        errorsHtml += "  <th>type</th>";
+        errorsHtml += "  <th>id</th>";
+        errorsHtml += "  <th>path</th>";
+        errorsHtml += "  <th>message</th>";
+        errorsHtml += "  <th>repairStatus</th>";
+        errorsHtml += "  <th>repairMessage</th>";
+        errorsHtml += "  <th>Operations</th>";
+        errorsHtml += " </thead>";
+        errorsHtml += "  <tbody>";
+
+        results.repositories.forEach(function (repo) {
+            repo.branches.forEach(function (branch) {
+                errorsHtml += renderBranchResults(repo, branch);
+            });
+        });
+
+        errorsHtml += "</tbody>";
+        errorsHtml += "</table>";
+    }
+    return errorsHtml;
+};
 
 var renderBranchResults = function (repo, branch) {
 
@@ -241,7 +247,7 @@ var getState = function () {
 
                 $(model.buttons.runValidator).prop("disabled", false);
                 $(model.buttons.runValidator + " > i").html("play_arrow");
-                $(model.buttons.runValidator + " > span").html("Start");
+                $(model.buttons.runValidator + " > span").html("Analyze");
             }
         }
     });

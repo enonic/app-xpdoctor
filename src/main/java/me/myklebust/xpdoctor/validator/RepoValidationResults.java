@@ -10,10 +10,13 @@ public class RepoValidationResults
 
     private final Long timestamp;
 
+    private final int totalIssues;
+
     private RepoValidationResults( final Builder builder )
     {
         this.timestamp = System.currentTimeMillis();
         repositories = builder.repositories;
+        totalIssues = builder.totalIssues;
     }
 
     public static Builder create()
@@ -31,9 +34,16 @@ public class RepoValidationResults
         return timestamp;
     }
 
+    public int getTotalIssues()
+    {
+        return totalIssues;
+    }
+
     public static final class Builder
     {
         private List<RepoValidationResult> repositories = Lists.newArrayList();
+
+        private int totalIssues = 0;
 
         private Builder()
         {
@@ -42,12 +52,7 @@ public class RepoValidationResults
         public Builder add( final RepoValidationResult val )
         {
             this.repositories.add( val );
-            return this;
-        }
-
-        public Builder repositories( final List<RepoValidationResult> val )
-        {
-            repositories = val;
+            totalIssues += val.getTotalIssues();
             return this;
         }
 

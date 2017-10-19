@@ -47,7 +47,7 @@
 
 <main>
     <nav class="navbar navbar-dark bg-dark">
-        <a class="navbar-brand" href="#">xpDoctor</a>
+        <a class="navbar-brand ml-auto" href="#">xpDoctor</a>
     </nav>
 
     <div class="container-fluid">
@@ -55,34 +55,34 @@
             <div class="row">
                 <div class="col-sm-12">
                     <div class="executorWrapper">
-                        <div class="executor">
+                        <div class="executor" id="executor">
                             <div class="row">
-                                <div class="col-sm-6">
+                                <div class="col-sm-2">
+                                    <div class="actions">
+                                        <div class="executorButton">
+                                            <button id="btnRunValidator" type="button" class="btn btn-success">
+                                                <span class="buttonDescr">Analyze</span>
+                                                <i class="material-icons">play_arrow</i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-2">
                                     <div class="validators">
                                         <h3>Validators:</h3>
                                         <ul>
                                             <div data-th-each="item,iterStat : ${validators}" data-th-remove="tag">
-                                                <li data-th-text="${item.name}"></li>
+                                                <li>
+                                                    <label class="form-check-label">
+                                                        <input class="form-check-input" type="checkbox" value="" checked>
+                                                    </label>
+                                                    <span data-th-text="${item.name}"></span>
+                                                </li>
                                             </div>
                                         </ul>
                                     </div>
-                                    <div class="actions">
-                                        <div class="executorButton">
-                                            <button id="btnRunValidator" type="button" class="btn btn-success">
-                                                <span class="buttonDescr">Start</span>
-                                                <i class="material-icons">play_arrow</i>
-                                            </button>
-                                        </div>
-                                        <div class="itemForm">
-                                            <div class="form-check">
-                                                <label class="form-check-label">
-                                                    <input class="form-check-input" type="checkbox" value="" checked>
-                                                    Auto repair
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
+
 
                                 <div class="col-sm-6">
                                     <div class="progressReporter" id="progressReporter">

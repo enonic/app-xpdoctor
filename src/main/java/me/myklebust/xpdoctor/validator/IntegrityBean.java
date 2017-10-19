@@ -49,6 +49,8 @@ public class IntegrityBean
     @SuppressWarnings("unused")
     public Object validate()
     {
+        this.lastResult = null;
+
         final RunnableTask task = ( id, progressReporter ) -> validatorTask( progressReporter );
 
         final TaskId taskId = taskService.submitTask( task, "com.enonic.app.xpdoctor" );
