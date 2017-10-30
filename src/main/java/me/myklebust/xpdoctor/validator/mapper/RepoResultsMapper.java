@@ -85,6 +85,7 @@ public class RepoResultsMapper
     {
         gen.map();
         gen.value( "type", result.type() );
+        gen.value( "validatorName", result.validatorName() );
         gen.value( "id", result.nodeId() );
         gen.value( "message", result.message() );
         gen.value( "path", result.nodePath() );
@@ -96,11 +97,9 @@ public class RepoResultsMapper
     private void serialize( final MapGenerator gen, final RepairResult repairResult )
     {
         gen.map( "repair" );
-        gen.value( "message", repairResult.message() );
-        gen.value( "status", repairResult.status() );
+        new RepairResultMapper( repairResult ).serialize( gen );
         gen.end();
     }
-
 
     private void serialize( final MapGenerator gen, final Map<String, Integer> types )
     {

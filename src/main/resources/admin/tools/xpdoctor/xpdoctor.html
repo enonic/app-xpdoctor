@@ -6,6 +6,10 @@
 
     <title>xpDoctor</title>
 
+    <!-- reset css -->
+    <link rel="stylesheet" data-th-href="${portal.assetUrl({'_path=css/reset.css'})}"/>
+
+
     <!-- app css -->
     <link rel="stylesheet" data-th-href="${portal.assetUrl({'_path=css/main.css'})}"/>
 
@@ -16,15 +20,8 @@
     <script data-th-src="${portal.assetUrl({'_path=js/jquery-3.1.1.min.js'})}"></script>
 
     <!-- Roboto -->
-    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
 
-    <!-- Bootstrap -->
-    <link rel="stylesheet" data-th-href="${portal.assetUrl({'_path=css/bootstrap.min.css'})}"/>
-    <script data-th-src="${portal.assetUrl({'_path=js/tether.min.js'})}"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"
-            integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
-
-    <script data-th-src="${portal.assetUrl({'_path=js/bootstrap.min.js'})}"></script>
     <script type="text/javascript" data-th-src="${portal.assetUrl({'_path=js/renderjson.js'})}"></script>
     <script data-th-src="${portal.assetUrl({'_path=js/main.js'})}"></script>
 
@@ -35,10 +32,11 @@
     <script data-th-inline="javascript">
         /*<![CDATA[*/
         var validatorServiceUrl = [[${validatorServiceUrl}]];
-        var statusServiceUrl = [[${statusServiceUrl}]];
+        var progressServiceUrl = [[${progressServiceUrl}]];
         var stateServiceUrl = [[${stateServiceUrl}]];
         var lastResultServiceUrl = [[${lastResultServiceUrl}]];
         var wsUrl = [[${wsUrl}]];
+        var repairServiceUrl = [[${repairServiceUrl}]];
         /*]]>*/
     </script>
 
@@ -46,67 +44,64 @@
 <body>
 
 <main>
-    <nav class="navbar navbar-dark bg-dark">
-        <a class="navbar-brand ml-auto" href="#">xpDoctor</a>
+    <nav class="navbar">
+        <span class="progress" id="progressState"></span>
+        <a class="navbar-brand" href="#"><img data-th-src="${portal.assetUrl({'_path=images/xpDoc.png'})}"></img></a>
     </nav>
 
-    <div class="container-fluid">
-        <div class="mainTab" id="mainTab">
-            <div class="row">
-                <div class="col-sm-12">
-                    <div class="executorWrapper">
-                        <div class="executor" id="executor">
-                            <div class="row">
-                                <div class="col-sm-2">
-                                    <div class="actions">
-                                        <div class="executorButton">
-                                            <button id="btnRunValidator" type="button" class="btn btn-success">
-                                                <span class="buttonDescr">Analyze</span>
-                                                <i class="material-icons">play_arrow</i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-sm-2">
-                                    <div class="validators">
-                                        <h3>Validators:</h3>
-                                        <ul>
-                                            <div data-th-each="item,iterStat : ${validators}" data-th-remove="tag">
-                                                <li>
-                                                    <label class="form-check-label">
-                                                        <input class="form-check-input" type="checkbox" value="" checked>
-                                                    </label>
-                                                    <span data-th-text="${item.name}"></span>
-                                                </li>
-                                            </div>
-                                        </ul>
-                                    </div>
-                                </div>
+    <div class="mainContainer">
 
+        <div class="toolbar">
+            <div class="toolbar-items">
+                <div class="actions">
+                    <button id="btnRunValidator" type="button" class="big-action-button analyze" disabled>
+                        <i class="material-icons">play_arrow</i>
+                        <p class="buttonDescr">Analyze</p>
+                    </button>
+                    <button id="btnRepairAll" type="button" class="big-action-button repair" disabled>
+                        <i class="material-icons">build</i>
+                        <p class="buttonDescr">Repair all</p>
+                    </button>
+                </div>
 
-                                <div class="col-sm-6">
-                                    <div class="progressReporter" id="progressReporter">
-                                    </div>
-                                </div>
-                            </div>
+                <div class="validators">
+                    <div data-th-each="item,iterStat : ${validators}" class="validatorItems">
+                        <div class="validatorItem" data-th-id="${'validator_' + item.name}">
+                            <label class="form-check-label">
+                                <input class="form-check-input" data-th-attr="data-validatorName=${item.name}" type="checkbox" value=""
+                                       checked>
+                            </label>
+                            <span data-th-text="${item.name}"></span>
+                            <span class="itemProgress"></span>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- RESULT -->
-            <div class="row">
-                <div class="column-sm-12">
-                    <div class="resultTab" id="resultTab">
+                <div class="progress">
+                    <div class="progressReporter" id="progressReporter">
                     </div>
                 </div>
+
             </div>
-
-
         </div>
+
+
+    </div>
+
+
+    <!-- RESULT -->
+
+    <div class="resultWrapper" id="resultWrapper">
+        <div class="resultTab" id="resultTab">
+        </div>
+
     </div>
 
 </main>
+
+<div id="messageBox" class="row messageBox">
+    <span id="repoMessage"></span>
+</div>
 
 </body>
 </html>

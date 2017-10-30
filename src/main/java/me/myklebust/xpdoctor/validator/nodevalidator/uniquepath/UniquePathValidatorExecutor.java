@@ -35,7 +35,6 @@ import com.enonic.xp.node.NodeService;
 import com.enonic.xp.node.NodeVersionMetadata;
 import com.enonic.xp.repository.Repository;
 import com.enonic.xp.repository.RepositoryService;
-import com.enonic.xp.task.ProgressReporter;
 
 public class UniquePathValidatorExecutor
     extends AbstractNodeExecutor
@@ -50,12 +49,16 @@ public class UniquePathValidatorExecutor
 
     private final Logger LOG = LoggerFactory.getLogger( UniquePathValidatorExecutor.class );
 
-    public UniquePathValidatorExecutor( final NodeService nodeService, final RepositoryService repositoryService,
-                                        final ProgressReporter reporter )
+    private UniquePathValidatorExecutor( final Builder builder )
     {
-        super( reporter );
-        this.nodeService = nodeService;
-        this.repositoryService = repositoryService;
+        super( builder );
+        nodeService = builder.nodeService;
+        repositoryService = builder.repositoryService;
+    }
+
+    public static Builder create()
+    {
+        return new Builder();
     }
 
     public ValidatorResults execute()
@@ -139,6 +142,7 @@ public class UniquePathValidatorExecutor
             nodePath( node.path() ).
             nodeVersionId( node.getNodeVersionId() ).
             timestamp( node.getTimestamp() ).
+            validatorName( this.validatorName ).
             type( "Non-unique path" );
 
         final ArrayList<String> messages = Lists.newArrayList();
@@ -178,5 +182,34 @@ public class UniquePathValidatorExecutor
             nodeId( nodeId ).
             branches( repository.getBranches() ).
             build() );
+    }
+
+    public static final class Builder
+        extends AbstractNodeExecutor.Builder<Builder>
+    {
+        private NodeService nodeService;
+
+        private RepositoryService repositoryService;
+
+        private Builder()
+        {
+        }
+
+        public Builder nodeService( final NodeService val )
+        {
+            nodeService = val;
+            return this;
+        }
+
+        public Builder repositoryService( final RepositoryService val )
+        {
+            repositoryService = val;
+            return this;
+        }
+
+        public UniquePathValidatorExecutor build()
+        {
+            return new UniquePathValidatorExecutor( this );
+        }
     }
 }

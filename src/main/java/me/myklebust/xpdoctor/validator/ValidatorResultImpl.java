@@ -23,6 +23,8 @@ public class ValidatorResultImpl
 
     private final String message;
 
+    private final String validatorName;
+
     private ValidatorResultImpl( final Builder builder )
     {
         nodeId = builder.nodeId;
@@ -32,6 +34,7 @@ public class ValidatorResultImpl
         type = builder.type;
         repairResult = builder.repairResult;
         message = builder.message;
+        validatorName = builder.validatorName;
     }
 
     @Override
@@ -76,6 +79,12 @@ public class ValidatorResultImpl
         return this.type;
     }
 
+    @Override
+    public String validatorName()
+    {
+        return this.validatorName;
+    }
+
     public static Builder create()
     {
         return new Builder();
@@ -97,6 +106,8 @@ public class ValidatorResultImpl
         private RepairResult repairResult;
 
         private String message;
+
+        private String validatorName;
 
         private Builder()
         {
@@ -141,6 +152,12 @@ public class ValidatorResultImpl
         public Builder message( final String message )
         {
             this.message = message;
+            return this;
+        }
+
+        public Builder validatorName( final String val )
+        {
+            validatorName = val;
             return this;
         }
 

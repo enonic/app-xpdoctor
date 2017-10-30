@@ -21,4 +21,6 @@ public interface ValidatorResult
     String message();
 
     String type();
+
+    String validatorName();
 }

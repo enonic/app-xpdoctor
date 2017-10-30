@@ -1,6 +1,6 @@
 package me.myklebust.xpdoctor.validator;
 
-import java.util.Set;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +24,7 @@ public class ValidatorExecutor
 {
     private final RepositoryService repoService;
 
-    private final Set<Validator> validators;
+    private final List<Validator> validators;
 
     private final ProgressReporter progressReporter;
 
@@ -52,7 +52,7 @@ public class ValidatorExecutor
 
             final Branches branches = repo.getBranches();
 
-            branches.stream().forEach( branch -> {
+            branches.stream().filter( branch -> branch.getValue().equals( "master" ) ).forEach( branch -> {
                 LOG.info( "Checking branch: [ " + branch + "]" );
                 final ValidatorResults validationResults = createContext( repo.getId(), branch ).callWith( this::doExecute );
                 final BranchValidationResult.Builder branchResult = BranchValidationResult.create( branch ).results( validationResults );
@@ -110,7 +110,7 @@ public class ValidatorExecutor
     {
         private RepositoryService repoService;
 
-        private Set<Validator> validators;
+        private List<Validator> validators;
 
         private ProgressReporter progressReporter;
 
@@ -125,7 +125,7 @@ public class ValidatorExecutor
             return this;
         }
 
-        public Builder validators( final Set<Validator> val )
+        public Builder validators( final List<Validator> val )
         {
             validators = val;
             return this;

@@ -17,7 +17,6 @@ import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeIds;
 import com.enonic.xp.node.NodePath;
 import com.enonic.xp.node.NodeService;
-import com.enonic.xp.task.ProgressReporter;
 
 public class ParentExistsExistsExecutor
     extends AbstractNodeExecutor
@@ -28,11 +27,17 @@ public class ParentExistsExistsExecutor
 
     private final Logger LOG = LoggerFactory.getLogger( ParentExistsExistsExecutor.class );
 
-    public ParentExistsExistsExecutor( final NodeService nodeService, final ProgressReporter reporter )
+    private ParentExistsExistsExecutor( final Builder builder )
     {
-        super( reporter );
-        this.nodeService = nodeService;
+        super( builder );
+        nodeService = builder.nodeService;
     }
+
+    public static Builder create()
+    {
+        return new Builder();
+    }
+
 
     public ValidatorResults execute()
     {
@@ -94,4 +99,24 @@ public class ParentExistsExistsExecutor
         }
     }
 
+    public static final class Builder
+        extends AbstractNodeExecutor.Builder<Builder>
+    {
+        private NodeService nodeService;
+
+        private Builder()
+        {
+        }
+
+        public Builder nodeService( final NodeService val )
+        {
+            nodeService = val;
+            return this;
+        }
+
+        public ParentExistsExistsExecutor build()
+        {
+            return new ParentExistsExistsExecutor( this );
+        }
+    }
 }

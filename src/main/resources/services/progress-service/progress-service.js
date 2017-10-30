@@ -1,15 +1,15 @@
 var taskLib = require('/lib/xp/task');
-var mustache = require('/lib/xp/mustache');
 
 exports.get = function (req) {
-    var view = resolve('taskStatus.html');
 
     var taskId = getTaskId(req);
 
     if (!taskId) {
         return {
-            contentType: 'text/html',
-            body: "<div><p>No running jobs</p>"
+            contentType: 'application/json',
+            body: {
+                state: 'not running'
+            }
         }
     }
 
@@ -20,8 +20,21 @@ exports.get = function (req) {
     }
 
     return {
-        contentType: 'text/html',
-        body: mustache.render(view, task)
+        contentType: 'application/json',
+        body: createModel(task)
+    }
+};
+
+var createModel = function (task) {
+
+    return {
+        state: task.state,
+        description: task.description,
+        progress: {
+            info: task.state === "RUNNING" ? JSON.parse(task.progress.info) : "done",
+            current: task.progress.current,
+            total: task.progress.total
+        }
     }
 };
 

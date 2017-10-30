@@ -4,8 +4,10 @@ import java.util.Set;
 
 public interface ValidatorService
 {
-    RepoValidationResults execute( ValidatorParams params );
+    RepoValidationResults analyze( AnalyzeParams params );
 
     Set<Validator> getValidators();
+
+    Validator getValidator( final String validatorName );
 
 }

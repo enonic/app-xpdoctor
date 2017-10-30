@@ -12,9 +12,6 @@ function handleGet(req) {
             type: app.name + ".*",
             localOnly: false,
             callback: function (event) {
-
-                log.info("(event-bus) EVENT: %s", JSON.stringify(event));
-
                 sendToGroup(channel, {type: 'jobFinished', data: event.data.result});
             }
         });

@@ -3,9 +3,12 @@ package me.myklebust.xpdoctor.validator;
 import java.time.Instant;
 import java.util.Set;
 
+import me.myklebust.xpdoctor.validator.mapper.RepairResultMapper;
 import me.myklebust.xpdoctor.validator.mapper.RepoResultsMapper;
 import me.myklebust.xpdoctor.validator.mapper.ValidatorsMapper;
 
+import com.enonic.xp.context.ContextAccessor;
+import com.enonic.xp.context.ContextBuilder;
 import com.enonic.xp.event.Event;
 import com.enonic.xp.event.EventPublisher;
 import com.enonic.xp.script.bean.BeanContext;
@@ -47,15 +50,44 @@ public class IntegrityBean
     }
 
     @SuppressWarnings("unused")
-    public Object validate()
+    public Object validate( final ValidateParams params )
     {
         this.lastResult = null;
 
-        final RunnableTask task = ( id, progressReporter ) -> validatorTask( progressReporter );
+        final RunnableTask task = ( id, progressReporter ) -> validatorTask( progressReporter, params );
 
         final TaskId taskId = taskService.submitTask( task, "com.enonic.app.xpdoctor" );
 
         return taskId.toString();
+    }
+
+    public Object repairAll()
+    {
+        return null;
+    }
+
+    public Object repair( final RepairParams params )
+    {
+        this.lastResult = null;
+
+        return ContextBuilder.from( ContextAccessor.current() ).
+            branch( params.getBranch() ).
+            repositoryId( params.getRepoId() ).
+            build().callWith( () -> doRepair( params ) );
+    }
+
+    private Object doRepair( final RepairParams params )
+    {
+        final Validator validator = this.validatorService.getValidator( params.getValidatorName() );
+
+        if ( validator == null )
+        {
+            throw new IllegalArgumentException( "Validator with name [" + params.getValidatorName() + "] not found" );
+        }
+
+        final RepairResult repairResult = validator.repair( params.getNodeId() );
+
+        return new RepairResultMapper( repairResult );
     }
 
     public Object validators()
@@ -64,16 +96,19 @@ public class IntegrityBean
         return new ValidatorsMapper( validators );
     }
 
-    private void validatorTask( final ProgressReporter progressReporter )
+
+    private void validatorTask( final ProgressReporter progressReporter, final ValidateParams params )
     {
         try
         {
-            final RepoValidationResults result = this.validatorService.execute( new ValidatorParams( progressReporter ) );
+            final RepoValidationResults result = this.validatorService.analyze( AnalyzeParams.create().
+                progressReporter( progressReporter ).
+                enabledValidators( params.getEnabledValidators() ).
+                build() );
 
             this.lastResult = result;
 
             final Object serializedResult = getSerializedResult( result );
-            System.out.println( "Result: " + serializedResult );
 
             eventPublisher.publish( Event.create( "com.enonic.app.xpdoctor.jobFinished" ).
                 distributed( true ).

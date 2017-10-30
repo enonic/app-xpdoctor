@@ -1,6 +1,8 @@
 html {
     height: 100%;
     box-sizing: border-box;
+    padding: 0;
+    margin: 0;
 }
 
 body {
@@ -8,6 +10,9 @@ body {
     position: relative;
     box-sizing: border-box;
     font-family: 'Roboto', sans-serif !important;
+    padding: 0;
+    margin: 0;
+    background-color: #fff;
 }
 
 h1 {
@@ -18,86 +23,170 @@ h2 {
 
 }
 
+button {
+    border: 0;
+    font-family: 'Roboto', sans-serif !important;
+}
+
+.alternative {
+    background-color: #f0a37d;
+}
+
 .navbar {
-    justify-content: space-between;
+    display: flex;
+    background-color: #aaa;
+    padding: 8px;
+    z-index: 10000;
+    border-bottom: 2px solid #fff;
+    border-top: 2px solid #fff;
 }
 
-.progressReporter {
-    height: 170px;
-    padding: 10px;
-    border: 1px solid silver;
-    border-radius: 4px;
-    background-color: #fff;
-    display: none;
+.navbar .progress {
+    margin-left: 20px;
+    color: greenyellow;
+    font-size: 1.2em;
 }
 
-.progressInfo {
+.navbar img {
+    display: block;
+    max-width: 180px;
+    max-height: 80px;
+    width: auto;
+    height: auto;
 }
 
-.ok {
+.navbar a.navbar-brand {
+    margin-left: auto;
+    font-size: 3.0em;
+    margin-right: 10px;
 }
 
-.error {
+.navbar a, a:hover, a:visited.navbar-brand {
+    margin-left: auto;
+    font-size: 3.0em;
+    text-decoration: none;
+    color: #333;
 }
 
-main {
-}
-
-.mainTab {
-}
-
-.executorWrapper {
+.mainContainer {
     width: 100%;
-    margin-left: -15px;
-    margin-right: 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+.toolbar {
+    width: 100%;
     background-color: #343a40;
+    color: white;
 }
 
-.executor {
-    width: 100%;
-    color: #fff;
-    top: 0;
-    padding: 10px 20px;
+.toolbar a:active, a:focus, input, input:active, input:focus {
+    outline: none 0;
 }
 
-.executor .validators h3 {
-
-    font-size: 1.0em;
-}
-
-.executor .validators ul {
-    list-style: none;
-}
-
-.executor .actions {
+.toolbar-items {
+    padding: 0;
     display: flex;
     flex-direction: row;
+    height: 150px;
 }
 
-.executorButton button {
-    margin-right: 30px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.26);
+.toolbar .validators {
+    max-height: 100px;
+    padding: 20px;
+    align-self: center;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
 }
 
-.executorButton button .buttonDescr {
-    vertical-align: middle;
+.toolbar .validators h3 {
+    font-size: 1.0em;
+    text-decoration: underline;
 }
 
-.executorButton i {
-    margin-right: 20px;
-    vertical-align: middle !important;
+.toolbar .validators .validatorItems {
+    margin-top: 4px;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
 }
 
-.executor .itemForm {
+.toolbar .validators .validatorItem {
+    display: inline-block;
+    padding: 3px 5px;
+    border-radius: 10px;
+}
+
+.toolbar .validators .validatorItem.active {
+    background-color: #f0a37d;
+    color: #333;
+}
+
+.actions {
+    align-self: center;
+    width: 300px;
+    display: flex;
+    justify-content: space-around;
+    border-right: 1px solid #aaa;
+    padding-right: 8px;
+}
+
+.actions button.big-action-button {
+    z-index: 1000;
+    font-size: 0.8em;
+    height: 100px;
+    width: 100px;
+    border-radius: 4px;
+    color: #fff;
+    letter-spacing: 1px;
+    display: inline-block;
+    outline: none;
+}
+
+.actions button.big-action-button.analyze {
+    background-color: #68b86a;
+}
+
+.actions button.big-action-button.repair {
+    background-color: #e55812;
+}
+
+.actions button.big-action-button:hover:enabled, button.btn-analyze:focus:enabled {
+    border: 0;
+}
+
+.actions button.big-action-button.analyze:hover:enabled, button.btn-analyze.analyze:focus:enabled {
+    background-color: #7ee081;
+}
+
+.actions button.big-action-button.repair:hover:enabled, button.btn-analyze.repair:focus:enabled {
+    background-color: #f0a37d;
+}
+
+.actions button.big-action-button:disabled {
+    background-color: #eee;
+    color: #aaa;
+}
+
+.actions button.big-action-button i.material-icons {
+    font-size: 5.0em;
+}
+
+.toolbar p.buttonDescr {
+    font-weight: 700;
+}
+
+.toolbar .progressInfo p {
+    padding: 10px 0;
+}
+
+.progress {
+    align-self: center;
+}
+
+.resultWrapper {
     margin-top: 10px;
-}
-
-.hidden {
-    display: none;
-}
-
-.rightAlign {
-    float: right;
 }
 
 .resultTab {
@@ -113,12 +202,33 @@ main {
     font-size: 0.82em;
 }
 
+.dataTable thead {
+    background-color: #aaa;
+}
+
 .dataTable tr:nth-child(even) {
-    background-color: #e6f3ff;
+    background-color: #eee;
+}
+
+.dataTable tr.repaired {
+    background-color: #7ee081;
+    border-bottom: 1px solid silver;
 }
 
 table.dataTable td.repairOption {
     text-align: center;
+}
+
+.dataTables_wrapper .dataTables_length {
+    margin-bottom: 8px;
+}
+
+.hidden {
+    display: none;
+}
+
+.rightAlign {
+    float: right;
 }
 
 .resultSummary {

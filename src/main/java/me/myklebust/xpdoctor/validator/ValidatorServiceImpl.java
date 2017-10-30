@@ -1,6 +1,7 @@
 package me.myklebust.xpdoctor.validator;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Sets;
 
+import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeService;
 import com.enonic.xp.repository.RepositoryService;
 
@@ -19,7 +21,7 @@ import com.enonic.xp.repository.RepositoryService;
 public class ValidatorServiceImpl
     implements ValidatorService
 {
-    private Set<Validator> validators = Sets.newHashSet();
+    private Set<Validator> validators = Sets.newTreeSet();
 
     private NodeService nodeService;
 
@@ -32,15 +34,37 @@ public class ValidatorServiceImpl
         return validators;
     }
 
-    public RepoValidationResults execute( final ValidatorParams params )
+    public Validator getValidator( final String validatorName )
     {
+        for ( final Validator validator : this.validators )
+        {
+            if ( validator.name().equals( validatorName ) )
+            {
+                return validator;
+            }
+        }
+
+        return null;
+    }
+
+    public RepoValidationResults analyze( final AnalyzeParams params )
+    {
+        this.repoService.invalidateAll();
+
         return ValidatorExecutor.create().
-          //  nodeService( this.nodeService ).
             repoService( this.repoService ).
             progressReporter( params.getProgressReporter() ).
-            validators( this.validators ).
+            validators( this.validators.stream().filter( validator -> params.getEnabledValidators().contains( validator.name() ) ).collect(
+                Collectors.toList() ) ).
             build().
             execute();
+    }
+
+    public void repair( final NodeId nodeId )
+    {
+        validators.forEach( validator -> {
+            validator.repair( nodeId );
+        } );
     }
 
     @SuppressWarnings("unused")

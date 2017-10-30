@@ -17,7 +17,6 @@ import me.myklebust.xpdoctor.validator.nodevalidator.BatchedQueryExecutor;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeIds;
 import com.enonic.xp.node.NodeService;
-import com.enonic.xp.task.ProgressReporter;
 
 public class LoadableNodeExecutor
     extends AbstractNodeExecutor
@@ -32,11 +31,17 @@ public class LoadableNodeExecutor
 
     private Logger LOG = LoggerFactory.getLogger( LoadableNodeExecutor.class );
 
-    public LoadableNodeExecutor( final NodeService nodeService, final ProgressReporter reporter )
+    private LoadableNodeExecutor( final Builder builder )
     {
-        super( reporter );
-        this.nodeService = nodeService;
+        super( builder );
+        nodeService = builder.nodeService;
         this.doctor = new LoadableNodeDoctor( this.nodeService );
+    }
+
+
+    public static Builder create()
+    {
+        return new Builder();
     }
 
     public ValidatorResults execute()
@@ -99,6 +104,7 @@ public class LoadableNodeExecutor
                     nodeVersionId( null ).
                     timestamp( null ).
                     type( TYPE ).
+                    validatorName( validatorName ).
                     message( e.getMessage() ).
                     repairResult( repairResult ).
                     build();
@@ -109,6 +115,27 @@ public class LoadableNodeExecutor
             {
                 LOG.error( "Failed to repair", e1 );
             }
+        }
+    }
+
+    public static final class Builder
+        extends AbstractNodeExecutor.Builder<Builder>
+    {
+        private NodeService nodeService;
+
+        private Builder()
+        {
+        }
+
+        public Builder nodeService( final NodeService val )
+        {
+            nodeService = val;
+            return this;
+        }
+
+        public LoadableNodeExecutor build()
+        {
+            return new LoadableNodeExecutor( this );
         }
     }
 }

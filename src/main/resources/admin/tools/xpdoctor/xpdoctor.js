@@ -13,9 +13,10 @@ exports.get = function (req) {
         validators: createValidatorsModel(),
         assetsUrl: portal.assetUrl({path: ""}),
         validatorServiceUrl: getServiceUrl('validator-service'),
-        statusServiceUrl: getServiceUrl('status-service'),
+        progressServiceUrl: getServiceUrl('progress-service'),
         stateServiceUrl: getServiceUrl('state-service'),
         lastResultServiceUrl: getServiceUrl('last-result-service'),
+        repairServiceUrl: getServiceUrl('repair-service'),
         wsUrl: wsUrl
     };
 
