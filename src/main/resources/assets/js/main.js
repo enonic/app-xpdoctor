@@ -19,7 +19,8 @@ var model = {
         validatorProgressClass: ".itemProgress"
     },
     table: {
-        issuesTable: "#resultTable"
+        issuesTable: "#resultTable",
+        issuesTableData: "#issuesTableData"
     }
 };
 
@@ -34,7 +35,8 @@ var state = {
     taskId: null,
     taskState: null,
     resultTimestamp: 0,
-    dataTable: null
+    dataTable: null,
+    issues: null
 };
 
 $(function () {
@@ -58,6 +60,11 @@ var initializeButtons = function () {
     $(model.buttons.runValidator).click(function () {
         handleRunValidator();
     });
+
+    $(model.buttons.repairAll).click(function () {
+        handleRepairAll();
+    });
+
 };
 
 var disableButton = function (button) {
@@ -141,10 +148,19 @@ var handleJobFinished = function (message) {
     displayResults(results);
 };
 
+var handleRepairAll = function () {
+
+    console.log("Repairing all");
+
+    $(model.buttons.repairLink).each(function (element) {
+        console.log("Repair element: ", element);
+        repair(element);
+        return false;
+    });
+
+};
+
 var repair = function (element) {
-
-    console.log("Enter the repair function", element);
-
     var data = {
         nodeId: element.attr('data-nodeid'),
         validatorName: element.attr('data-type'),
@@ -162,10 +178,10 @@ var repair = function (element) {
             renderRepairResult(result, element);
         }
     });
-
 };
 
 var renderRepairResult = function (result, element) {
+
     console.log("RepairResult", result);
     var row = element.closest("tr");
     row.addClass("repaired");
@@ -180,10 +196,12 @@ var displayResults = function (result) {
         return;
     }
 
-    var renderResults = renderIssuesData(result.result);
+    state.issues = result.issues;
+    var issueRows = renderIssueRows(result.result);
+    $(model.table.issuesTableData).html(issueRows);
+
     var resultTab = $(model.div.resultTab);
 
-    resultTab.html(renderResults.infoHtml + renderResults.tableHtml);
     state.dataTable = $(model.table.issuesTable).DataTable({
         searching: false,
         paging: false
@@ -198,84 +216,52 @@ var displayResults = function (result) {
     });
 };
 
-var renderIssuesData = function (results) {
-    var infoHtml = "";
-    infoHtml += "<h2 class='resultSummary'>Total issues found: " + results.totalIssues + "</h2>";
-    var issueTable = renderIssueTable(results);
+var renderIssueRows = function (results) {
 
-    return {infoHtml: infoHtml, tableHtml: issueTable};
-};
-
-var renderIssueTable = function (results) {
-    var errorsHtml = "";
+    var tableRows = "";
 
     if (results.totalIssues > 0) {
         $(model.buttons.repairAll).prop("disabled", false);
-        errorsHtml += "<table id='resultTable' class='table'>";
-        errorsHtml += " <thead>";
-        errorsHtml += "  <th>repo</th>";
-        errorsHtml += "  <th>branch</th>";
-        errorsHtml += "  <th>type</th>";
-        errorsHtml += "  <th>id</th>";
-        errorsHtml += "  <th>path</th>";
-        errorsHtml += "  <th>message</th>";
-        errorsHtml += "  <th>repairStatus</th>";
-        errorsHtml += "  <th>repairMessage</th>";
-        errorsHtml += "  <th>Operations</th>";
-        errorsHtml += " </thead>";
-        errorsHtml += " <tbody>";
-
-        results.repositories.forEach(function (repo) {
-            repo.branches.forEach(function (branch) {
-                errorsHtml += renderBranchResults(repo, branch);
-            });
+        results.issues.forEach(function (issue) {
+            tableRows += renderIssueRow(issue);
         });
-
-        errorsHtml += "</tbody>";
-        errorsHtml += "</table>";
     }
-    return errorsHtml;
+    return tableRows;
 };
 
-var renderBranchResults = function (repo, branch) {
-
-    var rowHtml = "";
-
-    branch.results.forEach(function (entry) {
-        rowHtml += "<tr>";
-        rowHtml += "<td>" + repo.id + "</td>";
-        rowHtml += "<td>" + branch.branch + "</td>";
-        rowHtml += "<td>" + entry.type + "</td>";
-        rowHtml += "<td>" + entry.id + "</td>";
-        rowHtml += "<td>" + entry.path + "</td>";
-        rowHtml += "<td>" + entry.message + "</td>";
-        rowHtml += "<td class='repairStatus'>" + entry.repair.status + "</td>";
-        rowHtml += "<td class='repairMessage'>" + entry.repair.message + "</td>";
-        rowHtml += "<td class='repairOption'>" + renderRepairOptions(entry, branch, repo) + "</td>";
-        rowHtml += "</tr>";
-    });
-
+var renderIssueRow = function (issue) {
+    var rowHtml = "<tr>";
+    rowHtml += "<td>" + issue.repo + "</td>";
+    rowHtml += "<td>" + issue.branch + "</td>";
+    rowHtml += "<td>" + issue.type + "</td>";
+    rowHtml += "<td>" + issue.id + "</td>";
+    rowHtml += "<td>" + issue.path + "</td>";
+    rowHtml += "<td>" + issue.message + "</td>";
+    rowHtml += "<td class='repairStatus'>" + issue.repairStatus + "</td>";
+    rowHtml += "<td class='repairMessage'>" + issue.repairMessage + "</td>";
+    rowHtml += "<td class='repairOption'>" + renderRepairOptions(issue) + "</td>";
+    rowHtml += "</tr>";
     return rowHtml;
 };
 
-var renderRepairOptions = function (entry, branch, repo) {
+var renderRepairOptions = function (issue) {
 
     var repairOptions = "";
 
-    if (entry.repair.status === "IS_REPAIRABLE") {
-        repairOptions += renderRepairLink(branch, repo, entry);
+    if (issue.repairStatus === "IS_REPAIRABLE") {
+        repairOptions += renderRepairLink(issue);
     }
 
     return repairOptions;
 };
 
-var renderRepairLink = function (branch, repo, entry) {
+var renderRepairLink = function (issue) {
     var repairLink = "";
     repairLink += "<a class='repairLink' href='#'" +
-                  addData('branch', branch.branch) +
-                  addData('repoId', repo.id) +
-                  addData('nodeId', entry.id) +
-                  addData('type', entry.validatorName) +
+                  addData('branch', issue.branch) +
+                  addData('repoId', issue.repo) +
+                  addData('nodeId', issue.id) +
+                  addData('type', issue.validatorName) +
                   ">";
     repairLink += "<i class='material-icons'>build</i>";
     repairLink += "</a>";
