@@ -41,7 +41,6 @@ var state = {
 
 $(function () {
 
-    wsConnect();
     getTaskState();
     getProgress();
     initializeButtons();
@@ -144,10 +143,6 @@ var getLastResult = function () {
         }
     });
 
-};
-var handleJobFinished = function (message) {
-    var results = JSON.parse(message.data);
-    //updateIssueTable(results);
 };
 
 var handleRepairAll = function () {
@@ -450,43 +445,5 @@ var removeActiveMark = function (element) {
 var getProgressInfoElement = function (element) {
     return element.find(model.item.validatorProgressClass);
 };
-
-
-// ----------- WS ------------
-function wsConnect() {
-    console.log("Connecting to WS");
-    ws.connection = new WebSocket(wsUrl, ['result']);
-    ws.connection.onopen = onWsOpen;
-    ws.connection.onclose = onWsClose;
-    ws.connection.onmessage = onWsMessage;
-}
-
-
-function onWsOpen() {
-
-    console.log("Connected to WS");
-
-    ws.keepAliveIntervalId = setInterval(function () {
-        if (ws.connected) {
-            this.ws.connection.send('{"action":"KeepAlive"}');
-        }
-    }, 10 * 1000);
-    ws.connected = true;
-}
-
-function onWsClose() {
-    clearInterval(keepAliveIntervalId);
-    ws.connected = false;
-
-    setTimeout(wsConnect, 2000); // attempt to reconnect
-}
-
-function onWsMessage(event) {
-    var message = JSON.parse(event.data);
-
-    if (message.type === "jobFinished") {
-        handleJobFinished(message);
-    }
-}
 
 
