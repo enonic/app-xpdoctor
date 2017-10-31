@@ -19,7 +19,7 @@ public class UniquePathDoctor
 
     private final Logger LOG = LoggerFactory.getLogger( UniquePathDoctor.class );
 
-    private final static String PREFIX = "_com_enonic_app_xpdoctor";
+    public final static String PREFIX = "_com_enonic_app_xpdoctor";
 
 
     public UniquePathDoctor( final NodeService nodeService )

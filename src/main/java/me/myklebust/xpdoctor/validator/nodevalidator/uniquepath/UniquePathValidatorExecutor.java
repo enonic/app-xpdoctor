@@ -36,6 +36,8 @@ import com.enonic.xp.node.NodeVersionMetadata;
 import com.enonic.xp.repository.Repository;
 import com.enonic.xp.repository.RepositoryService;
 
+import static me.myklebust.xpdoctor.validator.nodevalidator.uniquepath.UniquePathDoctor.PREFIX;
+
 public class UniquePathValidatorExecutor
     extends AbstractNodeExecutor
 {
@@ -156,7 +158,8 @@ public class UniquePathValidatorExecutor
 
         result.message( Joiner.on( ";" ).join( messages ) );
 
-        result.repairResult( RepairResultImpl.create().message( "not started" ).repairStatus( RepairStatus.IS_REPAIRABLE ).build() );
+        result.repairResult(
+            RepairResultImpl.create().message( "rename to " + node.name() + PREFIX ).repairStatus( RepairStatus.IS_REPAIRABLE ).build() );
 
         return result.build();
     }

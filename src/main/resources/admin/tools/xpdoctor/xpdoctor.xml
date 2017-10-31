@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <tool xmlns="urn:enonic:xp:model:1.0">
   <display-name>XP-Doctor</display-name>
-  <description>Validates and repairs data</description>
+  <description>Analyze and repair data</description>
   <allow>
     <principal>role:system.admin</principal>
     <principal>role:system.admin</principal>

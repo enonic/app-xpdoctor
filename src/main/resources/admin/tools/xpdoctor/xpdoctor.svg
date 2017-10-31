@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="500px" height="500px" viewBox="0 0 500 500" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 47.1 (45422) - http://www.bohemiancoding.com/sketch -->
+    <title>XPDoc-cross</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="XPDoc-cross">
+            <circle id="Oval" fill="#E55812" cx="250" cy="250" r="250"></circle>
+            <rect id="Rectangle" fill="#FFFFFF" x="160" y="40" width="180" height="420"></rect>
+            <rect id="Rectangle" fill="#FFFFFF" transform="translate(250.000000, 250.000000) rotate(90.000000) translate(-250.000000, -250.000000) " x="160" y="40" width="180" height="420"></rect>
+        </g>
+    </g>
+</svg>

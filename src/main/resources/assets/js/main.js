@@ -223,6 +223,7 @@ var updateIssueTable = function () {
         var button = $(this);
         var issueId = button.attr("data-issueId");
         repair(issueId);
+        return false;
     });
 
 };
