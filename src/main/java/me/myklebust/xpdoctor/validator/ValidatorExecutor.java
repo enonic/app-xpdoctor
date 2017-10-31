@@ -52,12 +52,15 @@ public class ValidatorExecutor
 
             final Branches branches = repo.getBranches();
 
-            branches.stream().forEach( branch -> {
-                LOG.info( "Checking branch: [ " + branch + "]" );
-                final ValidatorResults validationResults = createContext( repo.getId(), branch ).callWith( this::doExecute );
-                final BranchValidationResult.Builder branchResult = BranchValidationResult.create( branch ).results( validationResults );
-                repoBuilder.add( branchResult.build() );
-            } );
+            branches.stream().
+                //filter( branch -> branch.getValue().equals( "master" ) ).
+                    forEach( branch -> {
+                    LOG.info( "Checking branch: [ " + branch + "]" );
+                    final ValidatorResults validationResults = createContext( repo.getId(), branch ).callWith( this::doExecute );
+                    final BranchValidationResult.Builder branchResult =
+                        BranchValidationResult.create( branch ).results( validationResults );
+                    repoBuilder.add( branchResult.build() );
+                } );
 
             results.add( repoBuilder.build() );
         } );

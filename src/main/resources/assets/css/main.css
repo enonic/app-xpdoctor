@@ -233,6 +233,11 @@ button {
 
 table.dataTable td.repairOption {
     text-align: center;
+    vertical-align: middle
+}
+
+table.dataTable td.repairOption a, a:visited, a:hover {
+    color: #333
 }
 
 .dataTables_wrapper .dataTables_length {

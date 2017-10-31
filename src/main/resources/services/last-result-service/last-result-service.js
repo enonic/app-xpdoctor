@@ -25,7 +25,8 @@ var createIssuesModel = function (result) {
     result.repositories.forEach(function (repo) {
         repo.branches.forEach(function (branch) {
             branch.results.forEach(function (entry) {
-                issues['issue-' + ++issueNum] = createIssue(repo, branch, entry);
+                var issueId = 'issue-' + ++issueNum;
+                issues[issueId] = createIssue(repo, branch, entry, issueId);
             });
         });
     });
@@ -37,8 +38,9 @@ var createIssuesModel = function (result) {
     }
 };
 
-var createIssue = function (repo, branch, entry) {
+var createIssue = function (repo, branch, entry, issueId) {
     return {
+        issueId: issueId,
         repo: repo.id,
         branch: branch.branch,
         type: entry.type,
