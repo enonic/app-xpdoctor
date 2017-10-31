@@ -4,9 +4,6 @@ exports.get = function (req) {
 
     var result = dataValidator.lastResult();
 
-    log.info("LastResultService result: %s", JSON.stringify(result));
-
-
     return {
         contentType: 'application/json',
         body: {
@@ -15,19 +12,20 @@ exports.get = function (req) {
     }
 };
 
-
 var createIssuesModel = function (result) {
 
     if (!result) {
         return {};
     }
 
-    var issues = [];
+    var issues = {};
+
+    var issueNum = 0;
 
     result.repositories.forEach(function (repo) {
         repo.branches.forEach(function (branch) {
             branch.results.forEach(function (entry) {
-                issues.push(createIssue(repo, branch, entry));
+                issues['issue-' + ++issueNum] = createIssue(repo, branch, entry);
             });
         });
     });
@@ -39,20 +37,17 @@ var createIssuesModel = function (result) {
     }
 };
 
-
 var createIssue = function (repo, branch, entry) {
-
     return {
         repo: repo.id,
         branch: branch.branch,
         type: entry.type,
-        id: entry.id,
+        nodeId: entry.id,
         path: entry.path,
         message: entry.message,
         validatorName: entry.validatorName,
         repairStatus: entry.repair.status,
         repairMessage: entry.repair.message
     }
-
-
 };
+

@@ -36,7 +36,7 @@ var state = {
     taskState: null,
     resultTimestamp: 0,
     dataTable: null,
-    issues: null
+    analyzeResult: null
 };
 
 $(function () {
@@ -85,6 +85,7 @@ var updateButton = function (button, disabled, icon, label) {
 };
 
 var handleRunValidator = function () {
+    clearIssueTable();
     disableButton($(model.buttons.runValidator));
     disableButton($(model.buttons.repairAll));
     doValidation();
@@ -134,10 +135,11 @@ var getLastResult = function () {
         url: lastResultServiceUrl,
         cache: false,
         type: 'GET',
-        success: function (result) {
-            if (result.result && result.result.timestamp > state.resultTimestamp) {
-                state.resultTimestamp = result.result.timestamp;
-                displayResults(result);
+        success: function (serviceResult) {
+            if (serviceResult.result && serviceResult.result.timestamp > state.resultTimestamp) {
+                state.resultTimestamp = serviceResult.result.timestamp;
+                state.analyzeResult = serviceResult.result;
+                updateIssueTable();
             }
         }
     });
@@ -145,27 +147,29 @@ var getLastResult = function () {
 };
 var handleJobFinished = function (message) {
     var results = JSON.parse(message.data);
-    displayResults(results);
+    //updateIssueTable(results);
 };
 
 var handleRepairAll = function () {
 
-    console.log("Repairing all");
+    if (!state.analyzeResult || !state.analyzeResult.issues) {
+        console.log("ERROR: NO RESULTS IN STATE");
+    }
 
-    $(model.buttons.repairLink).each(function (element) {
-        console.log("Repair element: ", element);
-        repair(element);
-        return false;
-    });
-
+    for (var issueKey in state.analyzeResult.issues) {
+        repair(issueKey);
+    }
 };
 
-var repair = function (element) {
+var repair = function (issueKey) {
+
+    var issue = state.analyzeResult.issues[issueKey];
+
     var data = {
-        nodeId: element.attr('data-nodeid'),
-        validatorName: element.attr('data-type'),
-        branch: element.attr('data-branch'),
-        repoId: element.attr('data-repoId')
+        nodeId: issue.nodeId,
+        validatorName: issue.validatorName,
+        branch: issue.branch,
+        repoId: issue.repo
     };
 
     jQuery.ajax({
@@ -174,67 +178,113 @@ var repair = function (element) {
         cache: false,
         type: 'GET',
         success: function (result) {
-            console.log("RepairResult", result);
-            renderRepairResult(result, element);
+            renderRepairResult(result, issueKey);
         }
     });
 };
 
-var renderRepairResult = function (result, element) {
+var renderRepairResult = function (result, issueKey) {
 
-    console.log("RepairResult", result);
-    var row = element.closest("tr");
-    row.addClass("repaired");
+    var item = state.analyzeResult.issues[issueKey];
+    item.repairStatus = result.repairStatus.status;
+    item.repairMessage = result.repairStatus.message;
+
+    updateIssueTable();
+    /*
+    var row = $('#' + issueKey);
+    row.removeClass();
+    row.addClass(result.repairStatus.status);
     row.children('.repairStatus').html(result.repairStatus.status);
     row.children('.repairMessage').html(result.repairStatus.message);
     row.children('.repairOption').html(' ');
+    */
 };
 
-var displayResults = function (result) {
+var updateIssueTable = function () {
 
-    if (!result.result) {
-        return;
+    var issuesArray = createAsIssuesArray();
+
+    var dataTable = state.dataTable;
+
+    if (!dataTable) {
+        state.dataTable = $(model.table.issuesTable).DataTable({
+            data: issuesArray,
+            "columns": [
+                {"data": "repo"},
+                {"data": "branch"},
+                {"data": "type"},
+                {"data": "nodeId"},
+                {"data": "path"},
+                {"data": "message"},
+                {"data": "validatorName"},
+                {"data": "repairStatus"},
+                {"data": "repairMessage"}
+            ],
+            searching: false,
+            paging: false,
+            "rowCallback": function (row, data, index) {
+                styleRow(row, data, index);
+            }
+        });
+    } else {
+        dataTable.clear();
+        dataTable.rows.add(issuesArray);
+        dataTable.draw();
     }
 
-    state.issues = result.issues;
-    var issueRows = renderIssueRows(result.result);
-    $(model.table.issuesTableData).html(issueRows);
+    if (state.analyzeResult.totalIssues > 0) {
+        updateButton($(model.buttons.repairAll), false);
+    }
 
-    var resultTab = $(model.div.resultTab);
-
-    state.dataTable = $(model.table.issuesTable).DataTable({
-        searching: false,
-        paging: false
-    });
-
-    resultTab.show();
-
-    $(model.buttons.repairLink).click(function () {
-        var elem = $(this);
-        repair(elem);
-        return false;
-    });
 };
 
-var renderIssueRows = function (results) {
+var styleRow = function (row, data, index) {
+
+    if (data.repairStatus) {
+        $(row).removeClass();
+        $(row).addClass(data.repairStatus);
+    }
+};
+
+var createAsIssuesArray = function () {
+    var issuesArray = [];
+
+    for (var key in state.analyzeResult.issues) {
+        issuesArray.push(state.analyzeResult.issues[key]);
+    }
+
+    console.log("issuesArray:", issuesArray);
+    return issuesArray;
+};
+
+var clearIssueTable = function () {
+
+    state.analyzeResult = null;
+    $(model.table.issuesTableData).html("");
+};
+
+var renderIssueRows = function (analyzeResult) {
+
+    console.log("ANALYZE-RESULT: ", analyzeResult.issues);
 
     var tableRows = "";
 
-    if (results.totalIssues > 0) {
+    if (analyzeResult.totalIssues > 0) {
         $(model.buttons.repairAll).prop("disabled", false);
-        results.issues.forEach(function (issue) {
-            tableRows += renderIssueRow(issue);
-        });
+
+        for (var issueKey in analyzeResult.issues) {
+            tableRows += renderIssueRow(issueKey, analyzeResult.issues[issueKey]);
+        }
     }
     return tableRows;
 };
 
-var renderIssueRow = function (issue) {
-    var rowHtml = "<tr>";
+var renderIssueRow = function (key, issue) {
+    var rowHtml = "<tr id='" + key + "' class='" + issue.repairStatus + "'>";
     rowHtml += "<td>" + issue.repo + "</td>";
     rowHtml += "<td>" + issue.branch + "</td>";
     rowHtml += "<td>" + issue.type + "</td>";
-    rowHtml += "<td>" + issue.id + "</td>";
+    rowHtml += "<td>" + issue.nodeId + "</td>";
     rowHtml += "<td>" + issue.path + "</td>";
     rowHtml += "<td>" + issue.message + "</td>";
     rowHtml += "<td class='repairStatus'>" + issue.repairStatus + "</td>";
@@ -257,12 +307,7 @@ var renderRepairOptions = function (issue) {
 
 var renderRepairLink = function (issue) {
     var repairLink = "";
-    repairLink += "<a class='repairLink' href='#'" +
-                  addData('branch', issue.branch) +
-                  addData('repoId', issue.repo) +
-                  addData('nodeId', issue.id) +
-                  addData('type', issue.validatorName) +
-                  ">";
+    repairLink += "<a class='repairLink' href='#'>";
     repairLink += "<i class='material-icons'>build</i>";
     repairLink += "</a>";
     return repairLink;
