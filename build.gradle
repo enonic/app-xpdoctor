@@ -13,6 +13,7 @@ buildscript {
 }
 
 apply plugin: 'com.enonic.xp.app'
+apply plugin: 'maven'
 
 app {
     name = project.appName
@@ -51,5 +52,17 @@ repositories {
     jcenter()
     maven {
         url 'http://repo.enonic.com/public'
+    }
+}
+
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository( url: 'https://repo.enonic.com/public' ) {
+                authentication( userName: findProperty( 'repoUser' ),
+                                password: findProperty( 'repoPassword' ) )
+            }
+        }
     }
 }
