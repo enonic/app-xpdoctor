@@ -55,7 +55,6 @@ repositories {
     }
 }
 
-
 uploadArchives {
     repositories {
         mavenDeployer {

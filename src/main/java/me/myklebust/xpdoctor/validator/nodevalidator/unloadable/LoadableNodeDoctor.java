@@ -75,7 +75,7 @@ class LoadableNodeDoctor
         {
             try
             {
-                final NodeVersion byNodeVersion = this.nodeService.getByNodeVersion( version );
+                final NodeVersion byNodeVersion = this.nodeService.getByNodeVersion( version.getNodeVersionId() );
                 if ( byNodeVersion != null )
                 {
                     return byNodeVersion;
