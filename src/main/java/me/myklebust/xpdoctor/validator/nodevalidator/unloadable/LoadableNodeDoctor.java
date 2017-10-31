@@ -75,7 +75,7 @@ class LoadableNodeDoctor
         {
             try
             {
-                final NodeVersion byNodeVersion = this.nodeService.getByNodeVersion( version.getNodeVersionId() );
+                final NodeVersion byNodeVersion = this.nodeService.getByNodeVersion( version );
                 if ( byNodeVersion != null )
                 {
                     return byNodeVersion;
@@ -107,10 +107,10 @@ class LoadableNodeDoctor
         }
         catch ( Exception e )
         {
-            LOG.error( "Failed to roll-back version", e.getMessage() );
+            LOG.error( "Failed to roll-back version", e );
             return RepairResultImpl.create().
                 repairStatus( RepairStatus.FAILED ).
-                message( "Failed to roll-back version: " + e.getMessage() ).
+                message( "Failed to roll-back version: " + e.toString() ).
                 build();
         }
     }

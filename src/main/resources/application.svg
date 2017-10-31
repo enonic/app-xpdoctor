@@ -6,9 +6,9 @@
     <defs></defs>
     <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
         <g id="XPDoc-cross">
-            <circle id="Oval" fill="#333333" cx="250" cy="250" r="250"></circle>
-            <rect id="Rectangle" fill="#FFFFFF" x="160" y="40" width="174" height="420"></rect>
-            <rect id="Rectangle" fill="#FFFFFF" transform="translate(247.000000, 250.000000) rotate(90.000000) translate(-247.000000, -250.000000) " x="160" y="40" width="174" height="420"></rect>
+            <circle id="Oval" fill="#E55812" cx="250" cy="250" r="250"></circle>
+            <rect id="Rectangle" fill="#FFFFFF" x="160" y="40" width="180" height="420"></rect>
+            <rect id="Rectangle" fill="#FFFFFF" transform="translate(250.000000, 250.000000) rotate(90.000000) translate(-250.000000, -250.000000) " x="160" y="40" width="180" height="420"></rect>
         </g>
     </g>
 </svg>
