@@ -9,7 +9,7 @@ exports.get = function (req) {
         enabledValidators: enabledValidators
     };
 
-    var taskId = dataValidator.execute(validatorParams);
+    var taskId = dataValidator.validateAll(validatorParams);
 
     return {
         contentType: 'application/json',

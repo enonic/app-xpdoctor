@@ -4,9 +4,10 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
-import me.myklebust.xpdoctor.validator.RepairResult;
 import me.myklebust.xpdoctor.validator.Validator;
-import me.myklebust.xpdoctor.validator.ValidatorResults;
+import me.myklebust.xpdoctor.validator.result.RepairResult;
+import me.myklebust.xpdoctor.validator.result.ValidatorResult;
+import me.myklebust.xpdoctor.validator.result.ValidatorResults;
 
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeService;
@@ -56,13 +57,24 @@ public class UniquePathValidator
     @Override
     public ValidatorResults validate( final ProgressReporter reporter )
     {
-        return UniquePathValidatorExecutor.create().
+        return UniquePathEntriesExecutor.create().
             nodeService( this.nodeService ).
             repositoryService( this.repositoryService ).
             progressReporter( reporter ).
             validatorName( this.name() ).
             build().
             execute();
+    }
+
+    @Override
+    public ValidatorResult validate( final NodeId nodeId )
+    {
+        return UniquePathEntryExecutor.create().
+            nodeService( this.nodeService ).
+            repositoryService( this.repositoryService ).
+            validatorName( this.name() ).
+            build().
+            execute( nodeId );
     }
 
     @Override

@@ -1,6 +1,6 @@
 package me.myklebust.xpdoctor.validator.mapper;
 
-import me.myklebust.xpdoctor.validator.RepairResult;
+import me.myklebust.xpdoctor.validator.result.RepairResult;
 
 import com.enonic.xp.script.serializer.MapGenerator;
 import com.enonic.xp.script.serializer.MapSerializable;

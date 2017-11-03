@@ -5,7 +5,12 @@ import java.util.Set;
 
 import me.myklebust.xpdoctor.validator.mapper.RepairResultMapper;
 import me.myklebust.xpdoctor.validator.mapper.RepoResultsMapper;
+import me.myklebust.xpdoctor.validator.mapper.ValidatorResultsMapper;
 import me.myklebust.xpdoctor.validator.mapper.ValidatorsMapper;
+import me.myklebust.xpdoctor.validator.model.IssueEntries;
+import me.myklebust.xpdoctor.validator.result.RepairResult;
+import me.myklebust.xpdoctor.validator.result.RepoValidationResults;
+import me.myklebust.xpdoctor.validator.result.ValidatorResults;
 
 import com.enonic.xp.context.ContextAccessor;
 import com.enonic.xp.context.ContextBuilder;
@@ -59,6 +64,13 @@ public class IntegrityBean
         final TaskId taskId = taskService.submitTask( task, "com.enonic.app.xpdoctor" );
 
         return taskId.toString();
+    }
+
+    public Object revalidate( final IssueEntries issues )
+    {
+        final ValidatorResults results = this.validatorService.reAnalyze( issues );
+
+        return new ValidatorResultsMapper( results );
     }
 
     public Object repairAll()

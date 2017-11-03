@@ -7,19 +7,17 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
-import me.myklebust.xpdoctor.validator.RepairResult;
-import me.myklebust.xpdoctor.validator.ValidatorResult;
-import me.myklebust.xpdoctor.validator.ValidatorResultImpl;
-import me.myklebust.xpdoctor.validator.ValidatorResults;
-import me.myklebust.xpdoctor.validator.nodevalidator.AbstractNodeExecutor;
+import me.myklebust.xpdoctor.validator.nodevalidator.AbstractEntriesValidator;
 import me.myklebust.xpdoctor.validator.nodevalidator.BatchedQueryExecutor;
+import me.myklebust.xpdoctor.validator.result.ValidatorResult;
+import me.myklebust.xpdoctor.validator.result.ValidatorResults;
 
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeIds;
 import com.enonic.xp.node.NodeService;
 
-public class LoadableNodeExecutor
-    extends AbstractNodeExecutor
+public class LoadableEntriesValidator
+    extends AbstractEntriesValidator
 {
     private final static String TYPE = "Unloadable node";
 
@@ -29,13 +27,20 @@ public class LoadableNodeExecutor
 
     private final LoadableNodeDoctor doctor;
 
-    private Logger LOG = LoggerFactory.getLogger( LoadableNodeExecutor.class );
+    private Logger LOG = LoggerFactory.getLogger( LoadableEntriesValidator.class );
 
-    private LoadableNodeExecutor( final Builder builder )
+    private final LoadableEntryValidator entryValidator;
+
+    private LoadableEntriesValidator( final Builder builder )
     {
         super( builder );
         nodeService = builder.nodeService;
         this.doctor = new LoadableNodeDoctor( this.nodeService );
+        this.entryValidator = LoadableEntryValidator.create().
+            validatorName( validatorName ).
+            doctor( this.doctor ).
+            nodeService( this.nodeService ).
+            build();
     }
 
 
@@ -80,46 +85,17 @@ public class LoadableNodeExecutor
 
         for ( final NodeId nodeId : nodeIds )
         {
-            doCheckNode( repair, results, nodeId );
+            final ValidatorResult result = this.entryValidator.execute( nodeId );
+            if ( result != null )
+            {
+                results.add( result );
+            }
         }
         return results;
     }
 
-    private void doCheckNode( final boolean repair, final List<ValidatorResult> results, final NodeId nodeId )
-    {
-        try
-        {
-            this.nodeService.getById( nodeId );
-        }
-        catch ( Exception e )
-        {
-            final RepairResult repairResult;
-            try
-            {
-                repairResult = this.doctor.repaidNode( nodeId, repair );
-
-                final ValidatorResultImpl result = ValidatorResultImpl.create().
-                    nodeId( nodeId ).
-                    nodePath( null ).
-                    nodeVersionId( null ).
-                    timestamp( null ).
-                    type( TYPE ).
-                    validatorName( validatorName ).
-                    message( e.getMessage() ).
-                    repairResult( repairResult ).
-                    build();
-
-                results.add( result );
-            }
-            catch ( Exception e1 )
-            {
-                LOG.error( "Failed to repair", e1 );
-            }
-        }
-    }
-
     public static final class Builder
-        extends AbstractNodeExecutor.Builder<Builder>
+        extends AbstractEntriesValidator.Builder<Builder>
     {
         private NodeService nodeService;
 
@@ -133,9 +109,9 @@ public class LoadableNodeExecutor
             return this;
         }
 
-        public LoadableNodeExecutor build()
+        public LoadableEntriesValidator build()
         {
-            return new LoadableNodeExecutor( this );
+            return new LoadableEntriesValidator( this );
         }
     }
 }

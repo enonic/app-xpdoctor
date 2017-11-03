@@ -1,4 +1,4 @@
-package me.myklebust.xpdoctor.validator;
+package me.myklebust.xpdoctor.validator.result;
 
 import java.util.List;
 

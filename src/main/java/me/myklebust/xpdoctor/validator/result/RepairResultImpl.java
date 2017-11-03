@@ -1,4 +1,6 @@
-package me.myklebust.xpdoctor.validator;
+package me.myklebust.xpdoctor.validator.result;
+
+import me.myklebust.xpdoctor.validator.RepairStatus;
 
 public class RepairResultImpl
     implements RepairResult

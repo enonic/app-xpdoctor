@@ -6,13 +6,13 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-import me.myklebust.xpdoctor.validator.BranchValidationResult;
-import me.myklebust.xpdoctor.validator.RepairResultImpl;
+import me.myklebust.xpdoctor.validator.result.BranchValidationResult;
+import me.myklebust.xpdoctor.validator.result.RepairResultImpl;
 import me.myklebust.xpdoctor.validator.RepairStatus;
-import me.myklebust.xpdoctor.validator.RepoValidationResult;
-import me.myklebust.xpdoctor.validator.RepoValidationResults;
-import me.myklebust.xpdoctor.validator.ValidatorResultImpl;
-import me.myklebust.xpdoctor.validator.ValidatorResults;
+import me.myklebust.xpdoctor.validator.result.RepoValidationResult;
+import me.myklebust.xpdoctor.validator.result.RepoValidationResults;
+import me.myklebust.xpdoctor.validator.result.ValidatorResultImpl;
+import me.myklebust.xpdoctor.validator.result.ValidatorResults;
 
 import com.enonic.xp.branch.Branch;
 import com.enonic.xp.node.NodeId;

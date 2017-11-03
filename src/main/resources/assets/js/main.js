@@ -179,10 +179,11 @@ var repair = function (issueKey) {
 };
 
 var renderRepairResult = function (result, issueKey) {
-
     var item = state.analyzeResult.issues[issueKey];
     item.repairStatus = result.repairStatus.status;
     item.repairMessage = result.repairStatus.message;
+
+    validateIds(state.analyzeResult.issues);
 
     updateIssueTable();
 };
@@ -348,6 +349,60 @@ var doValidation = function () {
             }
         }
     });
+};
+
+
+var validateIds = function (issues) {
+
+    for (var key in issues) {
+
+        var issue = issues[key];
+
+        var data = {
+            issues: [{
+                nodeId: issue.nodeId,
+                repoId: issue.repo,
+                branch: issue.branch
+            }],
+            enabledValidators: getEnabledValidators()
+        };
+
+        jQuery.ajax({
+            url: idValidatorService,
+            cache: false,
+            type: 'POST',
+            contentType: "application/json",
+            data: JSON.stringify(data),
+            success: function (result) {
+
+                if (result.revalidate.length === 0) {
+                    issue.repairStatus = "Implicitly fixed";
+                    issue.repairMessage = "Fixed because other issue fixed";
+                }
+
+            }
+        });
+    }
+
+};
+
+var issueMinimalEntries = function (issues) {
+
+    var issuesMinimal = [];
+
+    for (var key in issues) {
+
+        var issue = issues[key];
+
+        issuesMinimal.push({
+            issueId: key,
+            nodeId: issue.nodeId,
+            repoId: issue.repo,
+            branch: issue.branch
+        })
+    }
+
+    return issuesMinimal;
 };
 
 var getEnabledValidators = function () {

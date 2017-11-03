@@ -1,6 +1,6 @@
 package me.myklebust.xpdoctor.validator.nodevalidator;
 
-import me.myklebust.xpdoctor.validator.RepairResult;
+import me.myklebust.xpdoctor.validator.result.RepairResult;
 
 import com.enonic.xp.node.NodeId;
 

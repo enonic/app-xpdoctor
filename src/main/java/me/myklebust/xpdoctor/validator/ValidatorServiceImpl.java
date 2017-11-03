@@ -12,6 +12,13 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Sets;
 
+import me.myklebust.xpdoctor.validator.model.IssueEntries;
+import me.myklebust.xpdoctor.validator.result.RepoValidationResults;
+import me.myklebust.xpdoctor.validator.result.ValidatorResult;
+import me.myklebust.xpdoctor.validator.result.ValidatorResults;
+
+import com.enonic.xp.context.ContextAccessor;
+import com.enonic.xp.context.ContextBuilder;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeService;
 import com.enonic.xp.repository.RepositoryService;
@@ -49,15 +56,44 @@ public class ValidatorServiceImpl
 
     public RepoValidationResults analyze( final AnalyzeParams params )
     {
-        this.repoService.invalidateAll();
-
-        return ValidatorExecutor.create().
+        return MultiRepoValidatorExecutor.create().
             repoService( this.repoService ).
             progressReporter( params.getProgressReporter() ).
             validators( this.validators.stream().filter( validator -> params.getEnabledValidators().contains( validator.name() ) ).collect(
                 Collectors.toList() ) ).
             build().
             execute();
+    }
+
+    public ValidatorResults reAnalyze( final IssueEntries issues )
+    {
+        final ValidatorResults.Builder builder = ValidatorResults.create();
+
+        issues.forEach( issue -> {
+
+            ContextBuilder.from( ContextAccessor.current() ).
+                repositoryId( issue.getRepoId() ).
+                branch( issue.getBranch() ).
+                build().
+                callWith( () -> builder.add( validateIssue( issue.getNodeId() ) ) );
+        } );
+
+        return builder.build();
+    }
+
+    private ValidatorResults validateIssue( final NodeId nodeId )
+    {
+        final ValidatorResults.Builder builder = ValidatorResults.create();
+
+        this.validators.forEach( validator -> {
+            final ValidatorResult result = validator.validate( nodeId );
+            if ( result != null )
+            {
+                builder.add( result );
+            }
+        } );
+
+        return builder.build();
     }
 
     public void repair( final NodeId nodeId )

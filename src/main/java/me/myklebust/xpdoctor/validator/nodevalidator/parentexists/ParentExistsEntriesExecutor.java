@@ -7,30 +7,34 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
-import me.myklebust.xpdoctor.validator.ValidatorResult;
-import me.myklebust.xpdoctor.validator.ValidatorResults;
-import me.myklebust.xpdoctor.validator.nodevalidator.AbstractNodeExecutor;
+import me.myklebust.xpdoctor.validator.nodevalidator.AbstractEntriesValidator;
 import me.myklebust.xpdoctor.validator.nodevalidator.BatchedQueryExecutor;
+import me.myklebust.xpdoctor.validator.result.ValidatorResult;
+import me.myklebust.xpdoctor.validator.result.ValidatorResults;
 
-import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeIds;
-import com.enonic.xp.node.NodePath;
 import com.enonic.xp.node.NodeService;
 
-public class ParentExistsExistsExecutor
-    extends AbstractNodeExecutor
+public class ParentExistsEntriesExecutor
+    extends AbstractEntriesValidator
 {
     public static final int BATCH_SIZE = 1_000;
 
     private final NodeService nodeService;
 
-    private final Logger LOG = LoggerFactory.getLogger( ParentExistsExistsExecutor.class );
+    private final Logger LOG = LoggerFactory.getLogger( ParentExistsEntriesExecutor.class );
 
-    private ParentExistsExistsExecutor( final Builder builder )
+    private final ParentExistsEntryExecutor entryExecutor;
+
+    private ParentExistsEntriesExecutor( final Builder builder )
     {
         super( builder );
         nodeService = builder.nodeService;
+        this.entryExecutor = ParentExistsEntryExecutor.create().
+            nodeService( this.nodeService ).
+            validatorName( validatorName ).
+            build();
     }
 
     public static Builder create()
@@ -72,7 +76,12 @@ public class ParentExistsExistsExecutor
         {
             try
             {
-                doCheckNode( results, nodeId );
+                final ValidatorResult result = this.entryExecutor.execute( nodeId );
+
+                if ( result != null )
+                {
+                    results.add( result );
+                }
             }
             catch ( Exception e )
             {
@@ -82,25 +91,9 @@ public class ParentExistsExistsExecutor
         return results;
     }
 
-    private void doCheckNode( final List<ValidatorResult> results, final NodeId nodeId )
-    {
-        final Node node = this.nodeService.getById( nodeId );
-
-        final NodePath parentPath = node.path().getParentPath();
-
-        final Node parent = this.nodeService.getByPath( parentPath );
-
-        if ( parent == null )
-        {
-            // results.add( ParentNotExistsResult.create().
-            //     nodeId( node.id() ).
-            //     nodePath( node.path() ).
-            //     build() );
-        }
-    }
 
     public static final class Builder
-        extends AbstractNodeExecutor.Builder<Builder>
+        extends AbstractEntriesValidator.Builder<Builder>
     {
         private NodeService nodeService;
 
@@ -114,9 +107,9 @@ public class ParentExistsExistsExecutor
             return this;
         }
 
-        public ParentExistsExistsExecutor build()
+        public ParentExistsEntriesExecutor build()
         {
-            return new ParentExistsExistsExecutor( this );
+            return new ParentExistsEntriesExecutor( this );
         }
     }
 }

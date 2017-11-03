@@ -7,7 +7,7 @@ import com.enonic.xp.context.Context;
 import com.enonic.xp.context.ContextAccessor;
 import com.enonic.xp.task.ProgressReporter;
 
-public abstract class AbstractNodeExecutor
+public abstract class AbstractEntriesValidator
 {
     private final ProgressReporter reporter;
 
@@ -15,7 +15,7 @@ public abstract class AbstractNodeExecutor
 
     private final ObjectMapper objectMapper;
 
-    protected AbstractNodeExecutor( final Builder builder )
+    protected AbstractEntriesValidator( final Builder builder )
     {
         this.validatorName = builder.validatorName;
         this.reporter = builder.reporter;

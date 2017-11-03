@@ -3,8 +3,8 @@ package me.myklebust.xpdoctor.validator.nodevalidator.unloadable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import me.myklebust.xpdoctor.validator.RepairResult;
-import me.myklebust.xpdoctor.validator.RepairResultImpl;
+import me.myklebust.xpdoctor.validator.result.RepairResult;
+import me.myklebust.xpdoctor.validator.result.RepairResultImpl;
 import me.myklebust.xpdoctor.validator.RepairStatus;
 import me.myklebust.xpdoctor.validator.nodevalidator.BatchedVersionExecutor;
 

@@ -5,6 +5,11 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import me.myklebust.xpdoctor.validator.result.BranchValidationResult;
+import me.myklebust.xpdoctor.validator.result.RepoValidationResult;
+import me.myklebust.xpdoctor.validator.result.RepoValidationResults;
+import me.myklebust.xpdoctor.validator.result.ValidatorResults;
+
 import com.enonic.xp.branch.Branch;
 import com.enonic.xp.branch.Branches;
 import com.enonic.xp.context.Context;
@@ -20,7 +25,7 @@ import com.enonic.xp.security.UserStoreKey;
 import com.enonic.xp.security.auth.AuthenticationInfo;
 import com.enonic.xp.task.ProgressReporter;
 
-public class ValidatorExecutor
+public class MultiRepoValidatorExecutor
 {
     private final RepositoryService repoService;
 
@@ -30,7 +35,7 @@ public class ValidatorExecutor
 
     private final Logger LOG = LoggerFactory.getLogger( IntegrityBean.class );
 
-    private ValidatorExecutor( final Builder builder )
+    private MultiRepoValidatorExecutor( final Builder builder )
     {
         repoService = builder.repoService;
         validators = builder.validators;
@@ -141,9 +146,9 @@ public class ValidatorExecutor
             return this;
         }
 
-        public ValidatorExecutor build()
+        public MultiRepoValidatorExecutor build()
         {
-            return new ValidatorExecutor( this );
+            return new MultiRepoValidatorExecutor( this );
         }
     }
 }

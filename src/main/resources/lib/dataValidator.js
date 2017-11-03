@@ -10,14 +10,28 @@ function required(params, name) {
     return value;
 }
 
-exports.execute = function (validatorParams) {
-
+exports.validateAll = function (validatorParams) {
     var paramsObject = __.newBean('me.myklebust.xpdoctor.validator.ValidateParams');
     paramsObject.enabledValidators = validatorParams.enabledValidators;
-
     var result = bean.validate(paramsObject);
     return __.toNativeObject(result);
 };
+
+exports.validateIds = function (params) {
+    var issueEntries = __.newBean('me.myklebust.xpdoctor.validator.model.IssueEntries');
+    var issues = required(params, 'issues');
+    issues.forEach(function (issue) {
+        var entry = __.newBean('me.myklebust.xpdoctor.validator.model.IssueEntry');
+        entry.nodeId = issue.nodeId;
+        entry.repoId = issue.repoId;
+        entry.branch = issue.branch;
+        issueEntries.add(entry);
+    });
+
+    var result = bean.revalidate(issueEntries);
+    return __.toNativeObject(result);
+};
+
 
 exports.lastResult = function () {
     var result = bean.getLastResult();
@@ -40,4 +54,3 @@ exports.repair = function (params) {
 
     return __.toNativeObject(bean.repair(paramsObject));
 };
-
