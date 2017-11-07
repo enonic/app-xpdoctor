@@ -29,10 +29,14 @@ import com.enonic.xp.node.GetActiveNodeVersionsResult;
 import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeIds;
+import com.enonic.xp.node.NodeIndexPath;
 import com.enonic.xp.node.NodePath;
 import com.enonic.xp.node.NodeQuery;
 import com.enonic.xp.node.NodeService;
 import com.enonic.xp.node.NodeVersionMetadata;
+import com.enonic.xp.query.expr.FieldOrderExpr;
+import com.enonic.xp.query.expr.OrderExpr;
+import com.enonic.xp.query.expr.OrderExpressions;
 import com.enonic.xp.repository.Repository;
 import com.enonic.xp.repository.RepositoryService;
 
@@ -46,6 +50,8 @@ public class UniquePathValidatorExecutor
     private final NodeService nodeService;
 
     private final RepositoryService repositoryService;
+
+    private NonUniquePathsHolder nonUniquePathsHolder = new NonUniquePathsHolder();
 
     private final Set<NodePath> handledPaths = Sets.newHashSet();
 
@@ -71,6 +77,7 @@ public class UniquePathValidatorExecutor
         final BatchedQueryExecutor executor = BatchedQueryExecutor.create().
             batchSize( BATCH_SIZE ).
             nodeService( this.nodeService ).
+            orderBy( OrderExpressions.from( FieldOrderExpr.create( NodeIndexPath.PATH, OrderExpr.Direction.DESC ) ) ).
             build();
 
         final ValidatorResults.Builder results = ValidatorResults.create();
@@ -115,7 +122,7 @@ public class UniquePathValidatorExecutor
 
     private ValidatorResult checkNode( final Node node )
     {
-        if ( handledPaths.contains( node.path() ) )
+        if ( nonUniquePathsHolder.has( node.path() ) )
         {
             return null;
         }
@@ -124,8 +131,6 @@ public class UniquePathValidatorExecutor
             path( node.path() ).
             size( -1 ).
             build() );
-
-        this.handledPaths.add( node.path() );
 
         final boolean pathIsNotUnique = queryResult.getTotalHits() > 1;
 
@@ -158,8 +163,15 @@ public class UniquePathValidatorExecutor
 
         result.message( Joiner.on( ";" ).join( messages ) );
 
-        result.repairResult(
-            RepairResultImpl.create().message( "rename to " + node.name() + PREFIX ).repairStatus( RepairStatus.IS_REPAIRABLE ).build() );
+        this.nonUniquePathsHolder.add( node.path() );
+
+        System.out.println( "Adding to nonUniquePaths: " + node.path() );
+
+        final boolean childHasTrouble = this.nonUniquePathsHolder.myChildHasAProblem( node.path() );
+        result.repairResult( RepairResultImpl.create().
+            message( childHasTrouble ? "child must be repaired first" : "rename to " + node.name() + PREFIX ).
+            repairStatus( childHasTrouble ? RepairStatus.DEPENDENT_ON_OTHER : RepairStatus.IS_REPAIRABLE ).
+            build() );
 
         return result.build();
     }
@@ -176,7 +188,7 @@ public class UniquePathValidatorExecutor
             map( NodeVersionMetadata::getNodeId ).
             collect( Collectors.toSet() );
 
-        return String.format( "id: [%s] in: [%s]", Joiner.on( "," ).join( ids ), Joiner.on( "," ).join( nodeVersions.keySet() ) );
+        return String.format( "id: [%s]", Joiner.on( "," ).join( ids ) );
     }
 
     private GetActiveNodeVersionsResult getBranches( final NodeId nodeId, final Repository repository )

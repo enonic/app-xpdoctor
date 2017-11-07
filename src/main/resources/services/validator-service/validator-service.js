@@ -4,10 +4,20 @@ exports.get = function (req) {
 
     var params = req.params;
     var enabledValidators = params['enabledValidators[]'];
+    var repoId = params['repoId'];
+    var branch = params['branch'];
+
+    if (!repoId || !branch) {
+        throw "Missing repo / branch selector value";
+    }
 
     var validatorParams = {
-        enabledValidators: enabledValidators
+        enabledValidators: enabledValidators,
+        repoId: repoId,
+        branch: branch
     };
+
+    log.info("FAEN FITTE REPO: %s", repoId);
 
     var taskId = dataValidator.execute(validatorParams);
 

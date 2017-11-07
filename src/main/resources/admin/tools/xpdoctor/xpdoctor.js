@@ -17,6 +17,7 @@ exports.get = function (req) {
         stateServiceUrl: getServiceUrl('state-service'),
         lastResultServiceUrl: getServiceUrl('last-result-service'),
         repairServiceUrl: getServiceUrl('repair-service'),
+        repoListServiceUrl: getServiceUrl('repo-list-service'),
         wsUrl: wsUrl
     };
 

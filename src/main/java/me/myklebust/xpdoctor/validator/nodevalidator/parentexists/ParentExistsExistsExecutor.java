@@ -7,7 +7,10 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
+import me.myklebust.xpdoctor.validator.RepairResultImpl;
+import me.myklebust.xpdoctor.validator.RepairStatus;
 import me.myklebust.xpdoctor.validator.ValidatorResult;
+import me.myklebust.xpdoctor.validator.ValidatorResultImpl;
 import me.myklebust.xpdoctor.validator.ValidatorResults;
 import me.myklebust.xpdoctor.validator.nodevalidator.AbstractNodeExecutor;
 import me.myklebust.xpdoctor.validator.nodevalidator.BatchedQueryExecutor;
@@ -72,7 +75,13 @@ public class ParentExistsExistsExecutor
         {
             try
             {
-                doCheckNode( results, nodeId );
+                final ValidatorResult result = doCheckNode( results, nodeId );
+
+                if ( result != null )
+                {
+                    results.add( result );
+                }
+
             }
             catch ( Exception e )
             {
@@ -82,7 +91,7 @@ public class ParentExistsExistsExecutor
         return results;
     }
 
-    private void doCheckNode( final List<ValidatorResult> results, final NodeId nodeId )
+    private ValidatorResult doCheckNode( final List<ValidatorResult> results, final NodeId nodeId )
     {
         final Node node = this.nodeService.getById( nodeId );
 
@@ -92,11 +101,22 @@ public class ParentExistsExistsExecutor
 
         if ( parent == null )
         {
-            // results.add( ParentNotExistsResult.create().
-            //     nodeId( node.id() ).
-            //     nodePath( node.path() ).
-            //     build() );
+            return ValidatorResultImpl.create().
+                nodeId( nodeId ).
+                nodePath( node.path() ).
+                nodeVersionId( node.getNodeVersionId() ).
+                timestamp( node.getTimestamp() ).
+                type( "No parent" ).
+                validatorName( validatorName ).
+                message( "Parent with path : " + node.parentPath() + " not found" ).
+                repairResult( RepairResultImpl.create().
+                    message( "Create parent with path [" + node.parentPath() + "]" ).
+                    repairStatus( RepairStatus.MANUAL ).
+                    build() ).
+                build();
         }
+
+        return null;
     }
 
     public static final class Builder

@@ -1,5 +1,7 @@
 var model = {
-    selectors: {},
+    selectors: {
+        repoSelector: "#repoSelector"
+    },
     buttons: {
         runValidator: "#btnRunValidator",
         repairAll: "#btnRepairAll",
@@ -36,7 +38,8 @@ var state = {
     taskState: null,
     resultTimestamp: 0,
     dataTable: null,
-    analyzeResult: null
+    analyzeResult: null,
+    repoSelected: false
 };
 
 $(function () {
@@ -48,6 +51,8 @@ $(function () {
     setInterval(getProgress, 1000);
     setInterval(getTaskState, 1000);
     setInterval(getLastResult, 2000);
+
+    loadRepoList();
 
 });
 
@@ -63,6 +68,11 @@ var initializeButtons = function () {
     $(model.buttons.repairAll).click(function () {
         handleRepairAll();
     });
+
+    $(model.selectors.repoSelector).change(function () {
+        updateButton($(model.buttons.runValidator), false, "play_arrow", "Analyze");
+        state.repoSelected = true;
+    })
 
 };
 
@@ -81,6 +91,36 @@ var updateButton = function (button, disabled, icon, label) {
     if (label) {
         button.children("p").html(label);
     }
+};
+
+
+var loadRepoList = function () {
+    jQuery.ajax({
+        url: repoListServiceUrl,
+        cache: false,
+        type: 'GET',
+        success: function (result) {
+            populateRepoSelector(result);
+        }
+    });
+};
+
+var populateRepoSelector = function (result) {
+
+    console.log("LoadRepoList result:", result);
+
+    var html = "";
+
+    html += "<option selected='true' disabled='disabled'>Select repository/branch</option>";
+
+    result.repoList.forEach(function (entry) {
+        html += "<option value='" + entry.repo + ";" + entry.branch + "'>";
+        html += entry.repo + " - " + entry.branch + " (" + entry.count + " nodes)";
+        html += "</option>";
+    });
+
+    $(model.selectors.repoSelector).html(html);
+
 };
 
 var handleRunValidator = function () {
@@ -123,7 +163,10 @@ var handleTaskState = function (result) {
         } else {
             statusDiv.hide();
         }
-        updateButton(analyzeButton, false, "play_arrow", "Analyze");
+
+        if (state.repoSelected) {
+            updateButton(analyzeButton, false, "play_arrow", "Analyze");
+        }
     }
 };
 
@@ -152,7 +195,9 @@ var handleRepairAll = function () {
     }
 
     for (var issueKey in state.analyzeResult.issues) {
-        repair(issueKey);
+        if (state.analyzeResult.issues[issueKey].repairStatus === "IS_REPAIRABLE") {
+            repair(issueKey);
+        }
     }
 };
 
@@ -285,7 +330,7 @@ var renderRepairOptions = function (issue) {
         repairOptions += renderRepairLink(issue);
     }
     if (issue.repairStatus === "FAILED") {
-        repairOptions += renderDeleteLink(issue);
+        // repairOptions += renderDeleteLink(issue);
     }
     return repairOptions;
 };
@@ -331,10 +376,18 @@ var clearIssueTable = function () {
     updateIssueTable();
 };
 
-
 var doValidation = function () {
+
+    var repoSelector = $(model.selectors.repoSelector).val();
+
+    console.log("REPOSELECTOR: ", repoSelector);
+
+    var values = repoSelector.split(";");
+
     var data = {
-        enabledValidators: getEnabledValidators()
+        enabledValidators: getEnabledValidators(),
+        repoId: values[0],
+        branch: values[1]
     };
 
     jQuery.ajax({
@@ -348,6 +401,7 @@ var doValidation = function () {
             }
         }
     });
+
 };
 
 var getEnabledValidators = function () {

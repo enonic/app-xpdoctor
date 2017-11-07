@@ -1,11 +1,10 @@
 package me.myklebust.xpdoctor.validator.nodevalidator.parentexists;
 
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 import me.myklebust.xpdoctor.validator.RepairResult;
-import me.myklebust.xpdoctor.validator.RepairResultImpl;
-import me.myklebust.xpdoctor.validator.RepairStatus;
 import me.myklebust.xpdoctor.validator.Validator;
 import me.myklebust.xpdoctor.validator.ValidatorResults;
 
@@ -18,6 +17,14 @@ public class ParentExistsValidator
     implements Validator
 {
     private NodeService nodeService;
+
+    private NoParentDoctor doctor;
+
+    @Activate
+    public void activate()
+    {
+        this.doctor = new NoParentDoctor( this.nodeService );
+    }
 
     @Override
     public int order()
@@ -57,10 +64,7 @@ public class ParentExistsValidator
     @Override
     public RepairResult repair( final NodeId nodeId )
     {
-        return RepairResultImpl.create().
-            repairStatus( RepairStatus.UNKNOW ).
-            message( "Not implemented yet" ).
-            build();
+        return this.doctor.repairNode( nodeId, true );
     }
 
     @Reference

@@ -28,6 +28,10 @@ public class ValidatorExecutor
 
     private final ProgressReporter progressReporter;
 
+    private final RepositoryId repositoryId;
+
+    private final Branch branch;
+
     private final Logger LOG = LoggerFactory.getLogger( IntegrityBean.class );
 
     private ValidatorExecutor( final Builder builder )
@@ -35,35 +39,38 @@ public class ValidatorExecutor
         repoService = builder.repoService;
         validators = builder.validators;
         progressReporter = builder.progressReporter;
+        repositoryId = builder.repositoryId;
+        branch = builder.branch;
     }
 
     public RepoValidationResults execute()
     {
-        LOG.info( "Starting Integrity check..." );
+        LOG.info( "Starting Integrity check of repo " + this.repositoryId + " / " + this.branch + "..." );
 
         final RepoValidationResults.Builder results = RepoValidationResults.create();
         final Repositories repositories = this.repoService.list();
 
-        repositories.stream().forEach( ( repo ) -> {
+        repositories.stream().
+            filter( repository -> repository.getId().equals( this.repositoryId ) ).
+            forEach( ( repo ) -> {
+                LOG.info( "Checking repo: [ " + repo.getId() + "]" );
 
-            LOG.info( "Checking repo: [ " + repo.getId() + "]" );
+                final RepoValidationResult.Builder repoBuilder = RepoValidationResult.create( repo.getId() );
 
-            final RepoValidationResult.Builder repoBuilder = RepoValidationResult.create( repo.getId() );
+                final Branches branches = repo.getBranches();
 
-            final Branches branches = repo.getBranches();
-
-            branches.stream().
-                //filter( branch -> branch.getValue().equals( "master" ) ).
+                branches.stream().
+                    filter( branch -> branch.equals( this.branch ) ).
                     forEach( branch -> {
-                    LOG.info( "Checking branch: [ " + branch + "]" );
-                    final ValidatorResults validationResults = createContext( repo.getId(), branch ).callWith( this::doExecute );
-                    final BranchValidationResult.Builder branchResult =
-                        BranchValidationResult.create( branch ).results( validationResults );
-                    repoBuilder.add( branchResult.build() );
-                } );
+                        LOG.info( "Checking branch: [ " + branch + "]" );
+                        final ValidatorResults validationResults = createContext( repo.getId(), branch ).callWith( this::doExecute );
+                        final BranchValidationResult.Builder branchResult =
+                            BranchValidationResult.create( branch ).results( validationResults );
+                        repoBuilder.add( branchResult.build() );
+                    } );
 
-            results.add( repoBuilder.build() );
-        } );
+                results.add( repoBuilder.build() );
+            } );
 
         progressReporter.info( "Done, all validators finished" );
         progressReporter.progress( this.validators.size(), this.validators.size() );
@@ -117,6 +124,10 @@ public class ValidatorExecutor
 
         private ProgressReporter progressReporter;
 
+        private RepositoryId repositoryId;
+
+        private Branch branch;
+
         private Builder()
         {
         }
@@ -127,6 +138,19 @@ public class ValidatorExecutor
             repoService = val;
             return this;
         }
+
+        public Builder repositoryId( final RepositoryId val )
+        {
+            repositoryId = val;
+            return this;
+        }
+
+        public Builder branch( final Branch val )
+        {
+            branch = val;
+            return this;
+        }
+
 
         public Builder validators( final List<Validator> val )
         {

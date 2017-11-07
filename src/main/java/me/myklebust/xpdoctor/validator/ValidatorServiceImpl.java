@@ -49,11 +49,14 @@ public class ValidatorServiceImpl
 
     public RepoValidationResults analyze( final AnalyzeParams params )
     {
+
         this.repoService.invalidateAll();
 
         return ValidatorExecutor.create().
             repoService( this.repoService ).
             progressReporter( params.getProgressReporter() ).
+            repositoryId( params.getRepositoryId() ).
+            branch( params.getBranch() ).
             validators( this.validators.stream().filter( validator -> params.getEnabledValidators().contains( validator.name() ) ).collect(
                 Collectors.toList() ) ).
             build().

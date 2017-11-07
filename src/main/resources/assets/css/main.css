@@ -41,6 +41,19 @@ button {
     border-top: 2px solid #fff;
 }
 
+.navbar .repoSelector {
+    align-self: center;
+    margin-left: 20px;
+    font-size: 1.1em;
+    border-radius: 10px;
+    background: #333;
+    color: white;
+}
+
+.navbar .repoSelector select {
+    line-height: 1.2em;
+}
+
 .navbar .progress {
     margin-left: 20px;
     color: #333;

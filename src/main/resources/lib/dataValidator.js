@@ -14,7 +14,8 @@ exports.execute = function (validatorParams) {
 
     var paramsObject = __.newBean('me.myklebust.xpdoctor.validator.ValidateParams');
     paramsObject.enabledValidators = validatorParams.enabledValidators;
-
+    paramsObject.repoId = required(validatorParams, "repoId");
+    paramsObject.branch = required(validatorParams, "branch");
     var result = bean.validate(paramsObject);
     return __.toNativeObject(result);
 };

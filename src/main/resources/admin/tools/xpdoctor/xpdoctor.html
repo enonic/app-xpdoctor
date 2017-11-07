@@ -37,6 +37,7 @@
         var lastResultServiceUrl = [[${lastResultServiceUrl}]];
         var wsUrl = [[${wsUrl}]];
         var repairServiceUrl = [[${repairServiceUrl}]];
+        var repoListServiceUrl = [[${repoListServiceUrl}]];
         /*]]>*/
     </script>
 
@@ -45,6 +46,10 @@
 
 <main>
     <nav class="navbar">
+
+        <select class="repoSelector" id="repoSelector">
+        </select>
+
         <span class="progress" id="progressState"></span>
         <a class="navbar-brand" href="#"><img data-th-src="${portal.assetUrl({'_path=images/xpDoc.png'})}"></img></a>
     </nav>
