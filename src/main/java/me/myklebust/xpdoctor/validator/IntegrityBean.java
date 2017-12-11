@@ -18,6 +18,8 @@ import com.enonic.xp.task.ProgressReporter;
 import com.enonic.xp.task.RunnableTask;
 import com.enonic.xp.task.TaskId;
 import com.enonic.xp.task.TaskService;
+import com.enonic.xp.web.vhost.VirtualHost;
+import com.enonic.xp.web.vhost.VirtualHostHelper;
 
 @SuppressWarnings("unused")
 public class IntegrityBean

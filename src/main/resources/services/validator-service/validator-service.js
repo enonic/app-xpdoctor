@@ -17,8 +17,6 @@ exports.get = function (req) {
         branch: branch
     };
 
-    log.info("FAEN FITTE REPO: %s", repoId);
-
     var taskId = dataValidator.execute(validatorParams);
 
     return {
