@@ -12,12 +12,15 @@ buildscript {
     }
 }
 
-apply plugin: 'com.enonic.xp.app'
+plugins {
+    id 'com.enonic.xp.app' version '1.0.15'
+}
+
 apply plugin: 'maven'
 
 app {
+    displayName = 'xpDoctor'
     name = project.appName
-    displayName = project.displayName
     vendorName = 'Enonic AS'
     vendorUrl = 'http://enonic.com'
 }
