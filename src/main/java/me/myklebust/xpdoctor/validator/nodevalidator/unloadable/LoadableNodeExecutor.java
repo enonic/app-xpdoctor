@@ -35,7 +35,7 @@ public class LoadableNodeExecutor
     {
         super( builder );
         nodeService = builder.nodeService;
-        this.doctor = new LoadableNodeDoctor( this.nodeService );
+        this.doctor = builder.doctor;
     }
 
 
@@ -123,6 +123,8 @@ public class LoadableNodeExecutor
     {
         private NodeService nodeService;
 
+        private LoadableNodeDoctor doctor;
+
         private Builder()
         {
         }
@@ -130,6 +132,12 @@ public class LoadableNodeExecutor
         public Builder nodeService( final NodeService val )
         {
             nodeService = val;
+            return this;
+        }
+
+        public Builder doctor( final LoadableNodeDoctor val )
+        {
+            doctor = val;
             return this;
         }
 

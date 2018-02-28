@@ -1,13 +1,21 @@
 package me.myklebust.xpdoctor.validator.nodevalidator.unloadable;
 
+import java.io.IOException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.io.ByteSource;
 
 import me.myklebust.xpdoctor.validator.RepairResult;
 import me.myklebust.xpdoctor.validator.RepairResultImpl;
 import me.myklebust.xpdoctor.validator.RepairStatus;
 import me.myklebust.xpdoctor.validator.nodevalidator.BatchedVersionExecutor;
 
+import com.enonic.xp.blob.BlobKey;
+import com.enonic.xp.blob.BlobRecord;
+import com.enonic.xp.blob.BlobStore;
+import com.enonic.xp.blob.Segment;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeService;
 import com.enonic.xp.node.NodeVersion;
@@ -20,9 +28,12 @@ class LoadableNodeDoctor
 
     private final NodeService nodeService;
 
-    LoadableNodeDoctor( final NodeService nodeService )
+    private final BlobStore blobStore;
+
+    LoadableNodeDoctor( final NodeService nodeService, final BlobStore blobStore )
     {
         this.nodeService = nodeService;
+        this.blobStore = blobStore;
     }
 
     RepairResult repaidNode( final NodeId nodeId, final boolean repairNow )
@@ -43,23 +54,26 @@ class LoadableNodeDoctor
 
             final NodeVersion workingVersion = findNewestWorkingVersion( result );
 
-            if ( workingVersion != null )
-            {
-                final String message = String.format( "Working version found: id:[%s], timestamp:[%s]", workingVersion.getVersionId(),
-                                                      workingVersion.getTimestamp() );
-                LOG.info( message );
+            String message = createMessage( workingVersion );
 
-                if ( repairNow )
+            if ( repairNow )
+            {
+                if ( workingVersion != null )
                 {
                     return doRollbackToVersion( nodeId, workingVersion );
                 }
                 else
                 {
-                    return RepairResultImpl.create().
-                        repairStatus( RepairStatus.IS_REPAIRABLE ).
-                        message( message ).
-                        build();
+                    return createMinimalNode( result );
                 }
+
+            }
+            else
+            {
+                return RepairResultImpl.create().
+                    repairStatus( RepairStatus.IS_REPAIRABLE ).
+                    message( message ).
+                    build();
             }
         }
 
@@ -67,6 +81,24 @@ class LoadableNodeDoctor
             repairStatus( RepairStatus.NOT_REPAIRABLE ).
             message( "No working version found, checked " + executor.getTotalHits() + " versions" ).
             build();
+    }
+
+    private String createMessage( final NodeVersion workingVersion )
+    {
+        String message;
+
+        if ( workingVersion != null )
+        {
+            message = String.format( "Working version found: id:[%s], timestamp:[%s]", workingVersion.getVersionId(),
+                                     workingVersion.getTimestamp() );
+            LOG.info( message );
+        }
+        else
+        {
+            message = "No working version found, repair will create a minimal node";
+            LOG.info( message );
+        }
+        return message;
     }
 
     private NodeVersion findNewestWorkingVersion( final NodeVersionsMetadata result )
@@ -113,5 +145,68 @@ class LoadableNodeDoctor
                 message( "Failed to roll-back version: " + e.toString() ).
                 build();
         }
+    }
+
+    private RepairResultImpl createMinimalNode( final NodeVersionsMetadata metadata )
+    {
+        final NodeVersionMetadata nodeVersionMetadata = metadata.iterator().next();
+
+        final ByteSource byteSource = MinimalNodeFactory.create( "minimal_content.json", nodeVersionMetadata );
+
+        try
+        {
+            final BlobRecord record = createBlobRecord( nodeVersionMetadata, byteSource );
+
+            this.blobStore.addRecord( Segment.from( "node" ), record );
+
+            LOG.info( "Blob record created for versionId: " + nodeVersionMetadata.getNodeVersionId() );
+        }
+        catch ( Exception e )
+        {
+            return RepairResultImpl.create().
+                message( "Failed to created minimal blob: " + e.getMessage() ).
+                repairStatus( RepairStatus.FAILED ).
+                build();
+        }
+
+        return RepairResultImpl.create().
+            message( "Created minimal node with " + nodeVersionMetadata.getNodeVersionId() ).
+            repairStatus( RepairStatus.REPAIRED ).
+            build();
+    }
+
+    private BlobRecord createBlobRecord( final NodeVersionMetadata nodeVersionMetadata, final ByteSource byteSource )
+        throws IOException
+    {
+        LOG.info( "Creating blob-record for version " + nodeVersionMetadata.getNodeVersionId() );
+
+        final long size = byteSource.size();
+
+        return new BlobRecord()
+        {
+            @Override
+            public BlobKey getKey()
+            {
+                return BlobKey.from( nodeVersionMetadata.getNodeVersionId().toString() );
+            }
+
+            @Override
+            public long getLength()
+            {
+                return size;
+            }
+
+            @Override
+            public ByteSource getBytes()
+            {
+                return byteSource;
+            }
+
+            @Override
+            public long lastModified()
+            {
+                return nodeVersionMetadata.getTimestamp().toEpochMilli();
+            }
+        };
     }
 }

@@ -1,28 +1,15 @@
-buildscript {
-    repositories {
-        mavenLocal()
-        jcenter()
-        maven {
-            url 'http://repo.enonic.com/public'
-        }
-    }
-
-    dependencies {
-        classpath "com.enonic.xp:gradle-plugin:${xpVersion}"
-    }
-}
-
 plugins {
-    id 'com.enonic.xp.app' version '1.0.15'
+    id 'maven'
+    id 'com.enonic.defaults' version '1.0.3'
+    id 'com.enonic.xp.app' version '1.0.17'
 }
-
-apply plugin: 'maven'
 
 app {
     displayName = 'xpDoctor'
     name = project.appName
-    vendorName = 'Enonic AS'
+    vendorName = 'Runar Myklebust'
     vendorUrl = 'http://enonic.com'
+    systemVersion = "${xpVersion}"
 }
 
 dependencies {
@@ -52,19 +39,7 @@ dependencies {
 
 repositories {
     mavenLocal()
+    mavenCentral()
     jcenter()
-    maven {
-        url 'http://repo.enonic.com/public'
-    }
-}
-
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            repository( url: 'https://repo.enonic.com/public' ) {
-                authentication( userName: findProperty( 'repoUser' ),
-                                password: findProperty( 'repoPassword' ) )
-            }
-        }
-    }
+    xp.enonicRepo()
 }

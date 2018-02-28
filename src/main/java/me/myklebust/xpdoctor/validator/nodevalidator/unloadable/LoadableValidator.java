@@ -8,6 +8,7 @@ import me.myklebust.xpdoctor.validator.RepairResult;
 import me.myklebust.xpdoctor.validator.Validator;
 import me.myklebust.xpdoctor.validator.ValidatorResults;
 
+import com.enonic.xp.blob.BlobStore;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeService;
 import com.enonic.xp.task.ProgressReporter;
@@ -20,6 +21,8 @@ public class LoadableValidator
 
     private LoadableNodeDoctor doctor;
 
+    private BlobStore blobStore;
+
     @Override
     public int order()
     {
@@ -29,7 +32,7 @@ public class LoadableValidator
     @Activate
     public void activate()
     {
-        this.doctor = new LoadableNodeDoctor( this.nodeService );
+        this.doctor = new LoadableNodeDoctor( this.nodeService, this.blobStore );
     }
 
     @Override
@@ -55,6 +58,7 @@ public class LoadableValidator
     {
         return LoadableNodeExecutor.create().
             nodeService( this.nodeService ).
+            doctor( this.doctor ).
             progressReporter( reporter ).
             validatorName( this.name() ).
             build().
@@ -73,9 +77,16 @@ public class LoadableValidator
         this.nodeService = nodeService;
     }
 
+    @Reference
+    public void setBlobStore( final BlobStore blobStore )
+    {
+        this.blobStore = blobStore;
+    }
+
     @Override
     public int compareTo( final Validator o )
     {
         return Integer.compare( this.order(), o.order() );
     }
+
 }

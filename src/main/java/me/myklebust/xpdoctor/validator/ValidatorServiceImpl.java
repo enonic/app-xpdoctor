@@ -79,6 +79,12 @@ public class ValidatorServiceImpl
     }
 
     @SuppressWarnings("unused")
+    public void removeValidator( final Validator val )
+    {
+        this.validators.remove( val );
+    }
+
+    @SuppressWarnings("unused")
     @Reference
     public void setNodeService( final NodeService nodeService )
     {
