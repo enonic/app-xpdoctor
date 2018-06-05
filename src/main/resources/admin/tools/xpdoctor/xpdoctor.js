@@ -2,6 +2,8 @@ var thymeleaf = require('/lib/xp/thymeleaf');
 var portal = require('/lib/xp/portal');
 var dataValidator = require('/lib/dataValidator.js');
 
+var isMaster = require('/lib/isMaster/index.js')
+
 exports.get = function (req) {
 
     var view = resolve('xpdoctor.html');
