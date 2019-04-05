@@ -26,7 +26,6 @@ dependencies {
     include "com.enonic.xp:lib-mustache:${xpVersion}"
     include "com.enonic.xp:lib-event:${xpVersion}"
     include "com.enonic.xp:lib-websocket:${xpVersion}"
-    include "me.myklebust.lib:ismaster:1.0.0-SNAPSHOT"
 
     //include "com.enonic.xp:lib-xslt:${xpVersion}"
     //include "com.enonic.xp:lib-i18n:${xpVersion}"
