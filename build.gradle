@@ -25,7 +25,6 @@ dependencies {
     include "com.enonic.xp:lib-task:${xpVersion}"
     include "com.enonic.xp:lib-event:${xpVersion}"
     include "com.enonic.xp:lib-websocket:${xpVersion}"
-<<<<<<< HEAD
 
     //include "com.enonic.xp:lib-xslt:${xpVersion}"
     //include "com.enonic.xp:lib-i18n:${xpVersion}"
@@ -35,9 +34,6 @@ dependencies {
     //include "com.enonic.xp:lib-http-client:${xpVersion}"
     //include "com.enonic.xp:lib-io:${xpVersion}"
     //include "com.enonic.xp:lib-mail:${xpVersion}"
-=======
-    include "me.myklebust.lib:ismaster:1.0.0-SNAPSHOT"
->>>>>>> 8b5f8cb7a643daf0f3ab04ea03a074422791386d
 }
 
 repositories {
