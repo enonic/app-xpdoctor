@@ -61,18 +61,18 @@ class LoadableNodeDoctor
 
     private RepairResult repairMissingStorageButInSearch( final NodeId nodeId, final boolean repairNow )
     {
-        LOG.info( "Deleting entry in search-index" );
-
         if ( repairNow )
         {
             try
             {
+                LOG.info( "Deleting node from search-index..." );
+
                 final boolean deleted = this.storageSpyService.deleteInSearch( nodeId, ContextAccessor.current().getRepositoryId(),
                                                                                ContextAccessor.current().getBranch() );
 
                 return RepairResultImpl.create().
                     repairStatus( RepairStatus.REPAIRED ).
-                    message( "Deleted entry in search-index: " + deleted ).
+                    message( "Deleted entry with id [" + nodeId + "] sin search-index: [" + deleted + "]").
                     build();
             }
             catch ( Exception e )
@@ -80,7 +80,7 @@ class LoadableNodeDoctor
                 LOG.error( "Not able to delete entry from search-index", e );
                 return RepairResultImpl.create().
                     repairStatus( RepairStatus.FAILED ).
-                    message( "Delete entry in search-index" ).
+                    message( "Failed to delete entry with id [ " + nodeId + " ] in search-index" ).
                     build();
 
             }
