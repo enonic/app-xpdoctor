@@ -3,6 +3,8 @@ package me.myklebust.xpdoctor.validator.nodevalidator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import me.myklebust.xpdoctor.storagespy.StorageSpyService;
+
 import com.enonic.xp.context.Context;
 import com.enonic.xp.context.ContextAccessor;
 import com.enonic.xp.task.ProgressReporter;
@@ -14,6 +16,7 @@ public abstract class AbstractNodeExecutor
     protected final String validatorName;
 
     private final ObjectMapper objectMapper;
+
 
     protected AbstractNodeExecutor( final Builder builder )
     {

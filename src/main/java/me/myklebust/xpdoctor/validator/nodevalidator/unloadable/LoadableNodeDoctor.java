@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.io.ByteSource;
 
+import me.myklebust.xpdoctor.storagespy.StorageSpyService;
 import me.myklebust.xpdoctor.validator.RepairResult;
 import me.myklebust.xpdoctor.validator.RepairResultImpl;
 import me.myklebust.xpdoctor.validator.RepairStatus;
@@ -16,6 +17,7 @@ import com.enonic.xp.blob.BlobKey;
 import com.enonic.xp.blob.BlobRecord;
 import com.enonic.xp.blob.BlobStore;
 import com.enonic.xp.blob.Segment;
+import com.enonic.xp.context.ContextAccessor;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeService;
 import com.enonic.xp.node.NodeVersion;
@@ -30,15 +32,69 @@ class LoadableNodeDoctor
 
     private final BlobStore blobStore;
 
-    LoadableNodeDoctor( final NodeService nodeService, final BlobStore blobStore )
+    private final StorageSpyService storageSpyService;
+
+    LoadableNodeDoctor( final NodeService nodeService, final BlobStore blobStore, final StorageSpyService storageSpyService )
     {
         this.nodeService = nodeService;
         this.blobStore = blobStore;
+        this.storageSpyService = storageSpyService;
     }
 
-    RepairResult repaidNode( final NodeId nodeId, final boolean repairNow )
+    RepairResult repairNode( final NodeId nodeId, final boolean repairNow, final UnloadableReason reason )
     {
         LOG.info( "Trying to repaid un-loadable node with id [" + nodeId + "]" );
+
+        switch ( reason )
+        {
+            case MISSING_BLOB:
+                return repairMissingBlob( nodeId, repairNow );
+            case NOT_IN_STORAGE_BUT_IN_SEARCH:
+                return repairMissingStorageButInSearch( nodeId, repairNow );
+        }
+
+        return RepairResultImpl.create().
+            repairStatus( RepairStatus.UNKNOW ).
+            message( "Not able to repair, unknown reason for node to be unloadable, check log" ).
+            build();
+    }
+
+    private RepairResult repairMissingStorageButInSearch( final NodeId nodeId, final boolean repairNow )
+    {
+        LOG.info( "Deleting entry in search-index" );
+
+        if ( repairNow )
+        {
+            try
+            {
+                final boolean deleted = this.storageSpyService.deleteInSearch( nodeId, ContextAccessor.current().getRepositoryId(),
+                                                                               ContextAccessor.current().getBranch() );
+
+                return RepairResultImpl.create().
+                    repairStatus( RepairStatus.REPAIRED ).
+                    message( "Deleted entry in search-index: " + deleted ).
+                    build();
+            }
+            catch ( Exception e )
+            {
+                LOG.error( "Not able to delete entry from search-index", e );
+                return RepairResultImpl.create().
+                    repairStatus( RepairStatus.FAILED ).
+                    message( "Delete entry in search-index" ).
+                    build();
+
+            }
+
+        }
+
+        return RepairResultImpl.create().
+            repairStatus( RepairStatus.IS_REPAIRABLE ).
+            message( "Delete entry in search-index" ).
+            build();
+    }
+
+    private RepairResult repairMissingBlob( final NodeId nodeId, final boolean repairNow )
+    {
         LOG.info( "Checking for older versions of node with id: [" + nodeId + "]......" );
 
         final BatchedVersionExecutor executor = BatchedVersionExecutor.create( this.nodeService ).
@@ -56,24 +112,21 @@ class LoadableNodeDoctor
 
             String message = createMessage( workingVersion );
 
-            if ( repairNow )
-            {
-                if ( workingVersion != null )
-                {
-                    return doRollbackToVersion( nodeId, workingVersion );
-                }
-                else
-                {
-                    return createMinimalNode( result );
-                }
-
-            }
-            else
+            if ( !repairNow )
             {
                 return RepairResultImpl.create().
                     repairStatus( RepairStatus.IS_REPAIRABLE ).
                     message( message ).
                     build();
+            }
+
+            if ( workingVersion != null )
+            {
+                return doRollbackToVersion( nodeId, workingVersion );
+            }
+            else
+            {
+                return createMinimalNode( result );
             }
         }
 

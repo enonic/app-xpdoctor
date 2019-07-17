@@ -1,7 +1,7 @@
 plugins {
     id 'maven'
     id 'com.enonic.defaults' version '1.0.3'
-    id 'com.enonic.xp.app' version '1.0.17'
+    id 'com.enonic.xp.app' version '1.2.0'
 }
 
 app {
@@ -26,7 +26,9 @@ dependencies {
     include "com.enonic.xp:lib-mustache:${xpVersion}"
     include "com.enonic.xp:lib-event:${xpVersion}"
     include "com.enonic.xp:lib-websocket:${xpVersion}"
-    include "me.myklebust.lib:ismaster:1.0.0-SNAPSHOT"
+
+    // Dirty spy dependencies
+    compile "com.enonic.xp:core-repo:${xpVersion}"
 
     //include "com.enonic.xp:lib-xslt:${xpVersion}"
     //include "com.enonic.xp:lib-i18n:${xpVersion}"

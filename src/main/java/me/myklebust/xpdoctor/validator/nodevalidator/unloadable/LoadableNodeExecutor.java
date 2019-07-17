@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
+import me.myklebust.xpdoctor.storagespy.StorageSpyService;
 import me.myklebust.xpdoctor.validator.RepairResult;
 import me.myklebust.xpdoctor.validator.ValidatorResult;
 import me.myklebust.xpdoctor.validator.ValidatorResultImpl;
@@ -14,6 +15,7 @@ import me.myklebust.xpdoctor.validator.ValidatorResults;
 import me.myklebust.xpdoctor.validator.nodevalidator.AbstractNodeExecutor;
 import me.myklebust.xpdoctor.validator.nodevalidator.BatchedQueryExecutor;
 
+import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeIds;
 import com.enonic.xp.node.NodeService;
@@ -27,15 +29,21 @@ public class LoadableNodeExecutor
 
     private final NodeService nodeService;
 
+    private final StorageSpyService storageSpyService;
+
     private final LoadableNodeDoctor doctor;
+
+    private final UnloadableNodeReasonResolver reasonResolver;
 
     private Logger LOG = LoggerFactory.getLogger( LoadableNodeExecutor.class );
 
     private LoadableNodeExecutor( final Builder builder )
     {
         super( builder );
-        nodeService = builder.nodeService;
+        this.nodeService = builder.nodeService;
+        this.storageSpyService = builder.storageSpyService;
         this.doctor = builder.doctor;
+        this.reasonResolver = new UnloadableNodeReasonResolver( storageSpyService );
     }
 
 
@@ -89,32 +97,54 @@ public class LoadableNodeExecutor
     {
         try
         {
-            this.nodeService.getById( nodeId );
+            Node foundNodeId = this.nodeService.getById( nodeId );
+
+            if ( foundNodeId == null )
+            {
+                LOG.info( "##### NODE %s IS NULL BUT NO EXCEPTION!?", nodeId );
+            }
         }
         catch ( Exception e )
         {
-            final RepairResult repairResult;
-            try
-            {
-                repairResult = this.doctor.repaidNode( nodeId, repair );
+            resolveAndRepaid( repair, results, nodeId, e );
+        }
+    }
 
-                final ValidatorResultImpl result = ValidatorResultImpl.create().
-                    nodeId( nodeId ).
-                    nodePath( null ).
-                    nodeVersionId( null ).
-                    timestamp( null ).
-                    type( TYPE ).
-                    validatorName( validatorName ).
-                    message( e.getMessage() ).
-                    repairResult( repairResult ).
-                    build();
+    private void resolveAndRepaid( final boolean doRepair, final List<ValidatorResult> results, final NodeId nodeId, final Exception e )
+    {
+        UnloadableReason reason;
 
-                results.add( result );
-            }
-            catch ( Exception e1 )
-            {
-                LOG.error( "Failed to repair", e1 );
-            }
+        try
+        {
+            reason = reasonResolver.resolve( nodeId );
+        }
+        catch ( Exception e1 )
+        {
+            LOG.error( "Not able to resolve reason for unloadable node", e );
+            return;
+        }
+
+        try
+        {
+
+            final RepairResult repairResult = this.doctor.repairNode( nodeId, doRepair, reason );
+
+            final ValidatorResultImpl result = ValidatorResultImpl.create().
+                nodeId( nodeId ).
+                nodePath( null ).
+                nodeVersionId( null ).
+                timestamp( null ).
+                type( TYPE ).
+                validatorName( validatorName ).
+                message( e.getMessage() ).
+                repairResult( repairResult ).
+                build();
+
+            results.add( result );
+        }
+        catch ( Exception e1 )
+        {
+            LOG.error( "Failed to repair", e1 );
         }
     }
 
@@ -124,6 +154,8 @@ public class LoadableNodeExecutor
         private NodeService nodeService;
 
         private LoadableNodeDoctor doctor;
+
+        private StorageSpyService storageSpyService;
 
         private Builder()
         {
@@ -138,6 +170,12 @@ public class LoadableNodeExecutor
         public Builder doctor( final LoadableNodeDoctor val )
         {
             doctor = val;
+            return this;
+        }
+
+        public Builder storageSpyService( final StorageSpyService storageSpyService )
+        {
+            this.storageSpyService = storageSpyService;
             return this;
         }
 
