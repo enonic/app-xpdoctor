@@ -25,7 +25,6 @@ public class UniquePathDoctor
 
     public final static String PREFIX = "_com_enonic_app_xpdoctor";
 
-
     public UniquePathDoctor( final NodeService nodeService )
     {
         this.nodeService = nodeService;

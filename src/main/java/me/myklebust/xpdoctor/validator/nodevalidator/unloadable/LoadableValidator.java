@@ -4,6 +4,7 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
+import me.myklebust.xpdoctor.storagespy.StorageSpyService;
 import me.myklebust.xpdoctor.validator.RepairResult;
 import me.myklebust.xpdoctor.validator.Validator;
 import me.myklebust.xpdoctor.validator.ValidatorResults;
@@ -23,6 +24,10 @@ public class LoadableValidator
 
     private BlobStore blobStore;
 
+    private StorageSpyService storageSpyService;
+
+    private UnloadableNodeReasonResolver reasonResolver;
+
     @Override
     public int order()
     {
@@ -32,7 +37,8 @@ public class LoadableValidator
     @Activate
     public void activate()
     {
-        this.doctor = new LoadableNodeDoctor( this.nodeService, this.blobStore );
+        this.doctor = new LoadableNodeDoctor( this.nodeService, this.blobStore, this.storageSpyService );
+        this.reasonResolver = new UnloadableNodeReasonResolver( this.storageSpyService );
     }
 
     @Override
@@ -59,6 +65,7 @@ public class LoadableValidator
         return LoadableNodeExecutor.create().
             nodeService( this.nodeService ).
             doctor( this.doctor ).
+            storageSpyService( this.storageSpyService ).
             progressReporter( reporter ).
             validatorName( this.name() ).
             build().
@@ -68,13 +75,22 @@ public class LoadableValidator
     @Override
     public RepairResult repair( final NodeId nodeId )
     {
-        return this.doctor.repaidNode( nodeId, true );
+        final UnloadableReason reason = reasonResolver.resolve( nodeId );
+
+        return this.doctor.repairNode( nodeId, true, reason );
     }
 
     @Reference
     public void setNodeService( final NodeService nodeService )
     {
         this.nodeService = nodeService;
+    }
+
+    @Reference
+    public void setStorageSpyService( final StorageSpyService storageSpyService )
+    {
+        System.out.println( "Setting StorageSpyService......." + storageSpyService );
+        this.storageSpyService = storageSpyService;
     }
 
     @Reference
@@ -88,5 +104,6 @@ public class LoadableValidator
     {
         return Integer.compare( this.order(), o.order() );
     }
+
 
 }

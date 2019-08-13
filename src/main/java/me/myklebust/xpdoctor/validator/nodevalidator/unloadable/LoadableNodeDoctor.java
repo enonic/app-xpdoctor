@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.io.ByteSource;
 
+import me.myklebust.xpdoctor.storagespy.StorageSpyService;
 import me.myklebust.xpdoctor.validator.RepairResult;
 import me.myklebust.xpdoctor.validator.RepairResultImpl;
 import me.myklebust.xpdoctor.validator.RepairStatus;
@@ -16,6 +17,7 @@ import com.enonic.xp.blob.BlobKey;
 import com.enonic.xp.blob.BlobRecord;
 import com.enonic.xp.blob.BlobStore;
 import com.enonic.xp.blob.Segment;
+import com.enonic.xp.context.ContextAccessor;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeService;
 import com.enonic.xp.node.NodeVersion;
@@ -30,15 +32,69 @@ class LoadableNodeDoctor
 
     private final BlobStore blobStore;
 
-    LoadableNodeDoctor( final NodeService nodeService, final BlobStore blobStore )
+    private final StorageSpyService storageSpyService;
+
+    LoadableNodeDoctor( final NodeService nodeService, final BlobStore blobStore, final StorageSpyService storageSpyService )
     {
         this.nodeService = nodeService;
         this.blobStore = blobStore;
+        this.storageSpyService = storageSpyService;
     }
 
-    RepairResult repaidNode( final NodeId nodeId, final boolean repairNow )
+    RepairResult repairNode( final NodeId nodeId, final boolean repairNow, final UnloadableReason reason )
     {
         LOG.info( "Trying to repaid un-loadable node with id [" + nodeId + "]" );
+
+        switch ( reason )
+        {
+            case MISSING_BLOB:
+                return repairMissingBlob( nodeId, repairNow );
+            case NOT_IN_STORAGE_BUT_IN_SEARCH:
+                return repairMissingStorageButInSearch( nodeId, repairNow );
+        }
+
+        return RepairResultImpl.create().
+            repairStatus( RepairStatus.UNKNOW ).
+            message( "Not able to repair, unknown reason for node to be unloadable, check log" ).
+            build();
+    }
+
+    private RepairResult repairMissingStorageButInSearch( final NodeId nodeId, final boolean repairNow )
+    {
+        if ( repairNow )
+        {
+            try
+            {
+                LOG.info( "Deleting node from search-index..." );
+
+                final boolean deleted = this.storageSpyService.deleteInSearch( nodeId, ContextAccessor.current().getRepositoryId(),
+                                                                               ContextAccessor.current().getBranch() );
+
+                return RepairResultImpl.create().
+                    repairStatus( RepairStatus.REPAIRED ).
+                    message( "Deleted entry with id [" + nodeId + "] in search-index: [" + deleted + "]" ).
+                    build();
+            }
+            catch ( Exception e )
+            {
+                LOG.error( "Not able to delete entry from search-index", e );
+                return RepairResultImpl.create().
+                    repairStatus( RepairStatus.FAILED ).
+                    message( "Failed to delete entry with id [ " + nodeId + " ] in search-index" ).
+                    build();
+
+            }
+
+        }
+
+        return RepairResultImpl.create().
+            repairStatus( RepairStatus.IS_REPAIRABLE ).
+            message( "Delete entry in search-index" ).
+            build();
+    }
+
+    private RepairResult repairMissingBlob( final NodeId nodeId, final boolean repairNow )
+    {
         LOG.info( "Checking for older versions of node with id: [" + nodeId + "]......" );
 
         final BatchedVersionExecutor executor = BatchedVersionExecutor.create( this.nodeService ).
@@ -52,28 +108,25 @@ class LoadableNodeDoctor
         {
             final NodeVersionsMetadata result = executor.execute();
 
-            final NodeVersion workingVersion = findNewestWorkingVersion( result );
+            final NodeVersionMetadata workingVersionMetadata = findNewestWorkingVersion( result );
 
-            String message = createMessage( workingVersion );
+            String message = createMessage( workingVersionMetadata );
 
-            if ( repairNow )
-            {
-                if ( workingVersion != null )
-                {
-                    return doRollbackToVersion( nodeId, workingVersion );
-                }
-                else
-                {
-                    return createMinimalNode( result );
-                }
-
-            }
-            else
+            if ( !repairNow )
             {
                 return RepairResultImpl.create().
                     repairStatus( RepairStatus.IS_REPAIRABLE ).
                     message( message ).
                     build();
+            }
+
+            if ( workingVersionMetadata != null )
+            {
+                return doRollbackToVersion( nodeId, workingVersionMetadata );
+            }
+            else
+            {
+                return createMinimalNode( result );
             }
         }
 
@@ -83,14 +136,14 @@ class LoadableNodeDoctor
             build();
     }
 
-    private String createMessage( final NodeVersion workingVersion )
+    private String createMessage( final NodeVersionMetadata workingVersionMetadata )
     {
         String message;
 
-        if ( workingVersion != null )
+        if ( workingVersionMetadata != null )
         {
-            message = String.format( "Working version found: id:[%s], timestamp:[%s]", workingVersion.getVersionId(),
-                                     workingVersion.getTimestamp() );
+            message = String.format( "Working version found: id:[%s], timestamp:[%s]",
+                                     workingVersionMetadata.getNodeVersionKey().getNodeBlobKey(), workingVersionMetadata.getTimestamp() );
             LOG.info( message );
         }
         else
@@ -101,16 +154,16 @@ class LoadableNodeDoctor
         return message;
     }
 
-    private NodeVersion findNewestWorkingVersion( final NodeVersionsMetadata result )
+    private NodeVersionMetadata findNewestWorkingVersion( final NodeVersionsMetadata result )
     {
         for ( final NodeVersionMetadata version : result )
         {
             try
             {
-                final NodeVersion byNodeVersion = this.nodeService.getByNodeVersion( version.getNodeVersionId() );
+                final NodeVersion byNodeVersion = this.nodeService.getByNodeVersionKey( version.getNodeVersionKey() );
                 if ( byNodeVersion != null )
                 {
-                    return byNodeVersion;
+                    return version;
                 }
             }
             catch ( Exception e )
@@ -125,12 +178,12 @@ class LoadableNodeDoctor
         return null;
     }
 
-    private RepairResultImpl doRollbackToVersion( final NodeId nodeId, final NodeVersion byNodeVersion )
+    private RepairResultImpl doRollbackToVersion( final NodeId nodeId, final NodeVersionMetadata nodeVersionMetadata )
     {
         try
         {
-            this.nodeService.setActiveVersion( nodeId, byNodeVersion.getVersionId() );
-            final String message = "Successfully restored version from [" + byNodeVersion.getTimestamp() + "]";
+            this.nodeService.setActiveVersion( nodeId, nodeVersionMetadata.getNodeVersionId() );
+            final String message = "Successfully restored version from [" + nodeVersionMetadata.getTimestamp() + "]";
             LOG.info( message );
             return RepairResultImpl.create().
                 repairStatus( RepairStatus.REPAIRED ).

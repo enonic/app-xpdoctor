@@ -18,8 +18,6 @@ import com.enonic.xp.task.ProgressReporter;
 import com.enonic.xp.task.RunnableTask;
 import com.enonic.xp.task.TaskId;
 import com.enonic.xp.task.TaskService;
-import com.enonic.xp.web.vhost.VirtualHost;
-import com.enonic.xp.web.vhost.VirtualHostHelper;
 
 @SuppressWarnings("unused")
 public class IntegrityBean
@@ -126,7 +124,6 @@ public class IntegrityBean
             e.printStackTrace();
             throw e;
         }
-
     }
 
     private Object getSerializedResult( final RepoValidationResults result )

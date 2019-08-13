@@ -13,10 +13,10 @@ import com.enonic.xp.context.ContextBuilder;
 import com.enonic.xp.repository.Repositories;
 import com.enonic.xp.repository.RepositoryId;
 import com.enonic.xp.repository.RepositoryService;
+import com.enonic.xp.security.IdProviderKey;
 import com.enonic.xp.security.PrincipalKey;
 import com.enonic.xp.security.RoleKeys;
 import com.enonic.xp.security.User;
-import com.enonic.xp.security.UserStoreKey;
 import com.enonic.xp.security.auth.AuthenticationInfo;
 import com.enonic.xp.task.ProgressReporter;
 
@@ -99,7 +99,7 @@ public class ValidatorExecutor
 
     private Context createContext( final RepositoryId repositoryId, final Branch branch )
     {
-        final PrincipalKey superUser = PrincipalKey.ofUser( UserStoreKey.system(), "su" );
+        final PrincipalKey superUser = PrincipalKey.ofUser( IdProviderKey.system(), "su" );
 
         final User admin = User.create().key( superUser ).login( "su" ).build();
         final AuthenticationInfo authInfo = AuthenticationInfo.create().principals( RoleKeys.ADMIN ).user( admin ).build();
