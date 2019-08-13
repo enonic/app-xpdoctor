@@ -72,7 +72,7 @@ class LoadableNodeDoctor
 
                 return RepairResultImpl.create().
                     repairStatus( RepairStatus.REPAIRED ).
-                    message( "Deleted entry with id [" + nodeId + "] sin search-index: [" + deleted + "]").
+                    message( "Deleted entry with id [" + nodeId + "] in search-index: [" + deleted + "]" ).
                     build();
             }
             catch ( Exception e )
