@@ -13,7 +13,7 @@ app {
 }
 
 dependencies {
-    testCompile 'junit:junit:4.12'
+    testCompile 'junit:junit:4.13.2'
     compile "com.enonic.xp:core-api:${xpVersion}"
     compile "com.enonic.xp:portal-api:${xpVersion}"
     compile "com.enonic.xp:core-elasticsearch:${xpVersion}"
