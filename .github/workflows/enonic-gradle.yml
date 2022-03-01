@@ -16,7 +16,7 @@ jobs:
 
     steps:
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Get publishing variables
         id: publish_vars
@@ -33,7 +33,7 @@ jobs:
     if: always()
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
       - uses: actions/setup-java@v2
@@ -98,7 +98,7 @@ jobs:
     if: needs.publish_vars.outputs.release == 'true'
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
