@@ -87,6 +87,7 @@ public class RepoResultsMapper
         gen.value( "type", result.type() );
         gen.value( "validatorName", result.validatorName() );
         gen.value( "id", result.nodeId() );
+        gen.value( "nodeVersionId", result.nodeVersionId() );
         gen.value( "message", result.message() );
         gen.value( "path", result.nodePath() );
         serialize( gen, result.repairResult() );
