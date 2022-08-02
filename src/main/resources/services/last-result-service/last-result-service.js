@@ -45,6 +45,7 @@ var createIssue = function (repo, branch, entry, issueId) {
         branch: branch.branch,
         type: entry.type,
         nodeId: entry.id,
+        nodeVersionId: entry.nodeVersionId,
         path: entry.path,
         message: entry.message,
         validatorName: entry.validatorName,

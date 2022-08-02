@@ -289,6 +289,11 @@ var initializeDataTable = function (issuesArray) {
                 "title": "nodeId"
             },
             {
+                "data": "nodeVersionId",
+                "defaultContent": '',
+                "title": "nodeVersionId"
+            },
+            {
                 "data": "path",
                 "defaultContent": '',
                 "title": "path"
