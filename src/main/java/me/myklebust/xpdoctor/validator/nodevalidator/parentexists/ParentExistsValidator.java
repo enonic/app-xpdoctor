@@ -72,10 +72,4 @@ public class ParentExistsValidator
     {
         this.nodeService = nodeService;
     }
-
-    @Override
-    public int compareTo( final Validator o )
-    {
-        return Integer.compare( this.order(), o.order() );
-    }
 }

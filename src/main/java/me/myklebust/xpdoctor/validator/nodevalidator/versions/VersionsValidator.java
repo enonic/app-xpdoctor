@@ -5,12 +5,9 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 import me.myklebust.xpdoctor.validator.RepairResult;
-import me.myklebust.xpdoctor.validator.RepairResultImpl;
 import me.myklebust.xpdoctor.validator.RepairStatus;
 import me.myklebust.xpdoctor.validator.Validator;
 import me.myklebust.xpdoctor.validator.ValidatorResults;
-import me.myklebust.xpdoctor.validator.nodevalidator.parentexists.NoParentDoctor;
-import me.myklebust.xpdoctor.validator.nodevalidator.parentexists.ParentExistsExistsExecutor;
 
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeService;
@@ -65,18 +62,12 @@ public class VersionsValidator
     @Override
     public RepairResult repair( final NodeId nodeId )
     {
-        return RepairResultImpl.create().repairStatus( RepairStatus.NOT_REPAIRABLE ).message( "cannot automatically fix broken versions" ).build();
+        return RepairResult.create().repairStatus( RepairStatus.NOT_REPAIRABLE ).message( "cannot automatically fix broken versions" ).build();
     }
 
     @Reference
     public void setNodeService( final NodeService nodeService )
     {
         this.nodeService = nodeService;
-    }
-
-    @Override
-    public int compareTo( final Validator o )
-    {
-        return Integer.compare( this.order(), o.order() );
     }
 }

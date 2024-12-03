@@ -6,7 +6,6 @@ import org.elasticsearch.action.get.GetAction;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetRequestBuilder;
 import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.client.AdminClient;
 import org.elasticsearch.client.Client;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -14,6 +13,7 @@ import org.osgi.service.component.annotations.Reference;
 import com.enonic.xp.branch.Branch;
 import com.enonic.xp.index.IndexType;
 import com.enonic.xp.node.NodeId;
+import com.enonic.xp.node.NodeVersionId;
 import com.enonic.xp.repository.RepositoryId;
 
 @Component(immediate = true)
@@ -43,6 +43,38 @@ public class StorageSpyServiceImpl
         final GetResponse getResponse = client.get( getRequest ).actionGet();
 
         return getResponse.isExists();
+    }
+
+    @Override
+    public GetResponse getInBranch( final NodeId nodeId, final RepositoryId repositoryId, final Branch branch )
+    {
+        final String indexName = getStorageIndexName( repositoryId );
+
+        GetRequest getRequest = new GetRequestBuilder( client, GetAction.INSTANCE ).
+            setIndex( indexName ).
+            setRouting( nodeId.toString() ).
+            setId( nodeId + "_" + branch.getValue() ).
+            setType( IndexType.BRANCH.getName() ).request();
+
+        final GetResponse getResponse = client.get( getRequest ).actionGet();
+
+        return getResponse;
+    }
+
+    @Override
+    public GetResponse getVersion( final NodeId nodeId, final NodeVersionId nodeVersionId, final RepositoryId repositoryId )
+    {
+        final String indexName = getStorageIndexName( repositoryId );
+
+        GetRequest getRequest = new GetRequestBuilder( client, GetAction.INSTANCE ).
+            setIndex( indexName ).
+            setRouting( nodeId.toString() ).
+            setId( nodeVersionId.toString() ).
+            setType( IndexType.VERSION.getName() ).request();
+
+        final GetResponse getResponse = client.get( getRequest ).actionGet();
+
+        return getResponse;
     }
 
     @Override

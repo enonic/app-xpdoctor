@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 import me.myklebust.xpdoctor.validator.BranchValidationResult;
-import me.myklebust.xpdoctor.validator.RepairResultImpl;
+import me.myklebust.xpdoctor.validator.RepairResult;
 import me.myklebust.xpdoctor.validator.RepairStatus;
 import me.myklebust.xpdoctor.validator.RepoValidationResult;
 import me.myklebust.xpdoctor.validator.RepoValidationResults;
@@ -85,7 +85,7 @@ public class RepoResultsMapperTest
             nodeId( NodeId.from( "abc" ) ).
             nodePath( NodePath.ROOT ).
             nodeVersionId( NodeVersionId.from( "123" ) ).
-            repairResult( RepairResultImpl.create().
+            repairResult( RepairResult.create().
                 message( "not fixed" ).
                 repairStatus( RepairStatus.NOT_REPAIRABLE ).
                 build() ).

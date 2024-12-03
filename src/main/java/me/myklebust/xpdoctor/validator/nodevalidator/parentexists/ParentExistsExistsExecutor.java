@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
-import me.myklebust.xpdoctor.validator.RepairResultImpl;
+import me.myklebust.xpdoctor.validator.RepairResult;
 import me.myklebust.xpdoctor.validator.RepairStatus;
 import me.myklebust.xpdoctor.validator.ValidatorResult;
 import me.myklebust.xpdoctor.validator.ValidatorResultImpl;
@@ -109,7 +109,7 @@ public class ParentExistsExistsExecutor
                 type( "No parent" ).
                 validatorName( validatorName ).
                 message( "Parent with path : " + node.parentPath() + " not found" ).
-                repairResult( RepairResultImpl.create().
+                repairResult( RepairResult.create().
                     message( "Create parent with path [" + node.parentPath() + "]" ).
                     repairStatus( RepairStatus.MANUAL ).
                     build() ).

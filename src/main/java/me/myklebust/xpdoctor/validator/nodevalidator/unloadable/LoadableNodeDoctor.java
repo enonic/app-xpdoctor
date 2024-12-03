@@ -9,7 +9,6 @@ import com.google.common.io.ByteSource;
 
 import me.myklebust.xpdoctor.storagespy.StorageSpyService;
 import me.myklebust.xpdoctor.validator.RepairResult;
-import me.myklebust.xpdoctor.validator.RepairResultImpl;
 import me.myklebust.xpdoctor.validator.RepairStatus;
 import me.myklebust.xpdoctor.validator.nodevalidator.BatchedVersionExecutor;
 
@@ -53,7 +52,7 @@ class LoadableNodeDoctor
                 return repairMissingStorageButInSearch( nodeId, repairNow );
         }
 
-        return RepairResultImpl.create().
+        return RepairResult.create().
             repairStatus( RepairStatus.UNKNOW ).
             message( "Not able to repair, unknown reason for node to be unloadable, check log" ).
             build();
@@ -70,7 +69,7 @@ class LoadableNodeDoctor
                 final boolean deleted = this.storageSpyService.deleteInSearch( nodeId, ContextAccessor.current().getRepositoryId(),
                                                                                ContextAccessor.current().getBranch() );
 
-                return RepairResultImpl.create().
+                return RepairResult.create().
                     repairStatus( RepairStatus.REPAIRED ).
                     message( "Deleted entry with id [" + nodeId + "] in search-index: [" + deleted + "]" ).
                     build();
@@ -78,7 +77,7 @@ class LoadableNodeDoctor
             catch ( Exception e )
             {
                 LOG.error( "Not able to delete entry from search-index", e );
-                return RepairResultImpl.create().
+                return RepairResult.create().
                     repairStatus( RepairStatus.FAILED ).
                     message( "Failed to delete entry with id [ " + nodeId + " ] in search-index" ).
                     build();
@@ -87,7 +86,7 @@ class LoadableNodeDoctor
 
         }
 
-        return RepairResultImpl.create().
+        return RepairResult.create().
             repairStatus( RepairStatus.IS_REPAIRABLE ).
             message( "Delete entry in search-index" ).
             build();
@@ -114,7 +113,7 @@ class LoadableNodeDoctor
 
             if ( !repairNow )
             {
-                return RepairResultImpl.create().
+                return RepairResult.create().
                     repairStatus( RepairStatus.IS_REPAIRABLE ).
                     message( message ).
                     build();
@@ -130,7 +129,7 @@ class LoadableNodeDoctor
             }
         }
 
-        return RepairResultImpl.create().
+        return RepairResult.create().
             repairStatus( RepairStatus.NOT_REPAIRABLE ).
             message( "No working version found, checked " + executor.getTotalHits() + " versions" ).
             build();
@@ -178,14 +177,14 @@ class LoadableNodeDoctor
         return null;
     }
 
-    private RepairResultImpl doRollbackToVersion( final NodeId nodeId, final NodeVersionMetadata nodeVersionMetadata )
+    private RepairResult doRollbackToVersion( final NodeId nodeId, final NodeVersionMetadata nodeVersionMetadata )
     {
         try
         {
             this.nodeService.setActiveVersion( nodeId, nodeVersionMetadata.getNodeVersionId() );
             final String message = "Successfully restored version from [" + nodeVersionMetadata.getTimestamp() + "]";
             LOG.info( message );
-            return RepairResultImpl.create().
+            return RepairResult.create().
                 repairStatus( RepairStatus.REPAIRED ).
                 message( message ).
                 build();
@@ -193,14 +192,14 @@ class LoadableNodeDoctor
         catch ( Exception e )
         {
             LOG.error( "Failed to roll-back version", e );
-            return RepairResultImpl.create().
+            return RepairResult.create().
                 repairStatus( RepairStatus.FAILED ).
                 message( "Failed to roll-back version: " + e.toString() ).
                 build();
         }
     }
 
-    private RepairResultImpl createMinimalNode( final NodeVersionsMetadata metadata )
+    private RepairResult createMinimalNode( final NodeVersionsMetadata metadata )
     {
         final NodeVersionMetadata nodeVersionMetadata = metadata.iterator().next();
 
@@ -216,13 +215,13 @@ class LoadableNodeDoctor
         }
         catch ( Exception e )
         {
-            return RepairResultImpl.create().
+            return RepairResult.create().
                 message( "Failed to created minimal blob: " + e.getMessage() ).
                 repairStatus( RepairStatus.FAILED ).
                 build();
         }
 
-        return RepairResultImpl.create().
+        return RepairResult.create().
             message( "Created minimal node with " + nodeVersionMetadata.getNodeVersionId() ).
             repairStatus( RepairStatus.REPAIRED ).
             build();

@@ -172,10 +172,12 @@ button {
 
 .actions button.big-action-button.analyze:hover:enabled, button.btn-analyze.analyze:focus:enabled {
     background-color: #7ee081;
+    cursor: pointer;
 }
 
 .actions button.big-action-button.repair:hover:enabled, button.btn-analyze.repair:focus:enabled {
     background-color: #f0a37d;
+    cursor: pointer;
 }
 
 .actions button.big-action-button:disabled {
@@ -280,4 +282,17 @@ table.dataTable td.repairOption a, a:visited, a:hover {
     text-align: center;
     font-size: large;
     z-index: 200;
+}
+
+.toggleAll {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 5px;
+}
+
+.toggleAllButton {
+    display: inline-block;
+    padding: 3px 5px;
+    border-radius: 4px;
+    cursor: pointer;
 }

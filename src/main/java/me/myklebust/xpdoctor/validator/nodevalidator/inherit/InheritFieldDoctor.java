@@ -16,7 +16,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.io.ByteSource;
 
 import me.myklebust.xpdoctor.validator.RepairResult;
-import me.myklebust.xpdoctor.validator.RepairResultImpl;
 import me.myklebust.xpdoctor.validator.RepairStatus;
 import me.myklebust.xpdoctor.validator.nodevalidator.uniquepath.UniquePathDoctor;
 
@@ -120,7 +119,7 @@ public class InheritFieldDoctor
 
                                 LOG.info( msg );
 
-                                return RepairResultImpl.create().message( msg ).repairStatus( RepairStatus.REPAIRED ).build();
+                                return RepairResult.create().message( msg ).repairStatus( RepairStatus.REPAIRED ).build();
 
                             }
 
@@ -134,13 +133,13 @@ public class InheritFieldDoctor
         {
             LOG.error( "Failed to repair node", e );
 
-            return RepairResultImpl.create()
+            return RepairResult.create()
                 .message( "Cannot repair node, exception when trying to load: " + e.getMessage() )
                 .repairStatus( RepairStatus.FAILED )
                 .build();
         }
 
-        return RepairResultImpl.create().
+        return RepairResult.create().
             message( "No need to repair, the node has no 'inherit' value" ).
             repairStatus( RepairStatus.UNKNOW ).
             build();

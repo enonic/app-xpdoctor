@@ -53,7 +53,6 @@ $(function () {
     setInterval(getLastResult, 2000);
 
     loadRepoList();
-
 });
 
 var initializeButtons = function () {
@@ -74,6 +73,14 @@ var initializeButtons = function () {
         state.repoSelected = true;
     })
 
+    const checkUncheckAll = $('#toggleAll');
+    const checkboxes = $(model.item.validatorItemClass + ' input');
+
+    checkUncheckAll.on('click', function() {
+        const firstCheckbox = checkboxes.first();
+        const isChecked = !firstCheckbox.prop('checked');
+        checkboxes.prop('checked', isChecked);
+    });
 };
 
 var disableButton = function (button) {
@@ -504,5 +511,6 @@ var removeActiveMark = function (element) {
 var getProgressInfoElement = function (element) {
     return element.find(model.item.validatorProgressClass);
 };
+
 
 

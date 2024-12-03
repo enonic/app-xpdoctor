@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
-import me.myklebust.xpdoctor.validator.RepairResultImpl;
+import me.myklebust.xpdoctor.validator.RepairResult;
 import me.myklebust.xpdoctor.validator.RepairStatus;
 import me.myklebust.xpdoctor.validator.ValidatorResult;
 import me.myklebust.xpdoctor.validator.ValidatorResultImpl;
@@ -117,7 +117,7 @@ public class InheritFieldExecutor
                 .type( "Broken inherit" )
                 .validatorName( validatorName )
                 .message( "Node with id : " + node.id() + " has inconsistency between index and blob 'inherit' field value" )
-                .repairResult( RepairResultImpl.create()
+                .repairResult( RepairResult.create()
                                    .message( "Field can be fixed in blob according to search index" )
                                    .repairStatus( RepairStatus.IS_REPAIRABLE )
                                    .build() )

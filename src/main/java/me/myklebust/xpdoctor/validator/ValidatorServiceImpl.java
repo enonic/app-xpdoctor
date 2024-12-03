@@ -1,6 +1,8 @@
 package me.myklebust.xpdoctor.validator;
 
+import java.util.Comparator;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.osgi.service.component.annotations.Component;
@@ -9,8 +11,6 @@ import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Sets;
 
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeService;
@@ -21,7 +21,7 @@ import com.enonic.xp.repository.RepositoryService;
 public class ValidatorServiceImpl
     implements ValidatorService
 {
-    private Set<Validator> validators = Sets.newTreeSet();
+    private final Set<Validator> validators = new TreeSet<>( Comparator.comparingInt( Validator::order ) );
 
     private NodeService nodeService;
 

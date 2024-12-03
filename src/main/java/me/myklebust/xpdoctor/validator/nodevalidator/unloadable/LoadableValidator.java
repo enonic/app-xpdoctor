@@ -98,12 +98,4 @@ public class LoadableValidator
     {
         this.blobStore = blobStore;
     }
-
-    @Override
-    public int compareTo( final Validator o )
-    {
-        return Integer.compare( this.order(), o.order() );
-    }
-
-
 }

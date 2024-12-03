@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
-import me.myklebust.xpdoctor.validator.RepairResultImpl;
+import me.myklebust.xpdoctor.validator.RepairResult;
 import me.myklebust.xpdoctor.validator.RepairStatus;
 import me.myklebust.xpdoctor.validator.ValidatorResult;
 import me.myklebust.xpdoctor.validator.ValidatorResultImpl;
@@ -16,10 +16,8 @@ import me.myklebust.xpdoctor.validator.nodevalidator.AbstractNodeExecutor;
 import me.myklebust.xpdoctor.validator.nodevalidator.BatchedQueryExecutor;
 
 import com.enonic.xp.node.GetNodeVersionsParams;
-import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeIds;
-import com.enonic.xp.node.NodePath;
 import com.enonic.xp.node.NodeService;
 import com.enonic.xp.node.NodeVersionMetadata;
 import com.enonic.xp.node.NodeVersionQueryResult;
@@ -111,7 +109,7 @@ public class VersionsExecutor
                                  .type( "Unloadable Version" )
                                  .validatorName( validatorName )
                                  .message( "Cannot load version data" )
-                                 .repairResult( RepairResultImpl.create()
+                                 .repairResult( RepairResult.create()
                                                     .message( "Non repairable automatically" )
                                                     .repairStatus( RepairStatus.NOT_REPAIRABLE )
                                                     .build() )

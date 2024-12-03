@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import me.myklebust.xpdoctor.validator.RepairResult;
-import me.myklebust.xpdoctor.validator.RepairResultImpl;
 import me.myklebust.xpdoctor.validator.RepairStatus;
 
 import com.enonic.xp.node.FindNodesByQueryResult;
@@ -47,7 +46,7 @@ public class UniquePathDoctor
 
             if ( nodes.getHits() <= 1 )
             {
-                return RepairResultImpl.create().
+                return RepairResult.create().
                     repairStatus( RepairStatus.NOT_NEEDED ).
                     message( "Path no longer non-uniquer" ).
                     build();
@@ -55,7 +54,7 @@ public class UniquePathDoctor
 
             final String newName = doRename( nodeToBeRenamed );
 
-            return RepairResultImpl.create().
+            return RepairResult.create().
                 repairStatus( RepairStatus.REPAIRED ).
                 message( String.format( "Node with id: %s renamed to %s", nodeId, newName ) ).
                 build();
@@ -64,7 +63,7 @@ public class UniquePathDoctor
         {
             LOG.error( "Failed to repair node", e );
 
-            return RepairResultImpl.create().
+            return RepairResult.create().
                 message( "Cannot repair node, exeption when trying to load: " + e.getMessage() ).
                 repairStatus( RepairStatus.FAILED ).
                 build();

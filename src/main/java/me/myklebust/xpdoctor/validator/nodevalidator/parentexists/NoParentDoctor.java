@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import me.myklebust.xpdoctor.validator.RepairResult;
-import me.myklebust.xpdoctor.validator.RepairResultImpl;
 import me.myklebust.xpdoctor.validator.RepairStatus;
 import me.myklebust.xpdoctor.validator.nodevalidator.uniquepath.UniquePathDoctor;
 
@@ -50,7 +49,7 @@ public class NoParentDoctor
                 final String msg = "Created new parent with id: " + newParentNode.id() + " and path [" + newParentNode.path() + "]";
                 LOG.info( msg );
 
-                return RepairResultImpl.create().
+                return RepairResult.create().
                     message( msg ).
                     repairStatus( RepairStatus.REPAIRED ).
                     build();
@@ -60,13 +59,13 @@ public class NoParentDoctor
         {
             LOG.error( "Failed to repair node", e );
 
-            return RepairResultImpl.create().
+            return RepairResult.create().
                 message( "Cannot repair node, exeption when trying to load: " + e.getMessage() ).
                 repairStatus( RepairStatus.FAILED ).
                 build();
         }
 
-        return RepairResultImpl.create().
+        return RepairResult.create().
             message( "No need to repair, parent already exists?" ).
             repairStatus( RepairStatus.UNKNOW ).
             build();

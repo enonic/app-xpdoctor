@@ -100,10 +100,4 @@ public class InheritFieldValidator
     {
         this.blobStore = provider.get();
     }
-
-    @Override
-    public int compareTo( final Validator o )
-    {
-        return Integer.compare( this.order(), o.order() );
-    }
 }

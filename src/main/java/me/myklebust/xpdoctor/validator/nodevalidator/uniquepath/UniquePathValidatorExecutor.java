@@ -13,7 +13,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import me.myklebust.xpdoctor.validator.RepairResultImpl;
+import me.myklebust.xpdoctor.validator.RepairResult;
 import me.myklebust.xpdoctor.validator.RepairStatus;
 import me.myklebust.xpdoctor.validator.ValidatorResult;
 import me.myklebust.xpdoctor.validator.ValidatorResultImpl;
@@ -168,7 +168,7 @@ public class UniquePathValidatorExecutor
         System.out.println( "Adding to nonUniquePaths: " + node.path() );
 
         final boolean childHasTrouble = this.nonUniquePathsHolder.myChildHasAProblem( node.path() );
-        result.repairResult( RepairResultImpl.create().
+        result.repairResult( RepairResult.create().
             message( childHasTrouble ? "child must be repaired first" : "rename to " + node.name() + PREFIX ).
             repairStatus( childHasTrouble ? RepairStatus.DEPENDENT_ON_OTHER : RepairStatus.IS_REPAIRABLE ).
             build() );
