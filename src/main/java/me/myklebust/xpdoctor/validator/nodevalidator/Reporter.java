@@ -1,5 +1,7 @@
 package me.myklebust.xpdoctor.validator.nodevalidator;
 
+import java.io.UncheckedIOException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,20 +17,18 @@ import com.enonic.xp.task.ProgressReporter;
 
 public class Reporter
 {
-    private static final Logger LOG = LoggerFactory.getLogger( Reporter.class );
-
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    final ProgressReporter reporter;
+    final ProgressReporter progressReporter;
 
     public final String validatorName;
 
     final ValidatorResults.Builder results = ValidatorResults.create();
 
-    public Reporter( final String validatorName, ProgressReporter reporter )
+    public Reporter( final String validatorName, ProgressReporter progressReporter )
     {
         this.validatorName = validatorName;
-        this.reporter = reporter;
+        this.progressReporter = progressReporter;
     }
 
     public void addResult( final ValidatorResult result )
@@ -54,16 +54,16 @@ public class Reporter
         try
         {
             final String value = OBJECT_MAPPER.writeValueAsString( description );
-            reporter.info( value );
+            progressReporter.info( value );
         }
         catch ( JsonProcessingException e )
         {
-            LOG.error( "FAILED TO TRANSLATE TO JSON", e );
+            throw new UncheckedIOException( e );
         }
     }
 
-    public void reportProgress( final Long total, final Integer current )
+    public ProgressReporter getProgressReporter()
     {
-        reporter.progress( current, total.intValue() );
+        return progressReporter;
     }
 }

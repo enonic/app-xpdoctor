@@ -1,14 +1,24 @@
 package me.myklebust.xpdoctor.validator.nodevalidator;
 
+import java.util.function.Consumer;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import me.myklebust.xpdoctor.validator.nodevalidator.blobmissing.BlobMissingExecutor;
+
 import com.enonic.xp.node.FindNodesByQueryResult;
 import com.enonic.xp.node.NodeIds;
 import com.enonic.xp.node.NodeQuery;
 import com.enonic.xp.node.NodeService;
 import com.enonic.xp.query.expr.OrderExpressions;
 import com.enonic.xp.query.filter.Filters;
+import com.enonic.xp.task.ProgressReporter;
 
 public class BatchedQueryExecutor
 {
+    private static final Logger LOG = LoggerFactory.getLogger( BatchedQueryExecutor.class );
+
     private final int batchSize;
 
     private final NodeService nodeService;
@@ -21,7 +31,9 @@ public class BatchedQueryExecutor
 
     private final OrderExpressions orderBy;
 
-    private final Long totalHits;
+    private final ProgressReporter progressReporter;
+
+    private Long totalHits;
 
     private BatchedQueryExecutor( final Builder builder )
     {
@@ -29,28 +41,16 @@ public class BatchedQueryExecutor
         this.nodeService = builder.nodeService;
         this.filters = builder.filters;
         this.orderBy = builder.orderBy;
-        this.totalHits = initTotalHits();
-    }
-
-    private long initTotalHits()
-    {
-        final NodeQuery query = createQuery( 0, 0 );
-
-        final FindNodesByQueryResult result = this.nodeService.findByQuery( query );
-
-        return result.getTotalHits();
-    }
-
-    public int batchSize()
-    {
-        return batchSize;
+        this.progressReporter = builder.progressReporter;
+        this.totalHits = -1L;
     }
 
     public NodeIds execute()
     {
-        final NodeQuery query = createQuery( this.currentFrom, this.batchSize );
+        NodeQuery query = createQuery( this.currentFrom, this.batchSize );
 
-        final FindNodesByQueryResult result = this.nodeService.findByQuery( query );
+        FindNodesByQueryResult result = this.nodeService.findByQuery( query );
+        totalHits = result.getTotalHits();
 
         if ( result.getNodeHits().isEmpty() )
         {
@@ -98,6 +98,14 @@ public class BatchedQueryExecutor
         return new Builder();
     }
 
+    public void nextBatch( Consumer<NodeIds> consumer )
+    {
+        final NodeIds nodeIds = execute();
+        LOG.info( "Checking nodes {} of {}", currentFrom, totalHits );
+        progressReporter.progress( totalHits.intValue(), currentFrom );
+        consumer.accept( nodeIds );
+    }
+
     public static final class Builder
     {
         private int batchSize = 1_000;
@@ -108,14 +116,10 @@ public class BatchedQueryExecutor
 
         private OrderExpressions orderBy;
 
+        private ProgressReporter progressReporter;
+
         private Builder()
         {
-        }
-
-        public Builder batchSize( final int val )
-        {
-            batchSize = val;
-            return this;
         }
 
         public Builder nodeService( final NodeService val )
@@ -133,6 +137,12 @@ public class BatchedQueryExecutor
         public Builder orderBy( final OrderExpressions val )
         {
             orderBy = val;
+            return this;
+        }
+
+        public Builder progressReporter( final ProgressReporter val )
+        {
+            progressReporter = val;
             return this;
         }
 

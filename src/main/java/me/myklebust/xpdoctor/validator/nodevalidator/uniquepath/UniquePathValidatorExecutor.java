@@ -60,17 +60,13 @@ public class UniquePathValidatorExecutor
 
         final BatchedQueryExecutor executor = BatchedQueryExecutor.create().
             nodeService( this.nodeService ).
+            progressReporter( reporter.getProgressReporter() ).
             orderBy( OrderExpressions.from( FieldOrderExpr.create( NodeIndexPath.PATH, OrderExpr.Direction.DESC ) ) ).
             build();
 
-        int execute = 0;
         while ( executor.hasMore() )
         {
-            LOG.info( "Checking nodes {}->{} of {}", execute, execute + executor.batchSize(), executor.getTotalHits() );
-            reporter.reportProgress( executor.getTotalHits(), execute );
-
-            checkNodes( executor.execute(), reporter );
-            execute += executor.batchSize();
+            executor.nextBatch(nodesToCheck -> checkNodes( nodesToCheck, reporter ) );
         }
     }
 

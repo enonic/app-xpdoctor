@@ -55,32 +55,27 @@ public class BlobMissingExecutor
 
         reporter.reportStart();
 
-        final BatchedQueryExecutor executor = BatchedQueryExecutor.create().nodeService( this.nodeService ).build();
+        final BatchedQueryExecutor executor =
+            BatchedQueryExecutor.create().progressReporter( reporter.getProgressReporter() ).nodeService( this.nodeService ).build();
 
-        int execute = 0;
         while ( executor.hasMore() )
         {
-            LOG.info( "Checking nodes {}->{} of {}", execute, execute + executor.batchSize(), executor.getTotalHits() );
-            reporter.reportProgress( executor.getTotalHits(), execute );
-
-            final NodeIds nodesToCheck = executor.execute();
-            checkNodes( nodesToCheck, true, reporter );
-            execute += executor.batchSize();
+            executor.nextBatch(nodesToCheck -> checkNodes( nodesToCheck, reporter ) );
         }
 
         LOG.info( ".... BlobMissingExecutor done" );
     }
 
-    private void checkNodes( final NodeIds nodeIds, final boolean dryRun, final Reporter results )
+    private void checkNodes( final NodeIds nodeIds, final Reporter results )
     {
 
         for ( final NodeId nodeId : nodeIds )
         {
-            doCheckNode( dryRun, results, nodeId );
+            doCheckNode( results, nodeId );
         }
     }
 
-    private void doCheckNode( final boolean dryRun, final Reporter results, final NodeId nodeId )
+    private void doCheckNode( final Reporter results, final NodeId nodeId )
     {
         try
         {
@@ -101,7 +96,7 @@ public class BlobMissingExecutor
                         BlobKey.from( binaryblobkey ) );
                     if ( binaryBlobRecord == null )
                     {
-                        resolveAndRepair( dryRun, results, nodeId, "Binary blob is missing " + binaryblobkey );
+                        resolveAndRepair( results, nodeId, "Binary blob is missing " + binaryblobkey );
                     }
                 }
             }
@@ -112,11 +107,11 @@ public class BlobMissingExecutor
         }
     }
 
-    private void resolveAndRepair( final boolean dryRun, final Reporter results, final NodeId nodeId, final String message )
+    private void resolveAndRepair( final Reporter results, final NodeId nodeId, final String message )
     {
         try
         {
-            final RepairResult repairResult = this.doctor.repairNode( nodeId, dryRun );
+            final RepairResult repairResult = this.doctor.repairNode( nodeId, true );
 
             results.addResult( ValidatorResult.create()
                                    .nodeId( nodeId )

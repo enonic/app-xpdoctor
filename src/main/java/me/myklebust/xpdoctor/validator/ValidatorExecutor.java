@@ -53,7 +53,7 @@ public class ValidatorExecutor
         repositories.stream().
             filter( repository -> repository.getId().equals( this.repositoryId ) ).
             forEach( ( repo ) -> {
-                LOG.info( "Checking repo: [ " + repo.getId() + "]" );
+            LOG.info( "Checking repo: [ {}]", repo.getId() );
 
                 final RepoValidationResult.Builder repoBuilder = RepoValidationResult.create( repo.getId() );
 
