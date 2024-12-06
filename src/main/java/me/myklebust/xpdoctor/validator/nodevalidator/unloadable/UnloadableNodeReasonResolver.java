@@ -3,17 +3,16 @@ package me.myklebust.xpdoctor.validator.nodevalidator.unloadable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import me.myklebust.xpdoctor.storagespy.StorageSpyService;
+import me.myklebust.xpdoctor.validator.StorageSpyService;
 
 import com.enonic.xp.context.ContextAccessor;
 import com.enonic.xp.node.NodeId;
 
 class UnloadableNodeReasonResolver
 {
+    private final static Logger LOG = LoggerFactory.getLogger( UnloadableNodeReasonResolver.class );
 
     private final StorageSpyService storageSpyService;
-
-    private final static Logger LOG = LoggerFactory.getLogger( UnloadableNodeReasonResolver.class );
 
     public UnloadableNodeReasonResolver( final StorageSpyService storageSpyService )
     {
@@ -46,5 +45,4 @@ class UnloadableNodeReasonResolver
         LOG.error( "No storage inconsistencies found, assuming that blob is missing" );
         return UnloadableReason.MISSING_BLOB;
     }
-
 }

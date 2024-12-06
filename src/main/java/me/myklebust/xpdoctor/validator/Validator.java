@@ -18,6 +18,4 @@ public interface Validator
     RepairResult repair( final NodeId nodeId );
 
     int order();
-
-
 }

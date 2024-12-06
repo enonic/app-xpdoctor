@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import me.myklebust.xpdoctor.validator.RepairResult;
 import me.myklebust.xpdoctor.validator.RepairStatus;
+import me.myklebust.xpdoctor.validator.nodevalidator.NodeDoctor;
 
 import com.enonic.xp.node.FindNodesByQueryResult;
 import com.enonic.xp.node.Node;
@@ -17,6 +18,7 @@ import com.enonic.xp.node.RefreshMode;
 import com.enonic.xp.node.RenameNodeParams;
 
 public class UniquePathDoctor
+    implements NodeDoctor
 {
     private final NodeService nodeService;
 
@@ -29,7 +31,7 @@ public class UniquePathDoctor
         this.nodeService = nodeService;
     }
 
-    public RepairResult repairNode( final NodeId nodeId, final boolean repairNow )
+    public RepairResult repairNode( final NodeId nodeId, final boolean dryRun )
     {
         LOG.info( "Trying to repair node with non-unique path" );
         this.nodeService.refresh( RefreshMode.ALL );

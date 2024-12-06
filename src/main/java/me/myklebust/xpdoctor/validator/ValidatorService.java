@@ -9,5 +9,4 @@ public interface ValidatorService
     Set<Validator> getValidators();
 
     Validator getValidator( final String validatorName );
-
 }

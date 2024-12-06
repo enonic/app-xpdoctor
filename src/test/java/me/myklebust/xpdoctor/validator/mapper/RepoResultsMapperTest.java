@@ -11,7 +11,7 @@ import me.myklebust.xpdoctor.validator.RepairResult;
 import me.myklebust.xpdoctor.validator.RepairStatus;
 import me.myklebust.xpdoctor.validator.RepoValidationResult;
 import me.myklebust.xpdoctor.validator.RepoValidationResults;
-import me.myklebust.xpdoctor.validator.ValidatorResultImpl;
+import me.myklebust.xpdoctor.validator.ValidatorResult;
 import me.myklebust.xpdoctor.validator.ValidatorResults;
 
 import com.enonic.xp.branch.Branch;
@@ -77,9 +77,9 @@ public class RepoResultsMapperTest
             build();
     }
 
-    private ValidatorResultImpl createValidatorResult()
+    private ValidatorResult createValidatorResult()
     {
-        return ValidatorResultImpl.create().
+        return ValidatorResult.create().
             type( "Missing parent" ).
             message( "myMessage" ).
             nodeId( NodeId.from( "abc" ) ).

@@ -17,6 +17,7 @@ import com.google.common.io.ByteSource;
 
 import me.myklebust.xpdoctor.validator.RepairResult;
 import me.myklebust.xpdoctor.validator.RepairStatus;
+import me.myklebust.xpdoctor.validator.nodevalidator.NodeDoctor;
 import me.myklebust.xpdoctor.validator.nodevalidator.uniquepath.UniquePathDoctor;
 
 import com.enonic.xp.blob.BlobRecord;
@@ -34,6 +35,7 @@ import com.enonic.xp.node.NodeVersionMetadata;
 import com.enonic.xp.repository.RepositorySegmentUtils;
 
 public class InheritFieldDoctor
+    implements NodeDoctor
 {
     private final NodeService nodeService;
 
@@ -52,7 +54,8 @@ public class InheritFieldDoctor
         this.blobStore = builder.blobStore;
     }
 
-    public RepairResult repairNode( final NodeId nodeId, final boolean repairNow )
+    @Override
+    public RepairResult repairNode( final NodeId nodeId, final boolean dryRun )
     {
         LOG.info( "Updating blob with index value" );
 

@@ -1,8 +1,7 @@
 package me.myklebust.xpdoctor.validator;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import com.google.common.collect.Lists;
 
 public class RepoValidationResults
 {
@@ -41,7 +40,7 @@ public class RepoValidationResults
 
     public static final class Builder
     {
-        private List<RepoValidationResult> repositories = Lists.newArrayList();
+        private List<RepoValidationResult> repositories = new ArrayList<>();
 
         private int totalIssues = 0;
 

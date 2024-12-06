@@ -1,4 +1,4 @@
-package me.myklebust.xpdoctor.filespy;
+package me.myklebust.xpdoctor.validator;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;

@@ -27,7 +27,7 @@ public class NoParentDoctor
         this.nodeService = nodeService;
     }
 
-    public RepairResult repairNode( final NodeId nodeId, final boolean repairNow )
+    public RepairResult repairNode( final NodeId nodeId, final boolean dryRun )
     {
         LOG.info( "Moving node to default lost-folder" );
 
@@ -60,7 +60,7 @@ public class NoParentDoctor
             LOG.error( "Failed to repair node", e );
 
             return RepairResult.create().
-                message( "Cannot repair node, exeption when trying to load: " + e.getMessage() ).
+                message( "Cannot repair node, exception when trying to load: " + e.getMessage() ).
                 repairStatus( RepairStatus.FAILED ).
                 build();
         }

@@ -7,10 +7,11 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.io.ByteSource;
 
-import me.myklebust.xpdoctor.storagespy.StorageSpyService;
+import me.myklebust.xpdoctor.validator.StorageSpyService;
 import me.myklebust.xpdoctor.validator.RepairResult;
 import me.myklebust.xpdoctor.validator.RepairStatus;
 import me.myklebust.xpdoctor.validator.nodevalidator.BatchedVersionExecutor;
+import me.myklebust.xpdoctor.validator.nodevalidator.NodeDoctor;
 
 import com.enonic.xp.blob.BlobKey;
 import com.enonic.xp.blob.BlobRecord;
@@ -24,6 +25,7 @@ import com.enonic.xp.node.NodeVersionMetadata;
 import com.enonic.xp.node.NodeVersionsMetadata;
 
 class LoadableNodeDoctor
+implements NodeDoctor
 {
     private final Logger LOG = LoggerFactory.getLogger( LoadableNodeDoctor.class );
 
@@ -33,23 +35,34 @@ class LoadableNodeDoctor
 
     private final StorageSpyService storageSpyService;
 
+    private final UnloadableNodeReasonResolver reasonResolver;
+
     LoadableNodeDoctor( final NodeService nodeService, final BlobStore blobStore, final StorageSpyService storageSpyService )
     {
         this.nodeService = nodeService;
         this.blobStore = blobStore;
         this.storageSpyService = storageSpyService;
+        this.reasonResolver = new UnloadableNodeReasonResolver( storageSpyService );
     }
 
-    RepairResult repairNode( final NodeId nodeId, final boolean repairNow, final UnloadableReason reason )
+    @Override
+    public RepairResult repairNode( final NodeId nodeId, final boolean dryRun )
     {
-        LOG.info( "Trying to repaid un-loadable node with id [" + nodeId + "]" );
-
-        switch ( reason )
+        LOG.info( "Trying to repaid un-loadable node with id [{}]", nodeId );
+        try
         {
-            case MISSING_BLOB:
-                return repairMissingBlob( nodeId, repairNow );
-            case NOT_IN_STORAGE_BUT_IN_SEARCH:
-                return repairMissingStorageButInSearch( nodeId, repairNow );
+            UnloadableReason reason = reasonResolver.resolve( nodeId );
+            switch ( reason )
+            {
+                case MISSING_BLOB:
+                    return repairMissingBlob( nodeId, dryRun );
+                case NOT_IN_STORAGE_BUT_IN_SEARCH:
+                    return repairMissingStorageButInSearch( nodeId, dryRun );
+            }
+        }
+        catch ( Exception e )
+        {
+            LOG.error( "Not able to resolve reason for unloadable node", e );
         }
 
         return RepairResult.create().
@@ -58,9 +71,9 @@ class LoadableNodeDoctor
             build();
     }
 
-    private RepairResult repairMissingStorageButInSearch( final NodeId nodeId, final boolean repairNow )
+    private RepairResult repairMissingStorageButInSearch( final NodeId nodeId, final boolean dryRun )
     {
-        if ( repairNow )
+        if ( !dryRun )
         {
             try
             {
@@ -81,9 +94,7 @@ class LoadableNodeDoctor
                     repairStatus( RepairStatus.FAILED ).
                     message( "Failed to delete entry with id [ " + nodeId + " ] in search-index" ).
                     build();
-
             }
-
         }
 
         return RepairResult.create().
@@ -92,7 +103,7 @@ class LoadableNodeDoctor
             build();
     }
 
-    private RepairResult repairMissingBlob( final NodeId nodeId, final boolean repairNow )
+    private RepairResult repairMissingBlob( final NodeId nodeId, final boolean dryRun )
     {
         LOG.info( "Checking for older versions of node with id: [" + nodeId + "]......" );
 
@@ -111,7 +122,7 @@ class LoadableNodeDoctor
 
             String message = createMessage( workingVersionMetadata );
 
-            if ( !repairNow )
+            if ( dryRun )
             {
                 return RepairResult.create().
                     repairStatus( RepairStatus.IS_REPAIRABLE ).

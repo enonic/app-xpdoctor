@@ -1,4 +1,4 @@
-package me.myklebust.xpdoctor.storagespy;
+package me.myklebust.xpdoctor.validator;
 
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.delete.DeleteResponse;
@@ -16,10 +16,10 @@ import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeVersionId;
 import com.enonic.xp.repository.RepositoryId;
 
-@Component(immediate = true)
-public class StorageSpyServiceImpl
-    implements StorageSpyService
+@Component(immediate = true, service = StorageSpyService.class)
+public class StorageSpyService
 {
+    @Reference
     private Client client;
 
     private final static String SEARCH_INDEX_PREFIX = "search";
@@ -28,8 +28,6 @@ public class StorageSpyServiceImpl
 
     private final static String DIVIDER = "-";
 
-
-    @Override
     public boolean existsInBranch( final NodeId nodeId, final RepositoryId repositoryId, final Branch branch )
     {
         final String indexName = getStorageIndexName( repositoryId );
@@ -45,7 +43,6 @@ public class StorageSpyServiceImpl
         return getResponse.isExists();
     }
 
-    @Override
     public GetResponse getInBranch( final NodeId nodeId, final RepositoryId repositoryId, final Branch branch )
     {
         final String indexName = getStorageIndexName( repositoryId );
@@ -61,7 +58,6 @@ public class StorageSpyServiceImpl
         return getResponse;
     }
 
-    @Override
     public GetResponse getVersion( final NodeId nodeId, final NodeVersionId nodeVersionId, final RepositoryId repositoryId )
     {
         final String indexName = getStorageIndexName( repositoryId );
@@ -77,7 +73,6 @@ public class StorageSpyServiceImpl
         return getResponse;
     }
 
-    @Override
     public boolean existsInSearch( final NodeId nodeId, final RepositoryId repositoryId, final Branch branch )
     {
         final String indexName = getSearchIndexName( repositoryId );
@@ -89,7 +84,6 @@ public class StorageSpyServiceImpl
         return getResponse.isExists();
     }
 
-    @Override
     public boolean deleteInSearch( final NodeId nodeId, final RepositoryId repositoryId, final Branch branch )
     {
         return deleteFromIndex( nodeId, IndexType.SEARCH, repositoryId, branch );
@@ -118,22 +112,11 @@ public class StorageSpyServiceImpl
 
     private String getStorageIndexName( final RepositoryId repositoryId )
     {
-        return STORAGE_INDEX_PREFIX + DIVIDER + repositoryId.toString();
+        return STORAGE_INDEX_PREFIX + DIVIDER + repositoryId;
     }
 
     private String getSearchIndexName( final RepositoryId repositoryId )
     {
-        return SEARCH_INDEX_PREFIX + DIVIDER + repositoryId.toString();
-    }
-
-    public Client getClient()
-    {
-        return client;
-    }
-
-    @Reference
-    public void setClient( final Client client )
-    {
-        this.client = client;
+        return SEARCH_INDEX_PREFIX + DIVIDER + repositoryId;
     }
 }

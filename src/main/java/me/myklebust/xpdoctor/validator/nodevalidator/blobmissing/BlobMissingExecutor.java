@@ -7,15 +7,11 @@ import org.elasticsearch.action.get.GetResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
-
-import me.myklebust.xpdoctor.storagespy.StorageSpyService;
+import me.myklebust.xpdoctor.validator.StorageSpyService;
 import me.myklebust.xpdoctor.validator.RepairResult;
 import me.myklebust.xpdoctor.validator.ValidatorResult;
-import me.myklebust.xpdoctor.validator.ValidatorResultImpl;
-import me.myklebust.xpdoctor.validator.ValidatorResults;
-import me.myklebust.xpdoctor.validator.nodevalidator.AbstractNodeExecutor;
 import me.myklebust.xpdoctor.validator.nodevalidator.BatchedQueryExecutor;
+import me.myklebust.xpdoctor.validator.nodevalidator.Reporter;
 
 import com.enonic.xp.blob.BlobKey;
 import com.enonic.xp.blob.BlobRecord;
@@ -29,19 +25,12 @@ import com.enonic.xp.node.NodeVersionId;
 import com.enonic.xp.repository.RepositorySegmentUtils;
 
 public class BlobMissingExecutor
-    extends AbstractNodeExecutor
 {
-    public static final SegmentLevel NODE_SEGMENT_LEVEL = SegmentLevel.from( "node" );
+    private static final Logger LOG = LoggerFactory.getLogger( BlobMissingExecutor.class );
 
-    public static final SegmentLevel INDEX_CONFIG_SEGMENT_LEVEL = SegmentLevel.from( "index" );
-
-    public static final SegmentLevel ACCESS_CONTROL_SEGMENT_LEVEL = SegmentLevel.from( "access" );
-
-    public static final SegmentLevel BINARY_SEGMENT_LEVEL = SegmentLevel.from( "binary" );
+    private static final SegmentLevel BINARY_SEGMENT_LEVEL = SegmentLevel.from( "binary" );
 
     private final static String TYPE = "Missing Blob";
-
-    public static final int BATCH_SIZE = 1_000;
 
     private final NodeService nodeService;
 
@@ -51,185 +40,98 @@ public class BlobMissingExecutor
 
     private final BlobMissingDoctor doctor;
 
-
-    private Logger LOG = LoggerFactory.getLogger( BlobMissingExecutor.class );
-
-    private BlobMissingExecutor( final Builder builder )
+    public BlobMissingExecutor( final NodeService nodeService, final StorageSpyService storageSpyService, final BlobStore blobStore,
+                                final BlobMissingDoctor doctor )
     {
-        super( builder );
-        this.nodeService = builder.nodeService;
-        this.storageSpyService = builder.storageSpyService;
-        this.blobStore = builder.blobStore;
-        this.doctor = builder.doctor;
+        this.nodeService = nodeService;
+        this.storageSpyService = storageSpyService;
+        this.blobStore = blobStore;
+        this.doctor = doctor;
     }
 
-
-    public static Builder create()
+    public void execute( final Reporter reporter )
     {
-        return new Builder();
-    }
+        LOG.info( "Running BlobMissingExecutor..." );
 
-    public ValidatorResults execute()
-    {
-        LOG.info( "Running LoadableNodeExecutor..." );
+        reporter.reportStart();
 
-        reportStart();
-
-        final BatchedQueryExecutor executor = BatchedQueryExecutor.create().batchSize( BATCH_SIZE ).nodeService( this.nodeService ).build();
-
-        final ValidatorResults.Builder results = ValidatorResults.create();
+        final BatchedQueryExecutor executor = BatchedQueryExecutor.create().nodeService( this.nodeService ).build();
 
         int execute = 0;
-
         while ( executor.hasMore() )
         {
-            LOG.info( "Checking nodes " + execute + "->" + ( execute + BATCH_SIZE ) + " of " + executor.getTotalHits() );
-            reportProgress( executor.getTotalHits(), execute );
+            LOG.info( "Checking nodes {}->{} of {}", execute, execute + executor.batchSize(), executor.getTotalHits() );
+            reporter.reportProgress( executor.getTotalHits(), execute );
 
             final NodeIds nodesToCheck = executor.execute();
-            results.add( checkNodes( nodesToCheck, false ) );
-            execute += BATCH_SIZE;
+            checkNodes( nodesToCheck, true, reporter );
+            execute += executor.batchSize();
         }
 
-        LOG.info( ".... LoadableNodeExecutor done" );
-
-        return results.build();
+        LOG.info( ".... BlobMissingExecutor done" );
     }
 
-    private List<ValidatorResult> checkNodes( final NodeIds nodeIds, final boolean repair )
+    private void checkNodes( final NodeIds nodeIds, final boolean dryRun, final Reporter results )
     {
-        List<ValidatorResult> results = Lists.newArrayList();
 
         for ( final NodeId nodeId : nodeIds )
         {
-            doCheckNode( repair, results, nodeId );
+            doCheckNode( dryRun, results, nodeId );
         }
-        return results;
     }
 
-    private void doCheckNode( final boolean repair, final List<ValidatorResult> results, final NodeId nodeId )
+    private void doCheckNode( final boolean dryRun, final Reporter results, final NodeId nodeId )
     {
         try
         {
             final GetResponse response =
                 storageSpyService.getInBranch( nodeId, ContextAccessor.current().getRepositoryId(), ContextAccessor.current().getBranch() );
             final Map<String, Object> sourceAsMap = response.getSourceAsMap();
-            final BlobKey nodeBlobKey = BlobKey.from( ((List<String>) sourceAsMap.get( "nodeblobkey" )).get( 0 ) );
-            final BlobKey accessBlobKey = BlobKey.from( ((List<String>) sourceAsMap.get( "accesscontrolblobkey" )).get( 0 ) );
-            final BlobKey indexBlobKey = BlobKey.from( ((List<String>) sourceAsMap.get( "indexconfigblobkey" )).get( 0 ) );
-            final NodeVersionId versionid = NodeVersionId.from( ((List<String>) sourceAsMap.get( "versionid" )).get( 0 ) );
+            final NodeVersionId versionid = NodeVersionId.from( ( (List<String>) sourceAsMap.get( "versionid" ) ).get( 0 ) );
 
-            final BlobRecord nodeBlobRecord =
-                blobStore.getRecord( RepositorySegmentUtils.toSegment( ContextAccessor.current().getRepositoryId(), NODE_SEGMENT_LEVEL ),
-                                     nodeBlobKey );
-            if (nodeBlobRecord == null) {
-                resolveAndRepaid( repair, results, nodeId, new Exception( "Node blob is missing" ) );
-            }
-
-            final BlobRecord accessBlobRecord =
-                blobStore.getRecord( RepositorySegmentUtils.toSegment( ContextAccessor.current().getRepositoryId(), ACCESS_CONTROL_SEGMENT_LEVEL ),
-                                     accessBlobKey );
-            if (accessBlobRecord == null) {
-                resolveAndRepaid( repair, results, nodeId, new Exception( "Access control blob is missing" ) );
-            }
-
-            final BlobRecord indexBlobRecord =
-                blobStore.getRecord( RepositorySegmentUtils.toSegment( ContextAccessor.current().getRepositoryId(), INDEX_CONFIG_SEGMENT_LEVEL ),
-                                     indexBlobKey );
-            if (indexBlobRecord == null) {
-                resolveAndRepaid( repair, results, nodeId, new Exception( "Index config blob is missing" ) );
-            }
-
-            final GetResponse versionResponse = storageSpyService.getVersion( nodeId, versionid, ContextAccessor.current().getRepositoryId() );
+            final GetResponse versionResponse =
+                storageSpyService.getVersion( nodeId, versionid, ContextAccessor.current().getRepositoryId() );
             final List<String> binaryblobkeys = (List<String>) versionResponse.getSourceAsMap().get( "binaryblobkeys" );
-            if (binaryblobkeys != null) {
+            if ( binaryblobkeys != null )
+            {
                 for ( String binaryblobkey : binaryblobkeys )
                 {
                     final BlobRecord binaryBlobRecord = blobStore.getRecord(
                         RepositorySegmentUtils.toSegment( ContextAccessor.current().getRepositoryId(), BINARY_SEGMENT_LEVEL ),
                         BlobKey.from( binaryblobkey ) );
-                    if (binaryBlobRecord == null) {
-                        resolveAndRepaid( repair, results, nodeId, new Exception( "Binary blob is missing " + binaryblobkey ) );
-                    } else {
-                        System.out.println( "Binary blob found" );
+                    if ( binaryBlobRecord == null )
+                    {
+                        resolveAndRepair( dryRun, results, nodeId, "Binary blob is missing " + binaryblobkey );
                     }
-                };
+                }
             }
-
         }
         catch ( Exception e )
         {
-            resolveAndRepaid( repair, results, nodeId, e );
+            LOG.error( "Failed to check", e );
         }
     }
 
-    private void resolveAndRepaid( final boolean doRepair, final List<ValidatorResult> results, final NodeId nodeId, final Exception e )
+    private void resolveAndRepair( final boolean dryRun, final Reporter results, final NodeId nodeId, final String message )
     {
         try
         {
-            final RepairResult repairResult = this.doctor.repairBlob( nodeId, doRepair );
+            final RepairResult repairResult = this.doctor.repairNode( nodeId, dryRun );
 
-            final ValidatorResultImpl result = ValidatorResultImpl.create()
-                .nodeId( nodeId )
-                .nodePath( null )
-                .nodeVersionId( null )
-                .timestamp( null )
-                .type( TYPE )
-                .validatorName( validatorName )
-                .message( e.getMessage() )
-                .repairResult( repairResult )
-                .build();
-
-            results.add( result );
+            results.addResult( ValidatorResult.create()
+                                   .nodeId( nodeId )
+                                   .nodePath( null )
+                                   .nodeVersionId( null )
+                                   .timestamp( null )
+                                   .type( TYPE )
+                                   .validatorName( results.validatorName )
+                                   .message( message )
+                                   .repairResult( repairResult )
+                                   .build() );
         }
-        catch ( Exception e1 )
+        catch ( Exception e )
         {
-            LOG.error( "Failed to repair", e1 );
-        }
-    }
-
-    public static final class Builder
-        extends AbstractNodeExecutor.Builder<Builder>
-    {
-        private NodeService nodeService;
-
-        private BlobMissingDoctor doctor;
-
-        private StorageSpyService storageSpyService;
-
-        private BlobStore blobStore;
-
-        private Builder()
-        {
-        }
-
-        public Builder nodeService( final NodeService val )
-        {
-            nodeService = val;
-            return this;
-        }
-
-        public Builder doctor( final BlobMissingDoctor val )
-        {
-            doctor = val;
-            return this;
-        }
-
-        public Builder storageSpyService( final StorageSpyService storageSpyService )
-        {
-            this.storageSpyService = storageSpyService;
-            return this;
-        }
-
-        public BlobMissingExecutor build()
-        {
-            return new BlobMissingExecutor( this );
-        }
-
-        public Builder blobStore( final BlobStore blobStore )
-        {
-            this.blobStore = blobStore;
-            return this;
+            LOG.error( "Failed to repair", e );
         }
     }
 }

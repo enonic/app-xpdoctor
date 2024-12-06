@@ -4,10 +4,11 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
-import me.myklebust.xpdoctor.storagespy.StorageSpyService;
 import me.myklebust.xpdoctor.validator.RepairResult;
+import me.myklebust.xpdoctor.validator.StorageSpyService;
 import me.myklebust.xpdoctor.validator.Validator;
 import me.myklebust.xpdoctor.validator.ValidatorResults;
+import me.myklebust.xpdoctor.validator.nodevalidator.Reporter;
 
 import com.enonic.xp.blob.BlobStore;
 import com.enonic.xp.node.NodeId;
@@ -18,15 +19,16 @@ import com.enonic.xp.task.ProgressReporter;
 public class LoadableValidator
     implements Validator
 {
+    @Reference
     private NodeService nodeService;
 
-    private LoadableNodeDoctor doctor;
-
+    @Reference
     private BlobStore blobStore;
 
+    @Reference
     private StorageSpyService storageSpyService;
 
-    private UnloadableNodeReasonResolver reasonResolver;
+    private LoadableNodeDoctor doctor;
 
     @Override
     public int order()
@@ -38,13 +40,6 @@ public class LoadableValidator
     public void activate()
     {
         this.doctor = new LoadableNodeDoctor( this.nodeService, this.blobStore, this.storageSpyService );
-        this.reasonResolver = new UnloadableNodeReasonResolver( this.storageSpyService );
-    }
-
-    @Override
-    public String name()
-    {
-        return this.getClass().getSimpleName();
     }
 
     @Override
@@ -62,40 +57,14 @@ public class LoadableValidator
     @Override
     public ValidatorResults validate( final ProgressReporter reporter )
     {
-        return LoadableNodeExecutor.create().
-            nodeService( this.nodeService ).
-            doctor( this.doctor ).
-            storageSpyService( this.storageSpyService ).
-            progressReporter( reporter ).
-            validatorName( this.name() ).
-            build().
-            execute();
+        final Reporter results = new Reporter( name(), reporter );
+        new LoadableNodeExecutor( nodeService, doctor ).execute( results );
+        return results.buildResults();
     }
 
     @Override
     public RepairResult repair( final NodeId nodeId )
     {
-        final UnloadableReason reason = reasonResolver.resolve( nodeId );
-
-        return this.doctor.repairNode( nodeId, true, reason );
-    }
-
-    @Reference
-    public void setNodeService( final NodeService nodeService )
-    {
-        this.nodeService = nodeService;
-    }
-
-    @Reference
-    public void setStorageSpyService( final StorageSpyService storageSpyService )
-    {
-        System.out.println( "Setting StorageSpyService......." + storageSpyService );
-        this.storageSpyService = storageSpyService;
-    }
-
-    @Reference
-    public void setBlobStore( final BlobStore blobStore )
-    {
-        this.blobStore = blobStore;
+        return this.doctor.repairNode( nodeId, false );
     }
 }

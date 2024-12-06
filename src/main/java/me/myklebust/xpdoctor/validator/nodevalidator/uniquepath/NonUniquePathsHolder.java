@@ -1,14 +1,13 @@
 package me.myklebust.xpdoctor.validator.nodevalidator.uniquepath;
 
+import java.util.HashSet;
 import java.util.Set;
-
-import com.google.common.collect.Sets;
 
 import com.enonic.xp.node.NodePath;
 
 public class NonUniquePathsHolder
 {
-    private final Set<NodePath> nonUniquePaths = Sets.newHashSet();
+    private final Set<NodePath> nonUniquePaths = new HashSet<>();
 
     public void add( final NodePath nodePath )
     {

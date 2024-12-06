@@ -21,13 +21,15 @@ import com.enonic.xp.repository.RepositoryService;
 public class ValidatorServiceImpl
     implements ValidatorService
 {
+    private static final Logger LOG = LoggerFactory.getLogger( IntegrityBean.class );
+
     private final Set<Validator> validators = new TreeSet<>( Comparator.comparingInt( Validator::order ) );
 
+    @Reference
     private NodeService nodeService;
 
+    @Reference
     private RepositoryService repoService;
-
-    private final Logger LOG = LoggerFactory.getLogger( IntegrityBean.class );
 
     public Set<Validator> getValidators()
     {
@@ -84,19 +86,6 @@ public class ValidatorServiceImpl
         this.validators.remove( val );
     }
 
-    @SuppressWarnings("unused")
-    @Reference
-    public void setNodeService( final NodeService nodeService )
-    {
-        this.nodeService = nodeService;
-    }
-
-    @SuppressWarnings("unused")
-    @Reference
-    public void setRepoService( final RepositoryService repoService )
-    {
-        this.repoService = repoService;
-    }
 }
 
 

@@ -1,8 +1,7 @@
 package me.myklebust.xpdoctor.validator;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import com.google.common.collect.Lists;
 
 import com.enonic.xp.repository.RepositoryId;
 
@@ -45,7 +44,7 @@ public class RepoValidationResult
     {
         private final RepositoryId repositoryId;
 
-        private List<BranchValidationResult> branches = Lists.newArrayList();
+        private List<BranchValidationResult> branches = new ArrayList<>();
 
         private int totalIssues = 0;
 

@@ -1,20 +1,23 @@
 package me.myklebust.xpdoctor.validator.nodevalidator.blobmissing;
 
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
-import me.myklebust.xpdoctor.filespy.FileBlobStoreSpyService;
-import me.myklebust.xpdoctor.storagespy.StorageSpyService;
+import me.myklebust.xpdoctor.validator.FileBlobStoreSpyService;
+import me.myklebust.xpdoctor.validator.StorageSpyService;
 import me.myklebust.xpdoctor.validator.RepairResult;
 import me.myklebust.xpdoctor.validator.Validator;
 import me.myklebust.xpdoctor.validator.ValidatorResults;
+import me.myklebust.xpdoctor.validator.nodevalidator.Reporter;
 
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeService;
 import com.enonic.xp.task.ProgressReporter;
 
 @Component(immediate = true)
-public class BlobMissingValidator implements Validator
+public class BlobMissingValidator
+    implements Validator
 {
     @Reference
     private NodeService nodeService;
@@ -27,7 +30,8 @@ public class BlobMissingValidator implements Validator
 
     private BlobMissingDoctor doctor;
 
-    public BlobMissingValidator()
+    @Activate
+    public void activate()
     {
         this.doctor = new BlobMissingDoctor();
     }
@@ -47,21 +51,15 @@ public class BlobMissingValidator implements Validator
     @Override
     public ValidatorResults validate( final ProgressReporter reporter )
     {
-        return BlobMissingExecutor.create()
-            .nodeService( this.nodeService )
-            .progressReporter( reporter )
-            .validatorName( name() )
-            .doctor( this.doctor )
-            .storageSpyService( this.storageSpyService )
-            .blobStore( this.fileBlobStoreSpyService.getBlobStore() )
-            .build()
-            .execute();
+        final Reporter results = new Reporter( name(), reporter );
+        new BlobMissingExecutor( nodeService, storageSpyService, fileBlobStoreSpyService.getBlobStore(), doctor ).execute( results );
+        return results.buildResults();
     }
 
     @Override
     public RepairResult repair( final NodeId nodeId )
     {
-        return doctor.repairBlob( nodeId, false );
+        return doctor.repairNode( nodeId, false );
     }
 
     @Override

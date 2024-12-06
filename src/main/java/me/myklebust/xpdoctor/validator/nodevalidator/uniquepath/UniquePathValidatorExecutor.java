@@ -10,16 +10,12 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 import me.myklebust.xpdoctor.validator.RepairResult;
 import me.myklebust.xpdoctor.validator.RepairStatus;
 import me.myklebust.xpdoctor.validator.ValidatorResult;
-import me.myklebust.xpdoctor.validator.ValidatorResultImpl;
-import me.myklebust.xpdoctor.validator.ValidatorResults;
-import me.myklebust.xpdoctor.validator.nodevalidator.AbstractNodeExecutor;
 import me.myklebust.xpdoctor.validator.nodevalidator.BatchedQueryExecutor;
+import me.myklebust.xpdoctor.validator.nodevalidator.Reporter;
 
 import com.enonic.xp.branch.Branch;
 import com.enonic.xp.context.ContextAccessor;
@@ -30,7 +26,6 @@ import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeIds;
 import com.enonic.xp.node.NodeIndexPath;
-import com.enonic.xp.node.NodePath;
 import com.enonic.xp.node.NodeQuery;
 import com.enonic.xp.node.NodeService;
 import com.enonic.xp.node.NodeVersionMetadata;
@@ -43,61 +38,45 @@ import com.enonic.xp.repository.RepositoryService;
 import static me.myklebust.xpdoctor.validator.nodevalidator.uniquepath.UniquePathDoctor.PREFIX;
 
 public class UniquePathValidatorExecutor
-    extends AbstractNodeExecutor
 {
-    public static final int BATCH_SIZE = 1_000;
-
     private final NodeService nodeService;
 
     private final RepositoryService repositoryService;
 
     private NonUniquePathsHolder nonUniquePathsHolder = new NonUniquePathsHolder();
 
-    private final Set<NodePath> handledPaths = Sets.newHashSet();
-
     private final Logger LOG = LoggerFactory.getLogger( UniquePathValidatorExecutor.class );
 
-    private UniquePathValidatorExecutor( final Builder builder )
+    public UniquePathValidatorExecutor( final NodeService nodeService, final RepositoryService repositoryService )
     {
-        super( builder );
-        nodeService = builder.nodeService;
-        repositoryService = builder.repositoryService;
+        this.nodeService = nodeService;
+        this.repositoryService = repositoryService;
     }
 
-    public static Builder create()
-    {
-        return new Builder();
-    }
-
-    public ValidatorResults execute()
+    public void execute( final Reporter reporter)
     {
         LOG.info( "Running UniquePathValidatorExecutor..." );
-        reportStart();
+        reporter.reportStart();
 
         final BatchedQueryExecutor executor = BatchedQueryExecutor.create().
-            batchSize( BATCH_SIZE ).
             nodeService( this.nodeService ).
             orderBy( OrderExpressions.from( FieldOrderExpr.create( NodeIndexPath.PATH, OrderExpr.Direction.DESC ) ) ).
             build();
 
-        final ValidatorResults.Builder results = ValidatorResults.create();
-
         int execute = 0;
         while ( executor.hasMore() )
         {
-            LOG.info( "Checking nodes " + execute + "->" + ( execute + BATCH_SIZE ) + " of " + executor.getTotalHits() );
-            reportProgress( executor.getTotalHits(), execute );
+            LOG.info( "Checking nodes {}->{} of {}", execute, execute + executor.batchSize(), executor.getTotalHits() );
+            reporter.reportProgress( executor.getTotalHits(), execute );
 
-            results.add( checkNodes( executor.execute() ) );
-            execute += BATCH_SIZE;
+            checkNodes( executor.execute(), reporter );
+            execute += executor.batchSize();
         }
-
-        return results.build();
     }
 
-    private List<ValidatorResult> checkNodes( final NodeIds nodeIds )
+    private List<ValidatorResult> checkNodes( final NodeIds nodeIds, final Reporter reporter )
     {
-        List<ValidatorResult> results = Lists.newArrayList();
+        List<ValidatorResult> results = new ArrayList<>();
 
         for ( final NodeId nodeId : nodeIds )
         {
@@ -105,12 +84,8 @@ public class UniquePathValidatorExecutor
             {
                 final Node node = this.nodeService.getById( nodeId );
 
-                final ValidatorResult result = checkNode( node );
+                checkNode( node, reporter );
 
-                if ( result != null )
-                {
-                    results.add( result );
-                }
             }
             catch ( Exception e )
             {
@@ -120,11 +95,11 @@ public class UniquePathValidatorExecutor
         return results;
     }
 
-    private ValidatorResult checkNode( final Node node )
+    private void checkNode( final Node node, final Reporter reporter )
     {
         if ( nonUniquePathsHolder.has( node.path() ) )
         {
-            return null;
+            return;
         }
 
         final FindNodesByQueryResult queryResult = this.nodeService.findByQuery( NodeQuery.create().
@@ -136,23 +111,21 @@ public class UniquePathValidatorExecutor
 
         if ( pathIsNotUnique )
         {
-            return createNonUniqueEntry( node, queryResult );
+            createNonUniqueEntry( node, queryResult, reporter );
         }
-
-        return null;
     }
 
-    private ValidatorResult createNonUniqueEntry( final Node node, final FindNodesByQueryResult queryResult )
+    private void createNonUniqueEntry( final Node node, final FindNodesByQueryResult queryResult, final Reporter reporter )
     {
-        final ValidatorResultImpl.Builder result = ValidatorResultImpl.create().
+        final ValidatorResult.Builder result = ValidatorResult.create().
             nodeId( node.id() ).
             nodePath( node.path() ).
             nodeVersionId( node.getNodeVersionId() ).
             timestamp( node.getTimestamp() ).
-            validatorName( this.validatorName ).
+            validatorName( reporter.validatorName ).
             type( "Non-unique path" );
 
-        final ArrayList<String> messages = Lists.newArrayList();
+        final ArrayList<String> messages = new ArrayList<>();
 
         for ( final NodeId nodeId : queryResult.getNodeIds() )
         {
@@ -173,7 +146,7 @@ public class UniquePathValidatorExecutor
             repairStatus( childHasTrouble ? RepairStatus.DEPENDENT_ON_OTHER : RepairStatus.IS_REPAIRABLE ).
             build() );
 
-        return result.build();
+        reporter.addResult( result.build() );
     }
 
     private String addNotUniqueEntry( final NodeId nodeId )
@@ -197,34 +170,5 @@ public class UniquePathValidatorExecutor
             nodeId( nodeId ).
             branches( repository.getBranches() ).
             build() );
-    }
-
-    public static final class Builder
-        extends AbstractNodeExecutor.Builder<Builder>
-    {
-        private NodeService nodeService;
-
-        private RepositoryService repositoryService;
-
-        private Builder()
-        {
-        }
-
-        public Builder nodeService( final NodeService val )
-        {
-            nodeService = val;
-            return this;
-        }
-
-        public Builder repositoryService( final RepositoryService val )
-        {
-            repositoryService = val;
-            return this;
-        }
-
-        public UniquePathValidatorExecutor build()
-        {
-            return new UniquePathValidatorExecutor( this );
-        }
     }
 }

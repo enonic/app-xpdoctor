@@ -41,6 +41,11 @@ public class BatchedQueryExecutor
         return result.getTotalHits();
     }
 
+    public int batchSize()
+    {
+        return batchSize;
+    }
+
     public NodeIds execute()
     {
         final NodeQuery query = createQuery( this.currentFrom, this.batchSize );
@@ -95,7 +100,7 @@ public class BatchedQueryExecutor
 
     public static final class Builder
     {
-        private int batchSize = 1000;
+        private int batchSize = 1_000;
 
         private NodeService nodeService;
 
