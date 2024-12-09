@@ -32,13 +32,13 @@ public class VersionsExecutor
         LOG.info( "Running VersionsExecutor..." );
         reporter.reportStart();
 
-        final BatchedQueryExecutor executor =
-            BatchedQueryExecutor.create().progressReporter( reporter.getProgressReporter() ).nodeService( this.nodeService ).build();
+        BatchedQueryExecutor.create()
+            .progressReporter( reporter.getProgressReporter() )
+            .nodeService( this.nodeService )
+            .build()
+            .execute( nodesToCheck -> checkNodes( nodesToCheck, reporter ) );
 
-        while ( executor.hasMore() )
-        {
-            executor.nextBatch(nodesToCheck -> checkNodes( nodesToCheck, reporter ) );
-        }
+        LOG.info( "... VersionsExecutor done" );
     }
 
     private void checkNodes( final NodeIds nodeIds, final Reporter results )

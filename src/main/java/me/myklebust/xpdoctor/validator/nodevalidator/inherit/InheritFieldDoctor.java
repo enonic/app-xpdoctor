@@ -37,13 +37,13 @@ import com.enonic.xp.repository.RepositorySegmentUtils;
 public class InheritFieldDoctor
     implements NodeDoctor
 {
+    private static final Logger LOG = LoggerFactory.getLogger( UniquePathDoctor.class );
+
     private final NodeService nodeService;
 
     private IndexValueService indexValueService;
 
     private BlobStore blobStore;
-
-    private final Logger LOG = LoggerFactory.getLogger( UniquePathDoctor.class );
 
     private static final ObjectMapper MAPPER = ObjectMapperHelper.create();
 

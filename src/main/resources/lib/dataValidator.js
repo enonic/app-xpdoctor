@@ -11,11 +11,16 @@ function required(params, name) {
 }
 
 exports.execute = function (validatorParams) {
-
     var paramsObject = __.newBean('me.myklebust.xpdoctor.validator.ValidateParams');
-    paramsObject.enabledValidators = validatorParams.enabledValidators;
-    paramsObject.repoId = required(validatorParams, "repoId");
-    paramsObject.branch = required(validatorParams, "branch");
+    paramsObject.setEnabledValidators(validatorParams.enabledValidators);
+
+    for (const repoBranch of [].concat(validatorParams.repoBranches || [])) {
+        // split the repoBranch string into repoId and branch
+        var repoBranchItems = repoBranch.split(":");
+
+        paramsObject.addRepoBranch(repoBranchItems[0], repoBranchItems[1]);
+    }
+
     var result = bean.validate(paramsObject);
     return __.toNativeObject(result);
 };
@@ -31,13 +36,12 @@ exports.validators = function () {
     return __.toNativeObject(result);
 };
 
-
 exports.repair = function (params) {
     var paramsObject = __.newBean('me.myklebust.xpdoctor.validator.RepairParams');
-    paramsObject.nodeId = required(params, "nodeId");
-    paramsObject.validatorName = required(params, "validatorName");
-    paramsObject.repoId = required(params, "repoId");
-    paramsObject.branch = required(params, "branch");
+    paramsObject.setNodeId(required(params, "nodeId"));
+    paramsObject.setValidatorName(required(params, "validatorName"));
+    paramsObject.setRepoId(required(params, "repoId"));
+    paramsObject.setBranch(required(params, "branch"));
 
     return __.toNativeObject(bean.repair(paramsObject));
 };

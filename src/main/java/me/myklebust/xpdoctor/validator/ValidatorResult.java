@@ -121,6 +121,11 @@ public class ValidatorResult
             return this;
         }
 
+        public NodePath nodePath()
+        {
+            return nodePath;
+        }
+
         public Builder timestamp( final Instant val )
         {
             timestamp = val;

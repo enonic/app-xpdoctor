@@ -27,7 +27,7 @@ import com.enonic.xp.node.NodeVersionsMetadata;
 class LoadableNodeDoctor
 implements NodeDoctor
 {
-    private final Logger LOG = LoggerFactory.getLogger( LoadableNodeDoctor.class );
+    private static final Logger LOG = LoggerFactory.getLogger( LoadableNodeDoctor.class );
 
     private final NodeService nodeService;
 

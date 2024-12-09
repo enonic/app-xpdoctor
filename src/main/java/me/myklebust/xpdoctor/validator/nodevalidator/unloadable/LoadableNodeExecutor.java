@@ -33,17 +33,13 @@ public class LoadableNodeExecutor
     {
         LOG.info( "Running LoadableNodeExecutor..." );
 
-        reporter.reportStart();
+        BatchedQueryExecutor.create()
+            .progressReporter( reporter.getProgressReporter() )
+            .nodeService( this.nodeService )
+            .build()
+            .execute( nodesToCheck -> checkNodes( nodesToCheck, reporter ) );
 
-        final BatchedQueryExecutor executor =
-            BatchedQueryExecutor.create().progressReporter( reporter.getProgressReporter() ).nodeService( this.nodeService ).build();
-
-        while ( executor.hasMore() )
-        {
-            executor.nextBatch(nodesToCheck -> checkNodes( nodesToCheck, reporter ) );
-        }
-
-        LOG.info( ".... LoadableNodeExecutor done" );
+        LOG.info( "... LoadableNodeExecutor done" );
     }
 
     private void checkNodes( final NodeIds nodeIds, final Reporter results )

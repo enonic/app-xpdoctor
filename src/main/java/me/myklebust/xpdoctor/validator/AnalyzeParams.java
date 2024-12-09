@@ -1,8 +1,10 @@
 package me.myklebust.xpdoctor.validator;
 
 import java.util.List;
+import java.util.Map;
 
 import com.enonic.xp.branch.Branch;
+import com.enonic.xp.branch.Branches;
 import com.enonic.xp.repository.RepositoryId;
 import com.enonic.xp.task.ProgressReporter;
 
@@ -12,17 +14,13 @@ public class AnalyzeParams
 
     private final List<String> enabledValidators;
 
-    private final Branch branch;
-
-    private final RepositoryId repositoryId;
-
+    private final Map<RepositoryId, Branches> repoBranches;
 
     private AnalyzeParams( final Builder builder )
     {
         progressReporter = builder.progressReporter;
         enabledValidators = builder.enabledValidators;
-        branch = builder.branch;
-        repositoryId = builder.repositoryId;
+        repoBranches = builder.repoBranches;
     }
 
     public static Builder create()
@@ -31,14 +29,9 @@ public class AnalyzeParams
     }
 
 
-    public Branch getBranch()
+    public Map<RepositoryId, Branches> getRepoBranches()
     {
-        return branch;
-    }
-
-    public RepositoryId getRepositoryId()
-    {
-        return repositoryId;
+        return repoBranches;
     }
 
     public ProgressReporter getProgressReporter()
@@ -57,9 +50,7 @@ public class AnalyzeParams
 
         private List<String> enabledValidators;
 
-        private Branch branch;
-
-        private RepositoryId repositoryId;
+        private Map<RepositoryId, Branches> repoBranches;
 
         private Builder()
         {
@@ -77,15 +68,9 @@ public class AnalyzeParams
             return this;
         }
 
-        public Builder branch( final Branch val )
+        public Builder repoBranches( final Map<RepositoryId, Branches> val )
         {
-            branch = val;
-            return this;
-        }
-
-        public Builder repositoryId( final RepositoryId val )
-        {
-            repositoryId = val;
+            repoBranches = val;
             return this;
         }
 

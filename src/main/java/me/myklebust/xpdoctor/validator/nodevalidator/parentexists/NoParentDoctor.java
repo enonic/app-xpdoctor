@@ -15,10 +15,9 @@ import com.enonic.xp.node.NodeService;
 
 public class NoParentDoctor
 {
+    private static final Logger LOG = LoggerFactory.getLogger( NoParentDoctor.class );
+
     private final NodeService nodeService;
-
-    private final Logger LOG = LoggerFactory.getLogger( UniquePathDoctor.class );
-
 
     public final static String LOST_FOLDER = "_com_enonic_app_xpdoctor";
 

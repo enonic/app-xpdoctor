@@ -1,39 +1,42 @@
 package me.myklebust.xpdoctor.validator;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
-
-import com.google.common.collect.Lists;
+import java.util.Map;
+import java.util.stream.Stream;
 
 import com.enonic.xp.branch.Branch;
+import com.enonic.xp.branch.Branches;
 import com.enonic.xp.repository.RepositoryId;
 
 public class ValidateParams
 {
     private List<String> enabledValidators;
 
-    private RepositoryId repoId;
+    private Map<RepositoryId, Branches> repoBranches = new HashMap<>();
 
-    private Branch branch;
-
-    public void setRepoId( final String repoId )
+    public Map<RepositoryId, Branches> getRepoBranches()
     {
-        this.repoId = RepositoryId.from( repoId );
+        return repoBranches;
     }
 
-    public void setBranch( final String branch )
+    public void addRepoBranch( final String repoId, final String branch )
     {
-        this.branch = Branch.from( branch );
-    }
+        final RepositoryId repositoryId = RepositoryId.from( repoId );
 
-    public RepositoryId getRepoId()
-    {
-        return repoId;
-    }
+        final Branches branches = this.repoBranches.get( repositoryId );
 
-    public Branch getBranch()
-    {
-        return branch;
+        if ( branches != null )
+        {
+            this.repoBranches.put( repositoryId, Branches.from(
+                Stream.concat( branches.stream(), Stream.of( Branch.from( branch ) ) ).toArray( Branch[]::new ) ) );
+        }
+        else
+        {
+            this.repoBranches.put( repositoryId, Branches.from( Branch.from( branch ) ) );
+        }
     }
 
     public void setEnabledValidators( final List<String> enabledValidators )
@@ -55,7 +58,7 @@ public class ValidateParams
     public void setEnabledValidators( final String enabledValidator )
     {
 
-        this.enabledValidators = Lists.newArrayList( enabledValidator );
+        this.enabledValidators = new ArrayList<>( List.of(enabledValidator) );
     }
 
 }

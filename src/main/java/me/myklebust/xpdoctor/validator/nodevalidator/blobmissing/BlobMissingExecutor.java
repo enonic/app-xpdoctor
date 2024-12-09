@@ -55,13 +55,11 @@ public class BlobMissingExecutor
 
         reporter.reportStart();
 
-        final BatchedQueryExecutor executor =
-            BatchedQueryExecutor.create().progressReporter( reporter.getProgressReporter() ).nodeService( this.nodeService ).build();
-
-        while ( executor.hasMore() )
-        {
-            executor.nextBatch(nodesToCheck -> checkNodes( nodesToCheck, reporter ) );
-        }
+        BatchedQueryExecutor.create()
+            .progressReporter( reporter.getProgressReporter() )
+            .nodeService( this.nodeService )
+            .build()
+            .execute( nodesToCheck -> checkNodes( nodesToCheck, reporter ) );
 
         LOG.info( ".... BlobMissingExecutor done" );
     }

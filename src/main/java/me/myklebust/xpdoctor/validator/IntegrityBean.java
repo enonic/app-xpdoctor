@@ -104,8 +104,7 @@ public class IntegrityBean
             final RepoValidationResults result = this.validatorService.analyze( AnalyzeParams.create().
                 progressReporter( progressReporter ).
                 enabledValidators( params.getEnabledValidators() ).
-                branch( params.getBranch() ).
-                repositoryId( params.getRepoId() ).
+                repoBranches( params.getRepoBranches() ).
                 build() );
 
             this.lastResult = result;

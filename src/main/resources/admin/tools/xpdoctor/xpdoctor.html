@@ -47,9 +47,6 @@
 <main>
     <nav class="navbar">
 
-        <select class="repoSelector" id="repoSelector">
-        </select>
-
         <span class="progress" id="progressState"></span>
         <a class="navbar-brand" href="#"><img data-th-src="${portal.assetUrl({'_path=images/xpDoc.png'})}"/></a>
     </nav>
@@ -58,6 +55,10 @@
 
         <div class="toolbar">
             <div class="toolbar-items">
+                <div class="repos">
+                    <select class="repoSelector" id="repoSelector" multiple>
+                    </select>
+                </div>
                 <div class="actions">
                     <button id="btnRunValidator" type="button" class="big-action-button analyze" disabled>
                         <i class="material-icons">play_arrow</i>

@@ -1,6 +1,7 @@
 package me.myklebust.xpdoctor.validator;
 
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +12,7 @@ import com.enonic.xp.context.Context;
 import com.enonic.xp.context.ContextAccessor;
 import com.enonic.xp.context.ContextBuilder;
 import com.enonic.xp.repository.Repositories;
+import com.enonic.xp.repository.Repository;
 import com.enonic.xp.repository.RepositoryId;
 import com.enonic.xp.repository.RepositoryService;
 import com.enonic.xp.security.IdProviderKey;
@@ -22,52 +24,48 @@ import com.enonic.xp.task.ProgressReporter;
 
 public class ValidatorExecutor
 {
+    private static final Logger LOG = LoggerFactory.getLogger( ValidatorExecutor.class );
+
     private final RepositoryService repoService;
 
     private final List<Validator> validators;
 
     private final ProgressReporter progressReporter;
 
-    private final RepositoryId repositoryId;
+    private final Map<RepositoryId, Branches> repoBranches;
 
-    private final Branch branch;
-
-    private final Logger LOG = LoggerFactory.getLogger( IntegrityBean.class );
 
     private ValidatorExecutor( final Builder builder )
     {
         repoService = builder.repoService;
         validators = builder.validators;
         progressReporter = builder.progressReporter;
-        repositoryId = builder.repositoryId;
-        branch = builder.branch;
+        repoBranches = builder.repoBranches;
+
     }
 
     public RepoValidationResults execute()
     {
-        LOG.info( "Starting Integrity check of repo " + this.repositoryId + " / " + this.branch + "..." );
-
         final RepoValidationResults.Builder results = RepoValidationResults.create();
         final Repositories repositories = this.repoService.list();
 
         repositories.stream().
-            filter( repository -> repository.getId().equals( this.repositoryId ) ).
+            filter( repository -> repoBranches.containsKey( repository.getId() ) ).
             forEach( ( repo ) -> {
-            LOG.info( "Checking repo: [ {}]", repo.getId() );
+                final RepositoryId repositoryId = repo.getId();
 
-                final RepoValidationResult.Builder repoBuilder = RepoValidationResult.create( repo.getId() );
+                LOG.info( "Checking repo: [{}]", repositoryId );
+
+                final RepoValidationResult.Builder repoBuilder = RepoValidationResult.create( repositoryId );
 
                 final Branches branches = repo.getBranches();
 
-                branches.stream().
-                    filter( branch -> branch.equals( this.branch ) ).
-                    forEach( branch -> {
-                        LOG.info( "Checking branch: [ " + branch + "]" );
-                        final ValidatorResults validationResults = createContext( repo.getId(), branch ).callWith( this::doExecute );
-                        final BranchValidationResult.Builder branchResult =
-                            BranchValidationResult.create( branch ).results( validationResults );
-                        repoBuilder.add( branchResult.build() );
-                    } );
+            branches.stream().filter( branch -> repoBranches.get( repositoryId ).contains( branch ) ).forEach( branch -> {
+                LOG.info( "Checking branch: [{}]", branch );
+                final ValidatorResults validationResults = createContext( repositoryId, branch ).callWith( this::doExecute );
+                final BranchValidationResult.Builder branchResult = BranchValidationResult.create( branch ).results( validationResults );
+                repoBuilder.add( branchResult.build() );
+            } );
 
                 results.add( repoBuilder.build() );
             } );
@@ -124,14 +122,11 @@ public class ValidatorExecutor
 
         private ProgressReporter progressReporter;
 
-        private RepositoryId repositoryId;
-
-        private Branch branch;
+        private Map<RepositoryId, Branches> repoBranches;
 
         private Builder()
         {
         }
-
 
         public Builder repoService( final RepositoryService val )
         {
@@ -139,15 +134,9 @@ public class ValidatorExecutor
             return this;
         }
 
-        public Builder repositoryId( final RepositoryId val )
+        public Builder repoBranches( final Map<RepositoryId, Branches> val )
         {
-            repositoryId = val;
-            return this;
-        }
-
-        public Builder branch( final Branch val )
-        {
-            branch = val;
+            repoBranches = val;
             return this;
         }
 

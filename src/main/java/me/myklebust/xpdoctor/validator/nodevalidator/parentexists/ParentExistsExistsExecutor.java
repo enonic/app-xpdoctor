@@ -17,9 +17,9 @@ import com.enonic.xp.node.NodeService;
 
 public class ParentExistsExistsExecutor
 {
-    private final NodeService nodeService;
+    private static final Logger LOG = LoggerFactory.getLogger( ParentExistsExistsExecutor.class );
 
-    private final Logger LOG = LoggerFactory.getLogger( ParentExistsExistsExecutor.class );
+    private final NodeService nodeService;
 
     public ParentExistsExistsExecutor( final NodeService nodeService )
     {
@@ -31,13 +31,13 @@ public class ParentExistsExistsExecutor
         LOG.info( "Running LoadableNodeExecutor..." );
         reporter.reportStart();
 
-        final BatchedQueryExecutor executor =
-            BatchedQueryExecutor.create().progressReporter( reporter.getProgressReporter() ).nodeService( this.nodeService ).build();
+        BatchedQueryExecutor.create()
+            .progressReporter( reporter.getProgressReporter() )
+            .nodeService( this.nodeService )
+            .build()
+            .execute( nodesToCheck -> checkNodes( nodesToCheck, reporter ) );
 
-        while ( executor.hasMore() )
-        {
-            executor.nextBatch(nodesToCheck -> checkNodes( nodesToCheck, reporter ) );
-        }
+        LOG.info( "... LoadableNodeExecutor done" );
     }
 
     private void checkNodes( final NodeIds nodeIds, final Reporter results )
@@ -52,7 +52,7 @@ public class ParentExistsExistsExecutor
             }
             catch ( Exception e )
             {
-                LOG.error( "Cannot check parent exists for node with id: " + nodeId + "", e );
+                LOG.error( "Cannot check parent exists for node with id: {}", nodeId, e );
             }
         }
 

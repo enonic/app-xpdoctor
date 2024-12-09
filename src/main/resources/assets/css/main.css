@@ -41,17 +41,17 @@ button {
     border-top: 2px solid #fff;
 }
 
-.navbar .repoSelector {
+.mainContainer .repos {
     align-self: center;
     margin-left: 20px;
-    font-size: 1.1em;
-    border-radius: 10px;
-    background: #333;
-    color: white;
 }
 
-.navbar .repoSelector select {
+.mainContainer .repos .repoSelector {
     line-height: 1.2em;
+    background: #333;
+    color: white;
+    font-size: 1.1em;
+    height: 100px;
 }
 
 .navbar .progress {

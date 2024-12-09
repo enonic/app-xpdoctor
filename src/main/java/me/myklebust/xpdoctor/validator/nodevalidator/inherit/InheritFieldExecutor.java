@@ -21,11 +21,11 @@ import com.enonic.xp.node.NodeService;
 
 public class InheritFieldExecutor
 {
+    private static final Logger LOG = LoggerFactory.getLogger( InheritFieldExecutor.class );
+
     private final NodeService nodeService;
 
     private IndexValueService indexValueService;
-
-    private final Logger LOG = LoggerFactory.getLogger( InheritFieldExecutor.class );
 
     public InheritFieldExecutor( final NodeService nodeService, final IndexValueService indexValueService )
     {
@@ -39,13 +39,13 @@ public class InheritFieldExecutor
 
         reporter.reportStart();
 
-        final BatchedQueryExecutor executor =
-            BatchedQueryExecutor.create().progressReporter( reporter.getProgressReporter() ).nodeService( this.nodeService ).build();
+        BatchedQueryExecutor.create()
+            .progressReporter( reporter.getProgressReporter() )
+            .nodeService( this.nodeService )
+            .build()
+            .execute( nodesToCheck -> checkNodes( nodesToCheck, reporter ) );
 
-        while ( executor.hasMore() )
-        {
-            executor.nextBatch(nodesToCheck -> checkNodes( nodesToCheck, reporter ) );
-        }
+        LOG.info( "... InheritFieldExecutor done" );
     }
 
     private void checkNodes( final NodeIds nodeIds, final Reporter reporter )
@@ -58,7 +58,7 @@ public class InheritFieldExecutor
             }
             catch ( Exception e )
             {
-                LOG.error( "Cannot check 'inherit' field for node with id: " + nodeId + "", e );
+                LOG.error( "Cannot check 'inherit' field for node with id: {}", nodeId, e );
             }
         }
     }

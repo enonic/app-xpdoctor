@@ -25,13 +25,9 @@ import com.enonic.xp.node.GetActiveNodeVersionsResult;
 import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeIds;
-import com.enonic.xp.node.NodeIndexPath;
 import com.enonic.xp.node.NodeQuery;
 import com.enonic.xp.node.NodeService;
 import com.enonic.xp.node.NodeVersionMetadata;
-import com.enonic.xp.query.expr.FieldOrderExpr;
-import com.enonic.xp.query.expr.OrderExpr;
-import com.enonic.xp.query.expr.OrderExpressions;
 import com.enonic.xp.repository.Repository;
 import com.enonic.xp.repository.RepositoryService;
 
@@ -39,13 +35,15 @@ import static me.myklebust.xpdoctor.validator.nodevalidator.uniquepath.UniquePat
 
 public class UniquePathValidatorExecutor
 {
+    private static final Logger LOG = LoggerFactory.getLogger( UniquePathValidatorExecutor.class );
+
     private final NodeService nodeService;
 
     private final RepositoryService repositoryService;
 
-    private NonUniquePathsHolder nonUniquePathsHolder = new NonUniquePathsHolder();
+    private final NonUniquePathsHolder nonUniquePathsHolder = new NonUniquePathsHolder();
 
-    private final Logger LOG = LoggerFactory.getLogger( UniquePathValidatorExecutor.class );
+    private final List<ValidatorResult.Builder> tmpResults = new ArrayList<>();
 
     public UniquePathValidatorExecutor( final NodeService nodeService, final RepositoryService repositoryService )
     {
@@ -58,40 +56,44 @@ public class UniquePathValidatorExecutor
         LOG.info( "Running UniquePathValidatorExecutor..." );
         reporter.reportStart();
 
-        final BatchedQueryExecutor executor = BatchedQueryExecutor.create().
+        BatchedQueryExecutor.create().
             nodeService( this.nodeService ).
             progressReporter( reporter.getProgressReporter() ).
-            orderBy( OrderExpressions.from( FieldOrderExpr.create( NodeIndexPath.PATH, OrderExpr.Direction.DESC ) ) ).
-            build();
+            build().execute( nodesToCheck -> checkNodes( nodesToCheck, reporter ) );
 
-        while ( executor.hasMore() )
-        {
-            executor.nextBatch(nodesToCheck -> checkNodes( nodesToCheck, reporter ) );
-        }
+        LOG.info( "... UniquePathValidatorExecutor done" );
     }
 
-    private List<ValidatorResult> checkNodes( final NodeIds nodeIds, final Reporter reporter )
+    private void checkNodes( final NodeIds nodeIds, final Reporter reporter )
     {
-        List<ValidatorResult> results = new ArrayList<>();
-
         for ( final NodeId nodeId : nodeIds )
         {
             try
             {
                 final Node node = this.nodeService.getById( nodeId );
 
-                checkNode( node, reporter );
-
+                checkNode( node );
             }
             catch ( Exception e )
             {
-                LOG.error( "Cannot check unique path for node with id: " + nodeId + "", e );
+                LOG.error( "Cannot check unique path for node with id: {}", nodeId, e );
             }
         }
-        return results;
+
+        for ( ValidatorResult.Builder tmpResult : tmpResults )
+        {
+            final boolean childHasTrouble = this.nonUniquePathsHolder.myChildHasAProblem( tmpResult.nodePath() );
+            tmpResult.repairResult( RepairResult.create()
+                                        .message( childHasTrouble
+                                                      ? "child must be repaired first"
+                                                      : "rename to " + tmpResult.nodePath().getName() + PREFIX )
+                                        .repairStatus( childHasTrouble ? RepairStatus.DEPENDENT_ON_OTHER : RepairStatus.IS_REPAIRABLE )
+                                        .build() ).validatorName( reporter.validatorName );
+            reporter.addResult( tmpResult.build() );
+        }
     }
 
-    private void checkNode( final Node node, final Reporter reporter )
+    private void checkNode( final Node node )
     {
         if ( nonUniquePathsHolder.has( node.path() ) )
         {
@@ -107,49 +109,31 @@ public class UniquePathValidatorExecutor
 
         if ( pathIsNotUnique )
         {
-            createNonUniqueEntry( node, queryResult, reporter );
+            createNonUniqueEntry( node, queryResult );
         }
     }
 
-    private void createNonUniqueEntry( final Node node, final FindNodesByQueryResult queryResult, final Reporter reporter )
+    private void createNonUniqueEntry( final Node node, final FindNodesByQueryResult queryResult )
     {
         final ValidatorResult.Builder result = ValidatorResult.create().
             nodeId( node.id() ).
             nodePath( node.path() ).
             nodeVersionId( node.getNodeVersionId() ).
             timestamp( node.getTimestamp() ).
-            validatorName( reporter.validatorName ).
-            type( "Non-unique path" );
-
-        final ArrayList<String> messages = new ArrayList<>();
-
-        for ( final NodeId nodeId : queryResult.getNodeIds() )
-        {
-            messages.add( addNotUniqueEntry( nodeId ) );
-        }
-
-        System.out.println( "Duplicate entries found: " + Joiner.on( ";" ).join( messages ) );
-
-        result.message( Joiner.on( ";" ).join( messages ) );
+            type( "Non-unique path" )
+            .message( queryResult.getNodeIds().stream().map( this::addNotUniqueEntry ).collect( Collectors.joining( ";" ) ) );
 
         this.nonUniquePathsHolder.add( node.path() );
 
-        System.out.println( "Adding to nonUniquePaths: " + node.path() );
-
-        final boolean childHasTrouble = this.nonUniquePathsHolder.myChildHasAProblem( node.path() );
-        result.repairResult( RepairResult.create().
-            message( childHasTrouble ? "child must be repaired first" : "rename to " + node.name() + PREFIX ).
-            repairStatus( childHasTrouble ? RepairStatus.DEPENDENT_ON_OTHER : RepairStatus.IS_REPAIRABLE ).
-            build() );
-
-        reporter.addResult( result.build() );
+        tmpResults.add( result );
     }
 
     private String addNotUniqueEntry( final NodeId nodeId )
     {
         final Repository repository = this.repositoryService.get( ContextAccessor.current().getRepositoryId() );
 
-        final GetActiveNodeVersionsResult activeVersions = getBranches( nodeId, repository );
+        final GetActiveNodeVersionsResult activeVersions = this.nodeService.getActiveVersions(
+            GetActiveNodeVersionsParams.create().nodeId( nodeId ).branches( repository.getBranches() ).build() );
 
         final ImmutableMap<Branch, NodeVersionMetadata> nodeVersions = activeVersions.getNodeVersions();
 
@@ -158,13 +142,5 @@ public class UniquePathValidatorExecutor
             collect( Collectors.toSet() );
 
         return String.format( "id: [%s]", Joiner.on( "," ).join( ids ) );
-    }
-
-    private GetActiveNodeVersionsResult getBranches( final NodeId nodeId, final Repository repository )
-    {
-        return this.nodeService.getActiveVersions( GetActiveNodeVersionsParams.create().
-            nodeId( nodeId ).
-            branches( repository.getBranches() ).
-            build() );
     }
 }

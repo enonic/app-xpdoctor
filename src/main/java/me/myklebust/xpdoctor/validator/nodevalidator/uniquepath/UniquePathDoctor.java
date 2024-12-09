@@ -20,9 +20,9 @@ import com.enonic.xp.node.RenameNodeParams;
 public class UniquePathDoctor
     implements NodeDoctor
 {
-    private final NodeService nodeService;
+    private static final Logger LOG = LoggerFactory.getLogger( UniquePathDoctor.class );
 
-    private final Logger LOG = LoggerFactory.getLogger( UniquePathDoctor.class );
+    private final NodeService nodeService;
 
     public final static String PREFIX = "_com_enonic_app_xpdoctor";
 
