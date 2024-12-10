@@ -8,6 +8,7 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 import me.myklebust.xpdoctor.validator.RepairResult;
+import me.myklebust.xpdoctor.validator.StorageSpyService;
 import me.myklebust.xpdoctor.validator.Validator;
 import me.myklebust.xpdoctor.validator.ValidatorResults;
 import me.myklebust.xpdoctor.validator.nodevalidator.Reporter;
@@ -29,6 +30,9 @@ public class InheritFieldValidator
 
     @Reference
     private BlobStore blobStore;
+
+    @Reference
+    private StorageSpyService storageSpyService;
 
     private InheritFieldDoctor doctor;
 
@@ -66,7 +70,7 @@ public class InheritFieldValidator
     public ValidatorResults validate( final ProgressReporter reporter )
     {
         final Reporter results = new Reporter( name(), reporter );
-        new InheritFieldExecutor( nodeService, new IndexValueService( client ) ).execute( results );
+        new InheritFieldExecutor( nodeService, new IndexValueService( client ), storageSpyService ).execute( results );
         return results.buildResults();
     }
 

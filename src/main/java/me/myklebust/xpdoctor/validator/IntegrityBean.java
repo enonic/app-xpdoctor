@@ -92,37 +92,23 @@ public class IntegrityBean
 
     public Object validators()
     {
-        final Set<Validator> validators = this.validatorService.getValidators();
-        return new ValidatorsMapper( validators );
+        return new ValidatorsMapper( this.validatorService.getValidators() );
     }
-
 
     private void validatorTask( final ProgressReporter progressReporter, final ValidateParams params )
     {
-        try
-        {
-            final RepoValidationResults result = this.validatorService.analyze( AnalyzeParams.create().
-                progressReporter( progressReporter ).
-                enabledValidators( params.getEnabledValidators() ).
-                repoBranches( params.getRepoBranches() ).
-                build() );
+        final RepoValidationResults result = this.validatorService.analyze( AnalyzeParams.create()
+                                                                                .progressReporter( progressReporter )
+                                                                                .enabledValidators( params.getEnabledValidators() )
+                                                                                .repoBranches( params.getRepoBranches() )
+                                                                                .build() );
 
-            this.lastResult = result;
+        this.lastResult = result;
 
-            final Object serializedResult = getSerializedResult( result );
+        final Object serializedResult = getSerializedResult( result );
 
-            eventPublisher.publish( Event.create( "com.enonic.app.xpdoctor.jobFinished" ).
-                distributed( true ).
-                localOrigin( true ).
-                timestamp( Instant.now().toEpochMilli() ).
-                value( "result", serializedResult ).
-                build() );
-        }
-        catch ( Exception e )
-        {
-            e.printStackTrace();
-            throw e;
-        }
+        eventPublisher.publish(
+            Event.create( "com.enonic.app.xpdoctor.jobFinished" ).distributed( true ).value( "result", serializedResult ).build() );
     }
 
     private Object getSerializedResult( final RepoValidationResults result )
@@ -132,6 +118,4 @@ public class IntegrityBean
         resultsMapper.serialize( jsonSerializer );
         return jsonSerializer.getRoot();
     }
-
-
 }

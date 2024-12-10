@@ -5,6 +5,7 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 import me.myklebust.xpdoctor.validator.RepairResult;
+import me.myklebust.xpdoctor.validator.StorageSpyService;
 import me.myklebust.xpdoctor.validator.Validator;
 import me.myklebust.xpdoctor.validator.ValidatorResults;
 import me.myklebust.xpdoctor.validator.nodevalidator.Reporter;
@@ -23,6 +24,9 @@ public class UniquePathValidator
 
     @Reference
     private NodeService nodeService;
+
+    @Reference
+    private StorageSpyService storageSpyService;
 
     private UniquePathDoctor doctor;
 
@@ -54,7 +58,7 @@ public class UniquePathValidator
     public ValidatorResults validate( final ProgressReporter reporter )
     {
         final Reporter results = new Reporter( name(), reporter );
-        new UniquePathValidatorExecutor( nodeService, repositoryService ).execute( results );
+        new UniquePathValidatorExecutor( nodeService, repositoryService, storageSpyService ).execute( results );
         return results.buildResults();
     }
 

@@ -58,7 +58,7 @@ public class LoadableValidator
     public ValidatorResults validate( final ProgressReporter reporter )
     {
         final Reporter results = new Reporter( name(), reporter );
-        new LoadableNodeExecutor( nodeService, doctor ).execute( results );
+        new LoadableNodeExecutor( nodeService, doctor, storageSpyService ).execute( results );
         return results.buildResults();
     }
 

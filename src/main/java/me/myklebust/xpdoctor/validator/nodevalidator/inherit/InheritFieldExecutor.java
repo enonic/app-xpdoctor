@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import me.myklebust.xpdoctor.validator.RepairResult;
 import me.myklebust.xpdoctor.validator.RepairStatus;
+import me.myklebust.xpdoctor.validator.StorageSpyService;
 import me.myklebust.xpdoctor.validator.ValidatorResult;
 import me.myklebust.xpdoctor.validator.nodevalidator.BatchedQueryExecutor;
 import me.myklebust.xpdoctor.validator.nodevalidator.Reporter;
@@ -25,12 +26,15 @@ public class InheritFieldExecutor
 
     private final NodeService nodeService;
 
+    private final StorageSpyService storageSpyService;
+
     private IndexValueService indexValueService;
 
-    public InheritFieldExecutor( final NodeService nodeService, final IndexValueService indexValueService )
+    public InheritFieldExecutor( final NodeService nodeService, final IndexValueService indexValueService, final StorageSpyService storageSpyService)
     {
         this.nodeService = nodeService;
         this.indexValueService = indexValueService;
+        this.storageSpyService = storageSpyService;
     }
 
     public void execute( final Reporter reporter )
@@ -41,7 +45,7 @@ public class InheritFieldExecutor
 
         BatchedQueryExecutor.create()
             .progressReporter( reporter.getProgressReporter() )
-            .nodeService( this.nodeService )
+            .spyStorageService( this.storageSpyService )
             .build()
             .execute( nodesToCheck -> checkNodes( nodesToCheck, reporter ) );
 

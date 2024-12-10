@@ -5,6 +5,7 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 import me.myklebust.xpdoctor.validator.RepairResult;
+import me.myklebust.xpdoctor.validator.StorageSpyService;
 import me.myklebust.xpdoctor.validator.Validator;
 import me.myklebust.xpdoctor.validator.ValidatorResults;
 import me.myklebust.xpdoctor.validator.nodevalidator.Reporter;
@@ -21,6 +22,9 @@ public class ParentExistsValidator
     private NodeService nodeService;
 
     private NoParentDoctor doctor;
+
+    @Reference
+    private StorageSpyService storageSpyService;
 
     @Activate
     public void activate()
@@ -50,7 +54,7 @@ public class ParentExistsValidator
     public ValidatorResults validate( final ProgressReporter reporter )
     {
         final Reporter results = new Reporter( name(), reporter );
-        new ParentExistsExistsExecutor( nodeService ).execute( results );
+        new ParentExistsExistsExecutor( nodeService, storageSpyService ).execute( results );
         return results.buildResults();
     }
 

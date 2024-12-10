@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableMap;
 
 import me.myklebust.xpdoctor.validator.RepairResult;
 import me.myklebust.xpdoctor.validator.RepairStatus;
+import me.myklebust.xpdoctor.validator.StorageSpyService;
 import me.myklebust.xpdoctor.validator.ValidatorResult;
 import me.myklebust.xpdoctor.validator.nodevalidator.BatchedQueryExecutor;
 import me.myklebust.xpdoctor.validator.nodevalidator.Reporter;
@@ -41,14 +42,17 @@ public class UniquePathValidatorExecutor
 
     private final RepositoryService repositoryService;
 
+    private final StorageSpyService storageSpyService;
+
     private final NonUniquePathsHolder nonUniquePathsHolder = new NonUniquePathsHolder();
 
     private final List<ValidatorResult.Builder> tmpResults = new ArrayList<>();
 
-    public UniquePathValidatorExecutor( final NodeService nodeService, final RepositoryService repositoryService )
+    public UniquePathValidatorExecutor( final NodeService nodeService, final RepositoryService repositoryService, StorageSpyService storageSpyService )
     {
         this.nodeService = nodeService;
         this.repositoryService = repositoryService;
+        this.storageSpyService = storageSpyService;
     }
 
     public void execute( final Reporter reporter)
@@ -56,8 +60,7 @@ public class UniquePathValidatorExecutor
         LOG.info( "Running UniquePathValidatorExecutor..." );
         reporter.reportStart();
 
-        BatchedQueryExecutor.create().
-            nodeService( this.nodeService ).
+        BatchedQueryExecutor.create().spyStorageService( this.storageSpyService ).
             progressReporter( reporter.getProgressReporter() ).
             build().execute( nodesToCheck -> checkNodes( nodesToCheck, reporter ) );
 

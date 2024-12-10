@@ -1,26 +1,30 @@
-package me.myklebust.xpdoctor.validator.nodevalidator.blobmissing;
+package me.myklebust.xpdoctor.validator.nodevalidator.binaryblobmissing;
 
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 import me.myklebust.xpdoctor.validator.FileBlobStoreSpyService;
-import me.myklebust.xpdoctor.validator.StorageSpyService;
 import me.myklebust.xpdoctor.validator.RepairResult;
+import me.myklebust.xpdoctor.validator.StorageSpyService;
 import me.myklebust.xpdoctor.validator.Validator;
 import me.myklebust.xpdoctor.validator.ValidatorResults;
 import me.myklebust.xpdoctor.validator.nodevalidator.Reporter;
 
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeService;
+import com.enonic.xp.repository.RepositoryService;
 import com.enonic.xp.task.ProgressReporter;
 
 @Component(immediate = true)
-public class BlobMissingValidator
+public class BinaryBlobMissingValidator
     implements Validator
 {
     @Reference
     private NodeService nodeService;
+
+    @Reference
+    private RepositoryService repositoryService;
 
     @Reference
     private StorageSpyService storageSpyService;
@@ -28,12 +32,12 @@ public class BlobMissingValidator
     @Reference
     private FileBlobStoreSpyService fileBlobStoreSpyService;
 
-    private BlobMissingDoctor doctor;
+    private BinaryBlobMissingDoctor doctor;
 
     @Activate
     public void activate()
     {
-        this.doctor = new BlobMissingDoctor();
+        this.doctor = new BinaryBlobMissingDoctor( fileBlobStoreSpyService.getBlobStore(), repositoryService, storageSpyService );
     }
 
     @Override
@@ -52,7 +56,7 @@ public class BlobMissingValidator
     public ValidatorResults validate( final ProgressReporter reporter )
     {
         final Reporter results = new Reporter( name(), reporter );
-        new BlobMissingExecutor( nodeService, storageSpyService, fileBlobStoreSpyService.getBlobStore(), doctor ).execute( results );
+        new BinaryBlobMissingExecutor( storageSpyService, fileBlobStoreSpyService.getBlobStore(), doctor ).execute( results );
         return results.buildResults();
     }
 

@@ -105,14 +105,14 @@ implements NodeDoctor
 
     private RepairResult repairMissingBlob( final NodeId nodeId, final boolean dryRun )
     {
-        LOG.info( "Checking for older versions of node with id: [" + nodeId + "]......" );
+        LOG.info( "Checking for older versions of node with id: [{}]......", nodeId );
 
         final BatchedVersionExecutor executor = BatchedVersionExecutor.create( this.nodeService ).
             nodeId( nodeId ).
             batchSize( 10 ).
             build();
 
-        LOG.info( "Found: " + executor.getTotalHits() + " versions of node" );
+        LOG.info( "Found: {} versions of node", executor.getTotalHits() );
 
         while ( executor.hasMore() )
         {
@@ -205,7 +205,7 @@ implements NodeDoctor
             LOG.error( "Failed to roll-back version", e );
             return RepairResult.create().
                 repairStatus( RepairStatus.FAILED ).
-                message( "Failed to roll-back version: " + e.toString() ).
+                message( "Failed to roll-back version: " + e.getMessage() ).
                 build();
         }
     }

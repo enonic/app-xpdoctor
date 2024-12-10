@@ -1,7 +1,9 @@
-package me.myklebust.xpdoctor.validator.nodevalidator.blobmissing;
+package me.myklebust.xpdoctor.validator.nodevalidator.binaryblobmissing;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.elasticsearch.action.get.GetResponse;
 import org.slf4j.Logger;
@@ -20,30 +22,32 @@ import com.enonic.xp.blob.SegmentLevel;
 import com.enonic.xp.context.ContextAccessor;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeIds;
-import com.enonic.xp.node.NodeService;
 import com.enonic.xp.node.NodeVersionId;
 import com.enonic.xp.repository.RepositorySegmentUtils;
 
-public class BlobMissingExecutor
+public class BinaryBlobMissingExecutor
 {
-    private static final Logger LOG = LoggerFactory.getLogger( BlobMissingExecutor.class );
+    private static final Logger LOG = LoggerFactory.getLogger( BinaryBlobMissingExecutor.class );
 
-    private static final SegmentLevel BINARY_SEGMENT_LEVEL = SegmentLevel.from( "binary" );
+    public static final SegmentLevel NODE_SEGMENT_LEVEL = SegmentLevel.from( "node" );
+
+    public static final SegmentLevel INDEX_CONFIG_SEGMENT_LEVEL = SegmentLevel.from( "index" );
+
+    public static final SegmentLevel ACCESS_CONTROL_SEGMENT_LEVEL = SegmentLevel.from( "access" );
+
+    public static final SegmentLevel BINARY_SEGMENT_LEVEL = SegmentLevel.from( "binary" );
 
     private final static String TYPE = "Missing Blob";
-
-    private final NodeService nodeService;
 
     private final StorageSpyService storageSpyService;
 
     private final BlobStore blobStore;
 
-    private final BlobMissingDoctor doctor;
+    private final BinaryBlobMissingDoctor doctor;
 
-    public BlobMissingExecutor( final NodeService nodeService, final StorageSpyService storageSpyService, final BlobStore blobStore,
-                                final BlobMissingDoctor doctor )
+    public BinaryBlobMissingExecutor( final StorageSpyService storageSpyService, final BlobStore blobStore,
+                                      final BinaryBlobMissingDoctor doctor )
     {
-        this.nodeService = nodeService;
         this.storageSpyService = storageSpyService;
         this.blobStore = blobStore;
         this.doctor = doctor;
@@ -57,7 +61,7 @@ public class BlobMissingExecutor
 
         BatchedQueryExecutor.create()
             .progressReporter( reporter.getProgressReporter() )
-            .nodeService( this.nodeService )
+            .spyStorageService( this.storageSpyService )
             .build()
             .execute( nodesToCheck -> checkNodes( nodesToCheck, reporter ) );
 
@@ -77,26 +81,13 @@ public class BlobMissingExecutor
     {
         try
         {
-            final GetResponse response =
-                storageSpyService.getInBranch( nodeId, ContextAccessor.current().getRepositoryId(), ContextAccessor.current().getBranch() );
-            final Map<String, Object> sourceAsMap = response.getSourceAsMap();
-            final NodeVersionId versionid = NodeVersionId.from( ( (List<String>) sourceAsMap.get( "versionid" ) ).get( 0 ) );
+            final MissingBlobsService.BlobRefs binaryBlobKeysToRestore = new MissingBlobsService(blobStore, storageSpyService).missingBlobs( nodeId );
 
-            final GetResponse versionResponse =
-                storageSpyService.getVersion( nodeId, versionid, ContextAccessor.current().getRepositoryId() );
-            final List<String> binaryblobkeys = (List<String>) versionResponse.getSourceAsMap().get( "binaryblobkeys" );
-            if ( binaryblobkeys != null )
-            {
-                for ( String binaryblobkey : binaryblobkeys )
-                {
-                    final BlobRecord binaryBlobRecord = blobStore.getRecord(
-                        RepositorySegmentUtils.toSegment( ContextAccessor.current().getRepositoryId(), BINARY_SEGMENT_LEVEL ),
-                        BlobKey.from( binaryblobkey ) );
-                    if ( binaryBlobRecord == null )
-                    {
-                        resolveAndRepair( results, nodeId, "Binary blob is missing " + binaryblobkey );
-                    }
-                }
+            if (!binaryBlobKeysToRestore.isOk()) {
+                resolveAndRepair( results, nodeId, "Binary blobs missing: " + binaryBlobKeysToRestore.binaryblobkeys + " " +
+                    ( binaryBlobKeysToRestore.nodeblobkey == null ? "nodeblob missing" : "" ) +
+                    ( binaryBlobKeysToRestore.accesscontrolblobkey == null ? "accesscontrolblob missing" : "" ) +
+                    ( binaryBlobKeysToRestore.indexconfigblobkey == null ? "indexconfigblob missing" : "" ) );
             }
         }
         catch ( Exception e )

@@ -1,9 +1,9 @@
 package me.myklebust.xpdoctor.validator;
 
 import java.util.Comparator;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.stream.Collectors;
 
 import org.osgi.service.component.annotations.Component;
@@ -13,8 +13,6 @@ import org.osgi.service.component.annotations.ReferencePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.enonic.xp.branch.Branches;
-import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeService;
 import com.enonic.xp.repository.RepositoryService;
 
@@ -23,9 +21,9 @@ import com.enonic.xp.repository.RepositoryService;
 public class ValidatorServiceImpl
     implements ValidatorService
 {
-    private static final Logger LOG = LoggerFactory.getLogger( IntegrityBean.class );
+    private static final Logger LOG = LoggerFactory.getLogger( ValidatorServiceImpl.class );
 
-    private final Set<Validator> validators = new TreeSet<>( Comparator.comparingInt( Validator::order ) );
+    private final Set<Validator> validators = new ConcurrentSkipListSet<>( Comparator.comparing( Validator::name ) );
 
     @Reference
     private NodeService nodeService;
@@ -33,22 +31,14 @@ public class ValidatorServiceImpl
     @Reference
     private RepositoryService repoService;
 
-    public Set<Validator> getValidators()
+    public List<Validator> getValidators()
     {
-        return validators;
+        return validators.stream().sorted( Comparator.comparingInt( Validator::order ) ).collect( Collectors.toUnmodifiableList() );
     }
 
     public Validator getValidator( final String validatorName )
     {
-        for ( final Validator validator : this.validators )
-        {
-            if ( validator.name().equals( validatorName ) )
-            {
-                return validator;
-            }
-        }
-
-        return null;
+        return validators.stream().filter( validator -> validator.name().equals( validatorName ) ).findAny().orElse( null );
     }
 
     public RepoValidationResults analyze( final AnalyzeParams params )
@@ -59,23 +49,17 @@ public class ValidatorServiceImpl
             .repoService( this.repoService )
             .progressReporter( params.getProgressReporter() )
             .repoBranches( params.getRepoBranches() )
-            .validators( this.validators.stream()
-                             .filter( validator -> params.getEnabledValidators().contains( validator.name() ) )
-                             .collect( Collectors.toList() ) )
+            .validators( this.validators.stream().filter( validator -> params.getEnabledValidators().contains( validator.name() ) )
+                             .sorted( Comparator.comparingInt( Validator::order ) )
+                             .collect( Collectors.toUnmodifiableList() ) )
             .build()
             .execute();
-    }
-
-    public void repair( final NodeId nodeId )
-    {
-        validators.forEach( validator -> validator.repair( nodeId ) );
     }
 
     @SuppressWarnings("unused")
     @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
     public void addValidator( final Validator val )
     {
-        LOG.info( "Adding validator: " + val.name() );
         this.validators.add( val );
     }
 
@@ -84,7 +68,6 @@ public class ValidatorServiceImpl
     {
         this.validators.remove( val );
     }
-
 }
 
 

@@ -1,14 +1,20 @@
 package me.myklebust.xpdoctor.validator.nodevalidator;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Consumer;
 
+import org.elasticsearch.action.search.SearchResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.enonic.xp.node.FindNodesByQueryResult;
+import me.myklebust.xpdoctor.validator.StorageSpyService;
+
+import com.enonic.xp.branch.Branch;
+import com.enonic.xp.context.ContextAccessor;
+import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeIds;
-import com.enonic.xp.node.NodeQuery;
-import com.enonic.xp.node.NodeService;
+import com.enonic.xp.repository.RepositoryId;
 import com.enonic.xp.task.ProgressReporter;
 
 public class BatchedQueryExecutor
@@ -17,53 +23,58 @@ public class BatchedQueryExecutor
 
     private final int batchSize;
 
-    private final NodeService nodeService;
-
-    private int currentFrom = 0;
-
-    private boolean hasMore = true;
+    private final StorageSpyService storageSpyService;
 
     private final ProgressReporter progressReporter;
 
-    private Long totalHits;
+    private final RepositoryId repositoryId;
+
+    private final Branch branch;
 
     private BatchedQueryExecutor( final Builder builder )
     {
         this.batchSize = 1_000;
-        this.nodeService = builder.nodeService;
+        this.storageSpyService = builder.storageSpyService;
         this.progressReporter = builder.progressReporter;
-        this.totalHits = -1L;
+        this.repositoryId = ContextAccessor.current().getRepositoryId();
+        this.branch = ContextAccessor.current().getBranch();
     }
 
     public void execute( Consumer<NodeIds> consumer )
     {
-        while ( this.hasMore )
+        int totalHits = (int) this.storageSpyService.findAllInBranch( repositoryId, branch, 0, null ).getHits().getTotalHits();
+
+        NodeId lastNodeId = null;
+
+        int currentFrom = 0;
+        while ( true )
         {
-            final NodeIds nodeIds = executeNext();
-            LOG.info( "Checking nodes {} of {}", currentFrom, totalHits );
-            progressReporter.progress( totalHits.intValue(), currentFrom );
-            consumer.accept( nodeIds );
+            final NodeIds nodeIds = executeNext( lastNodeId );
+            if ( nodeIds.isEmpty() )
+            {
+                return;
+            }
+            else
+            {
+                LOG.info( "Checking nodes {}-{} of {}", currentFrom, Math.min( currentFrom - 1 + batchSize, totalHits ) , totalHits );
+                progressReporter.progress( totalHits, currentFrom );
+                currentFrom += nodeIds.getSize();
+
+                consumer.accept( nodeIds );
+                lastNodeId = nodeIds.stream().sequential().reduce((first, second) -> second).orElse(null);
+            }
         }
     }
 
-    public NodeIds executeNext()
+    public NodeIds executeNext( final NodeId lastNodeId )
     {
-        final NodeQuery query = NodeQuery.create().from( this.currentFrom ).size( this.batchSize ).build();
+        final SearchResponse allInBranch =
+            this.storageSpyService.findAllInBranch( repositoryId, branch, batchSize, lastNodeId == null ? null : lastNodeId.toString() );
+        return NodeIds.from( Arrays.stream( allInBranch.getHits().getHits() )
+                                 .map( h -> ((List<String>)h.getSource().get( "nodeid" )).get( 0 ) )
+                                 .map( NodeId::from )
+                                 .toArray( NodeId[]::new ) );
 
-        final FindNodesByQueryResult result = this.nodeService.findByQuery( query );
-        totalHits = result.getTotalHits();
-
-        if ( result.getNodeHits().isEmpty() )
-        {
-            this.hasMore = false;
-        }
-        else
-        {
-            this.currentFrom += this.batchSize;
-
-            this.hasMore = currentFrom < result.getTotalHits();
-        }
-        return result.getNodeIds();
     }
 
     public static Builder create()
@@ -73,7 +84,7 @@ public class BatchedQueryExecutor
 
     public static final class Builder
     {
-        private NodeService nodeService;
+        private StorageSpyService storageSpyService;
 
         private ProgressReporter progressReporter;
 
@@ -81,9 +92,9 @@ public class BatchedQueryExecutor
         {
         }
 
-        public Builder nodeService( final NodeService val )
+        public Builder spyStorageService( final StorageSpyService val )
         {
-            nodeService = val;
+            storageSpyService = val;
             return this;
         }
 

@@ -5,6 +5,7 @@ import org.osgi.service.component.annotations.Reference;
 
 import me.myklebust.xpdoctor.validator.RepairResult;
 import me.myklebust.xpdoctor.validator.RepairStatus;
+import me.myklebust.xpdoctor.validator.StorageSpyService;
 import me.myklebust.xpdoctor.validator.Validator;
 import me.myklebust.xpdoctor.validator.ValidatorResults;
 import me.myklebust.xpdoctor.validator.nodevalidator.Reporter;
@@ -19,6 +20,9 @@ public class VersionsValidator
 {
     @Reference
     private NodeService nodeService;
+
+    @Reference
+    private StorageSpyService storageSpyService;
 
     @Override
     public int order()
@@ -42,7 +46,7 @@ public class VersionsValidator
     public ValidatorResults validate( final ProgressReporter reporter )
     {
         final Reporter results = new Reporter( name(), reporter );
-        new VersionsExecutor( nodeService ).execute( results );
+        new VersionsExecutor( nodeService, storageSpyService ).execute( results );
         return results.buildResults();
     }
 

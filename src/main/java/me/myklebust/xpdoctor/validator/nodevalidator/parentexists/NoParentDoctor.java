@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import me.myklebust.xpdoctor.validator.RepairResult;
 import me.myklebust.xpdoctor.validator.RepairStatus;
-import me.myklebust.xpdoctor.validator.nodevalidator.uniquepath.UniquePathDoctor;
+import me.myklebust.xpdoctor.validator.nodevalidator.NodeDoctor;
 
 import com.enonic.xp.node.CreateNodeParams;
 import com.enonic.xp.node.Node;
@@ -13,7 +13,7 @@ import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodePath;
 import com.enonic.xp.node.NodeService;
 
-public class NoParentDoctor
+public class NoParentDoctor implements NodeDoctor
 {
     private static final Logger LOG = LoggerFactory.getLogger( NoParentDoctor.class );
 
@@ -26,6 +26,7 @@ public class NoParentDoctor
         this.nodeService = nodeService;
     }
 
+    @Override
     public RepairResult repairNode( final NodeId nodeId, final boolean dryRun )
     {
         LOG.info( "Moving node to default lost-folder" );

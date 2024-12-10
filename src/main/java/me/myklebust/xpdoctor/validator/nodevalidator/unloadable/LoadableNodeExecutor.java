@@ -1,9 +1,11 @@
 package me.myklebust.xpdoctor.validator.nodevalidator.unloadable;
 
+import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import me.myklebust.xpdoctor.validator.RepairResult;
+import me.myklebust.xpdoctor.validator.StorageSpyService;
 import me.myklebust.xpdoctor.validator.ValidatorResult;
 import me.myklebust.xpdoctor.validator.nodevalidator.BatchedQueryExecutor;
 import me.myklebust.xpdoctor.validator.nodevalidator.Reporter;
@@ -20,13 +22,15 @@ public class LoadableNodeExecutor
 
     private final NodeService nodeService;
 
+    private final StorageSpyService storageSpyService;
 
     private final LoadableNodeDoctor doctor;
 
-    public LoadableNodeExecutor( final NodeService nodeService, final LoadableNodeDoctor doctor )
+    public LoadableNodeExecutor( final NodeService nodeService, final LoadableNodeDoctor doctor, final StorageSpyService storageSpyService )
     {
         this.nodeService = nodeService;
         this.doctor = doctor;
+        this.storageSpyService = storageSpyService;
     }
 
     public void execute( final Reporter reporter )
@@ -35,7 +39,7 @@ public class LoadableNodeExecutor
 
         BatchedQueryExecutor.create()
             .progressReporter( reporter.getProgressReporter() )
-            .nodeService( this.nodeService )
+            .spyStorageService( storageSpyService )
             .build()
             .execute( nodesToCheck -> checkNodes( nodesToCheck, reporter ) );
 

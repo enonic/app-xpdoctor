@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import me.myklebust.xpdoctor.validator.RepairResult;
 import me.myklebust.xpdoctor.validator.RepairStatus;
+import me.myklebust.xpdoctor.validator.StorageSpyService;
 import me.myklebust.xpdoctor.validator.ValidatorResult;
 import me.myklebust.xpdoctor.validator.nodevalidator.BatchedQueryExecutor;
 import me.myklebust.xpdoctor.validator.nodevalidator.Reporter;
@@ -22,9 +23,12 @@ public class VersionsExecutor
 
     private final NodeService nodeService;
 
-    public VersionsExecutor( final NodeService nodeService )
+    private final StorageSpyService storageSpyService;
+
+    public VersionsExecutor( final NodeService nodeService, final StorageSpyService storageSpyService )
     {
         this.nodeService = nodeService;
+        this.storageSpyService = storageSpyService;
     }
 
     public void execute( final Reporter reporter )
@@ -34,7 +38,7 @@ public class VersionsExecutor
 
         BatchedQueryExecutor.create()
             .progressReporter( reporter.getProgressReporter() )
-            .nodeService( this.nodeService )
+            .spyStorageService( this.storageSpyService )
             .build()
             .execute( nodesToCheck -> checkNodes( nodesToCheck, reporter ) );
 
