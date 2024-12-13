@@ -77,10 +77,11 @@ public class BlobMissingExecutor
             if ( !missingBlobsResult.isOk() )
             {
                 final String message =
-                    ( !missingBlobsResult.binaryblobkeys.isEmpty() ? "Binary blobs missing: " + missingBlobsResult.binaryblobkeys : "" ) +
-                        " " + ( missingBlobsResult.nodeblobkey != null ? "nodeblob missing: " + missingBlobsResult.nodeblobkey : "" ) +
-                        " " + ( missingBlobsResult.accesscontrolblobkey != null ? "accesscontrolblob missing " +
-                        missingBlobsResult.accesscontrolblobkey : "" ) + " " + ( missingBlobsResult.indexconfigblobkey != null
+                    ( !missingBlobsResult.binaryblobkeys.isEmpty() ? "Binary blobs missing (" + missingBlobsResult.binaryblobkeys.size() +
+                        "): " + missingBlobsResult.binaryblobkeys : "" ) + " " +
+                        ( missingBlobsResult.nodeblobkey != null ? "nodeblob missing: " + missingBlobsResult.nodeblobkey : "" ) + " " +
+                        ( missingBlobsResult.accesscontrolblobkey != null ? "accesscontrolblob missing " +
+                            missingBlobsResult.accesscontrolblobkey : "" ) + " " + ( missingBlobsResult.indexconfigblobkey != null
                         ? "indexconfigblob missing " + missingBlobsResult.indexconfigblobkey
                         : "" );
                 resolveAndRepair( results, nodeId, message );
