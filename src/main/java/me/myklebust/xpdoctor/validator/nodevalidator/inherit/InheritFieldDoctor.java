@@ -16,8 +16,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.io.ByteSource;
 
 import me.myklebust.xpdoctor.validator.RepairResult;
-import me.myklebust.xpdoctor.validator.RepairResultImpl;
 import me.myklebust.xpdoctor.validator.RepairStatus;
+import me.myklebust.xpdoctor.validator.nodevalidator.NodeDoctor;
 import me.myklebust.xpdoctor.validator.nodevalidator.uniquepath.UniquePathDoctor;
 
 import com.enonic.xp.blob.BlobRecord;
@@ -35,14 +35,15 @@ import com.enonic.xp.node.NodeVersionMetadata;
 import com.enonic.xp.repository.RepositorySegmentUtils;
 
 public class InheritFieldDoctor
+    implements NodeDoctor
 {
+    private static final Logger LOG = LoggerFactory.getLogger( UniquePathDoctor.class );
+
     private final NodeService nodeService;
 
     private IndexValueService indexValueService;
 
     private BlobStore blobStore;
-
-    private final Logger LOG = LoggerFactory.getLogger( UniquePathDoctor.class );
 
     private static final ObjectMapper MAPPER = ObjectMapperHelper.create();
 
@@ -53,7 +54,8 @@ public class InheritFieldDoctor
         this.blobStore = builder.blobStore;
     }
 
-    public RepairResult repairNode( final NodeId nodeId, final boolean repairNow )
+    @Override
+    public RepairResult repairNode( final NodeId nodeId, final boolean dryRun )
     {
         LOG.info( "Updating blob with index value" );
 
@@ -120,7 +122,7 @@ public class InheritFieldDoctor
 
                                 LOG.info( msg );
 
-                                return RepairResultImpl.create().message( msg ).repairStatus( RepairStatus.REPAIRED ).build();
+                                return RepairResult.create().message( msg ).repairStatus( RepairStatus.REPAIRED ).build();
 
                             }
 
@@ -134,13 +136,13 @@ public class InheritFieldDoctor
         {
             LOG.error( "Failed to repair node", e );
 
-            return RepairResultImpl.create()
+            return RepairResult.create()
                 .message( "Cannot repair node, exception when trying to load: " + e.getMessage() )
                 .repairStatus( RepairStatus.FAILED )
                 .build();
         }
 
-        return RepairResultImpl.create().
+        return RepairResult.create().
             message( "No need to repair, the node has no 'inherit' value" ).
             repairStatus( RepairStatus.UNKNOW ).
             build();

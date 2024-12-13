@@ -5,8 +5,10 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 import me.myklebust.xpdoctor.validator.RepairResult;
+import me.myklebust.xpdoctor.validator.StorageSpyService;
 import me.myklebust.xpdoctor.validator.Validator;
 import me.myklebust.xpdoctor.validator.ValidatorResults;
+import me.myklebust.xpdoctor.validator.nodevalidator.Reporter;
 
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeService;
@@ -16,9 +18,13 @@ import com.enonic.xp.task.ProgressReporter;
 public class ParentExistsValidator
     implements Validator
 {
+    @Reference
     private NodeService nodeService;
 
     private NoParentDoctor doctor;
+
+    @Reference
+    private StorageSpyService storageSpyService;
 
     @Activate
     public void activate()
@@ -30,12 +36,6 @@ public class ParentExistsValidator
     public int order()
     {
         return 2;
-    }
-
-    @Override
-    public String name()
-    {
-        return this.getClass().getSimpleName();
     }
 
     @Override
@@ -53,29 +53,14 @@ public class ParentExistsValidator
     @Override
     public ValidatorResults validate( final ProgressReporter reporter )
     {
-        return ParentExistsExistsExecutor.create().
-            nodeService( this.nodeService ).
-            progressReporter( reporter ).
-            validatorName( name() ).
-            build().
-            execute();
+        final Reporter results = new Reporter( name(), reporter );
+        new ParentExistsExecutor( nodeService, storageSpyService ).execute( results );
+        return results.buildResults();
     }
 
     @Override
     public RepairResult repair( final NodeId nodeId )
     {
-        return this.doctor.repairNode( nodeId, true );
-    }
-
-    @Reference
-    public void setNodeService( final NodeService nodeService )
-    {
-        this.nodeService = nodeService;
-    }
-
-    @Override
-    public int compareTo( final Validator o )
-    {
-        return Integer.compare( this.order(), o.order() );
+        return this.doctor.repairNode( nodeId, false );
     }
 }

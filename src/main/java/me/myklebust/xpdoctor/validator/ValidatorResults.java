@@ -1,13 +1,11 @@
 package me.myklebust.xpdoctor.validator;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import com.google.common.collect.Lists;
-
 public class ValidatorResults
-    implements Iterable<ValidatorResult>
 {
     private List<ValidatorResult> validatorResultsList;
 
@@ -22,12 +20,6 @@ public class ValidatorResults
     }
 
 
-    @Override
-    public Iterator<ValidatorResult> iterator()
-    {
-        return this.validatorResultsList.iterator();
-    }
-
     public List<ValidatorResult> getResults()
     {
         return validatorResultsList;
@@ -35,7 +27,7 @@ public class ValidatorResults
 
     public static final class Builder
     {
-        private List<ValidatorResult> validatorResultsList = Lists.newArrayList();
+        private List<ValidatorResult> validatorResultsList = new ArrayList<>();
 
         private Builder()
         {

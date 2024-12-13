@@ -53,7 +53,6 @@ $(function () {
     setInterval(getLastResult, 2000);
 
     loadRepoList();
-
 });
 
 var initializeButtons = function () {
@@ -74,6 +73,14 @@ var initializeButtons = function () {
         state.repoSelected = true;
     })
 
+    const checkUncheckAll = $('#toggleAll');
+    const checkboxes = $(model.item.validatorItemClass + ' input');
+
+    checkUncheckAll.on('click', function() {
+        const firstCheckbox = checkboxes.first();
+        const isChecked = !firstCheckbox.prop('checked');
+        checkboxes.prop('checked', isChecked);
+    });
 };
 
 var disableButton = function (button) {
@@ -111,10 +118,8 @@ var populateRepoSelector = function (result) {
 
     var html = "";
 
-    html += "<option selected='true' disabled='disabled'>Select repository/branch</option>";
-
     result.repoList.forEach(function (entry) {
-        html += "<option value='" + entry.repo + ";" + entry.branch + "'>";
+        html += "<option value='" + entry.repo + ":" + entry.branch + "'>";
         html += entry.repo + " - " + entry.branch + " (" + entry.count + " nodes)";
         html += "</option>";
     });
@@ -387,18 +392,15 @@ var doValidation = function () {
 
     console.log("REPOSELECTOR: ", repoSelector);
 
-    var values = repoSelector.split(";");
-
     var data = {
         enabledValidators: getEnabledValidators(),
-        repoId: values[0],
-        branch: values[1]
+        repoBranches: repoSelector,
     };
 
     jQuery.ajax({
         url: validatorServiceUrl,
         cache: false,
-        type: 'GET',
+        type: 'POST',
         data: data,
         success: function (result) {
             if (result.error) {
@@ -504,5 +506,6 @@ var removeActiveMark = function (element) {
 var getProgressInfoElement = function (element) {
     return element.find(model.item.validatorProgressClass);
 };
+
 
 

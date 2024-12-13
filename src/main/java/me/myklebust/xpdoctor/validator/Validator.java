@@ -4,9 +4,10 @@ import com.enonic.xp.node.NodeId;
 import com.enonic.xp.task.ProgressReporter;
 
 public interface Validator
-    extends Comparable<Validator>
 {
-    String name();
+    default String name() {
+        return this.getClass().getSimpleName();
+    }
 
     String getDescription();
 
@@ -17,6 +18,4 @@ public interface Validator
     RepairResult repair( final NodeId nodeId );
 
     int order();
-
-
 }

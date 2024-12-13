@@ -1,6 +1,5 @@
 package me.myklebust.xpdoctor.validator.nodevalidator.inherit;
 
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -8,157 +7,94 @@ import java.util.stream.StreamSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
-
-import me.myklebust.xpdoctor.validator.RepairResultImpl;
+import me.myklebust.xpdoctor.validator.RepairResult;
 import me.myklebust.xpdoctor.validator.RepairStatus;
+import me.myklebust.xpdoctor.validator.StorageSpyService;
 import me.myklebust.xpdoctor.validator.ValidatorResult;
-import me.myklebust.xpdoctor.validator.ValidatorResultImpl;
-import me.myklebust.xpdoctor.validator.ValidatorResults;
-import me.myklebust.xpdoctor.validator.nodevalidator.AbstractNodeExecutor;
-import me.myklebust.xpdoctor.validator.nodevalidator.BatchedQueryExecutor;
+import me.myklebust.xpdoctor.validator.nodevalidator.Reporter;
+import me.myklebust.xpdoctor.validator.nodevalidator.ScrollQueryExecutor;
 
 import com.enonic.xp.data.PropertyTree;
+import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeIds;
 import com.enonic.xp.node.NodeService;
 
 
 public class InheritFieldExecutor
-    extends AbstractNodeExecutor
 {
-    public static final int BATCH_SIZE = 1_000;
+    private static final Logger LOG = LoggerFactory.getLogger( InheritFieldExecutor.class );
 
     private final NodeService nodeService;
 
+    private final StorageSpyService storageSpyService;
+
     private IndexValueService indexValueService;
 
-
-    private final Logger LOG = LoggerFactory.getLogger( InheritFieldExecutor.class );
-
-    private InheritFieldExecutor( final Builder builder )
+    public InheritFieldExecutor( final NodeService nodeService, final IndexValueService indexValueService, final StorageSpyService storageSpyService)
     {
-        super( builder );
-        nodeService = builder.nodeService;
-        indexValueService = builder.indexValueService;
+        this.nodeService = nodeService;
+        this.indexValueService = indexValueService;
+        this.storageSpyService = storageSpyService;
     }
 
-    public static Builder create()
-    {
-        return new Builder();
-    }
-
-
-    public ValidatorResults execute()
+    public void execute( final Reporter reporter )
     {
         LOG.info( "Running InheritFieldExecutor..." );
 
-        reportStart();
+        reporter.reportStart();
 
-        final BatchedQueryExecutor executor = BatchedQueryExecutor.create().batchSize( BATCH_SIZE ).nodeService( this.nodeService ).build();
+        ScrollQueryExecutor.create()
+            .progressReporter( reporter.getProgressReporter() )
+            .indexType( ScrollQueryExecutor.IndexType.STORAGE )
+            .spyStorageService( this.storageSpyService )
+            .build()
+            .execute( nodesToCheck -> checkNodes( nodesToCheck, reporter ) );
 
-        final ValidatorResults.Builder results = ValidatorResults.create();
-
-        int execute = 0;
-
-        while ( executor.hasMore() )
-        {
-            LOG.info( "Checking nodes " + execute + "->" + ( execute + BATCH_SIZE ) + " of " + executor.getTotalHits() );
-            reportProgress( executor.getTotalHits(), execute );
-
-            final NodeIds nodesToCheck = executor.execute();
-            results.add( checkNodes( nodesToCheck ) );
-            execute += BATCH_SIZE;
-        }
-
-        return results.build();
+        LOG.info( "... InheritFieldExecutor done" );
     }
 
-    private List<ValidatorResult> checkNodes( final NodeIds nodeIds )
+    private void checkNodes( final NodeIds nodeIds, final Reporter reporter )
     {
-        List<ValidatorResult> results = Lists.newArrayList();
-
         for ( final NodeId nodeId : nodeIds )
         {
             try
             {
-                final ValidatorResult result = doCheckNode( nodeId );
-
-                if ( result != null )
-                {
-                    results.add( result );
-                }
-
+                doCheckNode( nodeId, reporter );
             }
             catch ( Exception e )
             {
-                LOG.error( "Cannot check 'inherit' field for node with id: " + nodeId + "", e );
+                LOG.error( "Cannot check 'inherit' field for node with id: {}", nodeId, e );
             }
         }
-        return results;
     }
 
-    private ValidatorResult doCheckNode( final NodeId nodeId )
+    private void doCheckNode( final NodeId nodeId, final Reporter reporter )
     {
-
-        final com.enonic.xp.node.Node node = nodeService.getById( nodeId );
+        final Node node = nodeService.getById( nodeId );
         final Set<String> inheritFromBlobs = extractInherit( node.data() );
 
         final Set<String> docValues = indexValueService.getFieldsValue( nodeId, "search", InheritFieldValidator.FIELDS_TO_VALIDATE );
 
         if ( docValues != null && !inheritFromBlobs.equals( docValues ) )
         {
-            // broken blob
-            return ValidatorResultImpl.create()
-                .nodeId( nodeId )
-                .nodePath( node.path() )
-                .nodeVersionId( node.getNodeVersionId() )
-                .timestamp( node.getTimestamp() )
-                .type( "Broken inherit" )
-                .validatorName( validatorName )
-                .message( "Node with id : " + node.id() + " has inconsistency between index and blob 'inherit' field value" )
-                .repairResult( RepairResultImpl.create()
-                                   .message( "Field can be fixed in blob according to search index" )
-                                   .repairStatus( RepairStatus.IS_REPAIRABLE )
-                                   .build() )
-                .build();
+            reporter.addResult( ValidatorResult.create()
+                                    .nodeId( nodeId )
+                                    .nodePath( node.path() )
+                                    .nodeVersionId( node.getNodeVersionId() )
+                                    .timestamp( node.getTimestamp() )
+                                    .type( "Broken inherit" )
+                                    .message(
+                                        "Node with id : " + node.id() + " has inconsistency between index and blob 'inherit' field value" )
+                                    .repairResult( RepairResult.create()
+                                                       .message( "Field can be fixed in blob according to search index" )
+                                                       .repairStatus( RepairStatus.IS_REPAIRABLE )
+                                                       .build() ));
         }
-
-        return null;
-
     }
 
     private Set<String> extractInherit( final PropertyTree nodeData )
     {
         return StreamSupport.stream( nodeData.getStrings( "inherit" ).spliterator(), false ).collect( Collectors.toSet() );
-    }
-
-    public static final class Builder
-        extends AbstractNodeExecutor.Builder<Builder>
-    {
-        private NodeService nodeService;
-
-        private IndexValueService indexValueService;
-
-        private Builder()
-        {
-        }
-
-        public Builder nodeService( final NodeService val )
-        {
-            nodeService = val;
-            return this;
-        }
-
-        public Builder indexValueResolver( final IndexValueService val )
-        {
-            indexValueService = val;
-            return this;
-        }
-
-        public InheritFieldExecutor build()
-        {
-            return new InheritFieldExecutor( this );
-        }
     }
 }

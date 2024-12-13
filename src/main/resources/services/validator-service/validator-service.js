@@ -1,20 +1,14 @@
 var dataValidator = require('/lib/dataValidator.js');
 
-exports.get = function (req) {
+exports.post = function (req) {
 
     var params = req.params;
     var enabledValidators = params['enabledValidators[]'];
-    var repoId = params['repoId'];
-    var branch = params['branch'];
-
-    if (!repoId || !branch) {
-        throw "Missing repo / branch selector value";
-    }
+    var repoBranches = params['repoBranches[]'];
 
     var validatorParams = {
         enabledValidators: enabledValidators,
-        repoId: repoId,
-        branch: branch
+        repoBranches: repoBranches,
     };
 
     var taskId = dataValidator.execute(validatorParams);

@@ -1,91 +1,80 @@
 package me.myklebust.xpdoctor.validator.nodevalidator;
 
-import com.enonic.xp.node.FindNodesByQueryResult;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Consumer;
+
+import org.elasticsearch.action.search.SearchResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import me.myklebust.xpdoctor.validator.StorageSpyService;
+
+import com.enonic.xp.branch.Branch;
+import com.enonic.xp.context.ContextAccessor;
+import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeIds;
-import com.enonic.xp.node.NodeQuery;
-import com.enonic.xp.node.NodeService;
-import com.enonic.xp.query.expr.OrderExpressions;
-import com.enonic.xp.query.filter.Filters;
+import com.enonic.xp.repository.RepositoryId;
+import com.enonic.xp.task.ProgressReporter;
 
 public class BatchedQueryExecutor
 {
+    private static final Logger LOG = LoggerFactory.getLogger( BatchedQueryExecutor.class );
+
     private final int batchSize;
 
-    private final NodeService nodeService;
+    private final StorageSpyService storageSpyService;
 
-    private int currentFrom = 0;
+    private final ProgressReporter progressReporter;
 
-    private boolean hasMore = true;
+    private final RepositoryId repositoryId;
 
-    private final Filters filters;
-
-    private final OrderExpressions orderBy;
-
-    private final Long totalHits;
+    private final Branch branch;
 
     private BatchedQueryExecutor( final Builder builder )
     {
-        this.batchSize = builder.batchSize;
-        this.nodeService = builder.nodeService;
-        this.filters = builder.filters;
-        this.orderBy = builder.orderBy;
-        this.totalHits = initTotalHits();
+        this.batchSize = 1_000;
+        this.storageSpyService = builder.storageSpyService;
+        this.progressReporter = builder.progressReporter;
+        this.repositoryId = ContextAccessor.current().getRepositoryId();
+        this.branch = ContextAccessor.current().getBranch();
     }
 
-    private long initTotalHits()
+    public void execute( Consumer<NodeIds> consumer )
     {
-        final NodeQuery query = createQuery( 0, 0 );
+        int totalHits = (int) this.storageSpyService.findAllInBranch( repositoryId, branch, 0, null ).getHits().getTotalHits();
 
-        final FindNodesByQueryResult result = this.nodeService.findByQuery( query );
+        NodeId lastNodeId = null;
 
-        return result.getTotalHits();
-    }
-
-    public NodeIds execute()
-    {
-        final NodeQuery query = createQuery( this.currentFrom, this.batchSize );
-
-        final FindNodesByQueryResult result = this.nodeService.findByQuery( query );
-
-        if ( result.getNodeHits().isEmpty() )
+        int currentFrom = 0;
+        while ( true )
         {
-            this.hasMore = false;
-        }
-        else
-        {
-            this.currentFrom += this.batchSize;
+            final NodeIds nodeIds = executeNext( lastNodeId );
+            if ( nodeIds.isEmpty() )
+            {
+                return;
+            }
+            else
+            {
+                LOG.info( "Checking nodes {}-{} of {}", currentFrom, Math.min( currentFrom - 1 + batchSize, totalHits ) , totalHits );
+                progressReporter.progress( totalHits, currentFrom );
+                currentFrom += nodeIds.getSize();
 
-            this.hasMore = currentFrom < result.getTotalHits();
+                consumer.accept( nodeIds );
+                lastNodeId = nodeIds.stream().sequential().reduce((first, second) -> second).orElse(null);
+            }
         }
-        return result.getNodeIds();
     }
 
-    private NodeQuery createQuery( final int from, final int size )
+    public NodeIds executeNext( final NodeId lastNodeId )
     {
-        final NodeQuery.Builder query = NodeQuery.create().
-            from( from ).
-            size( size );
+        final SearchResponse allInBranch =
+            this.storageSpyService.findAllInBranch( repositoryId, branch, batchSize, lastNodeId == null ? null : lastNodeId.toString() );
+        return NodeIds.from( Arrays.stream( allInBranch.getHits().getHits() )
+                                 .map( h -> ((List<String>)h.getSource().get( "nodeid" )).get( 0 ) )
+                                 .map( NodeId::from )
+                                 .toArray( NodeId[]::new ) );
 
-        if ( this.filters != null )
-        {
-            query.addQueryFilters( this.filters );
-        }
-        if ( this.orderBy != null )
-        {
-            query.setOrderExpressions( this.orderBy );
-        }
-
-        return query.build();
-    }
-
-    public Long getTotalHits()
-    {
-        return totalHits;
-    }
-
-    public boolean hasMore()
-    {
-        return this.hasMore;
     }
 
     public static Builder create()
@@ -95,39 +84,23 @@ public class BatchedQueryExecutor
 
     public static final class Builder
     {
-        private int batchSize = 1000;
+        private StorageSpyService storageSpyService;
 
-        private NodeService nodeService;
-
-        private Filters filters;
-
-        private OrderExpressions orderBy;
+        private ProgressReporter progressReporter;
 
         private Builder()
         {
         }
 
-        public Builder batchSize( final int val )
+        public Builder spyStorageService( final StorageSpyService val )
         {
-            batchSize = val;
+            storageSpyService = val;
             return this;
         }
 
-        public Builder nodeService( final NodeService val )
+        public Builder progressReporter( final ProgressReporter val )
         {
-            nodeService = val;
-            return this;
-        }
-
-        public Builder filters( final Filters val )
-        {
-            filters = val;
-            return this;
-        }
-
-        public Builder orderBy( final OrderExpressions val )
-        {
-            orderBy = val;
+            progressReporter = val;
             return this;
         }
 
@@ -136,6 +109,4 @@ public class BatchedQueryExecutor
             return new BatchedQueryExecutor( this );
         }
     }
-
-
 }

@@ -1,22 +1,15 @@
 package me.myklebust.xpdoctor.validator.nodevalidator.unloadable;
 
-import java.io.IOException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.io.ByteSource;
-
-import me.myklebust.xpdoctor.storagespy.StorageSpyService;
+import me.myklebust.xpdoctor.validator.StorageSpyService;
 import me.myklebust.xpdoctor.validator.RepairResult;
-import me.myklebust.xpdoctor.validator.RepairResultImpl;
 import me.myklebust.xpdoctor.validator.RepairStatus;
 import me.myklebust.xpdoctor.validator.nodevalidator.BatchedVersionExecutor;
+import me.myklebust.xpdoctor.validator.nodevalidator.NodeDoctor;
 
-import com.enonic.xp.blob.BlobKey;
-import com.enonic.xp.blob.BlobRecord;
 import com.enonic.xp.blob.BlobStore;
-import com.enonic.xp.blob.Segment;
 import com.enonic.xp.context.ContextAccessor;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeService;
@@ -25,8 +18,9 @@ import com.enonic.xp.node.NodeVersionMetadata;
 import com.enonic.xp.node.NodeVersionsMetadata;
 
 class LoadableNodeDoctor
+implements NodeDoctor
 {
-    private final Logger LOG = LoggerFactory.getLogger( LoadableNodeDoctor.class );
+    private static final Logger LOG = LoggerFactory.getLogger( LoadableNodeDoctor.class );
 
     private final NodeService nodeService;
 
@@ -41,27 +35,62 @@ class LoadableNodeDoctor
         this.storageSpyService = storageSpyService;
     }
 
-    RepairResult repairNode( final NodeId nodeId, final boolean repairNow, final UnloadableReason reason )
+    @Override
+    public RepairResult repairNode( final NodeId nodeId, final boolean dryRun )
     {
-        LOG.info( "Trying to repaid un-loadable node with id [" + nodeId + "]" );
-
-        switch ( reason )
+        LOG.info( "Trying to repair un-loadable node with id [{}]", nodeId );
+        try
         {
-            case MISSING_BLOB:
-                return repairMissingBlob( nodeId, repairNow );
-            case NOT_IN_STORAGE_BUT_IN_SEARCH:
-                return repairMissingStorageButInSearch( nodeId, repairNow );
+            UnloadableReason reason = resolve( nodeId );
+            switch ( reason )
+            {
+                case MISSING_BLOB:
+                    return repairMissingBlob( nodeId, dryRun );
+                case NOT_IN_STORAGE_BUT_IN_SEARCH:
+                    return repairMissingStorageButInSearch( nodeId, dryRun );
+            }
+        }
+        catch ( Exception e )
+        {
+            LOG.error( "Not able to resolve reason for unloadable node", e );
         }
 
-        return RepairResultImpl.create().
+        return RepairResult.create().
             repairStatus( RepairStatus.UNKNOW ).
             message( "Not able to repair, unknown reason for node to be unloadable, check log" ).
             build();
     }
 
-    private RepairResult repairMissingStorageButInSearch( final NodeId nodeId, final boolean repairNow )
+    private UnloadableReason resolve( final NodeId nodeId )
     {
-        if ( repairNow )
+        LOG.info( "Node with id " + nodeId + " loading failed, try to decide why....." );
+
+        boolean inBranch =
+            storageSpyService.existsInBranch( nodeId, ContextAccessor.current().getRepositoryId(), ContextAccessor.current().getBranch() );
+
+        boolean inSearch =
+            storageSpyService.existsInSearch( nodeId, ContextAccessor.current().getRepositoryId(), ContextAccessor.current().getBranch() );
+
+        if ( !inBranch && !inSearch )
+        {
+            LOG.error( "Neither in branch or search, this should not appear at all" );
+            return UnloadableReason.UNKNOWN;
+        }
+
+        if ( !inBranch )
+        {
+            LOG.error( "Node in storage, not in search" );
+            return UnloadableReason.NOT_IN_STORAGE_BUT_IN_SEARCH;
+        }
+
+        // Check if blob is missing, for now just assume this
+        LOG.error( "No storage inconsistencies found, assuming that blob is missing" );
+        return UnloadableReason.MISSING_BLOB;
+    }
+
+    private RepairResult repairMissingStorageButInSearch( final NodeId nodeId, final boolean dryRun )
+    {
+        if ( !dryRun )
         {
             try
             {
@@ -70,7 +99,7 @@ class LoadableNodeDoctor
                 final boolean deleted = this.storageSpyService.deleteInSearch( nodeId, ContextAccessor.current().getRepositoryId(),
                                                                                ContextAccessor.current().getBranch() );
 
-                return RepairResultImpl.create().
+                return RepairResult.create().
                     repairStatus( RepairStatus.REPAIRED ).
                     message( "Deleted entry with id [" + nodeId + "] in search-index: [" + deleted + "]" ).
                     build();
@@ -78,31 +107,29 @@ class LoadableNodeDoctor
             catch ( Exception e )
             {
                 LOG.error( "Not able to delete entry from search-index", e );
-                return RepairResultImpl.create().
+                return RepairResult.create().
                     repairStatus( RepairStatus.FAILED ).
                     message( "Failed to delete entry with id [ " + nodeId + " ] in search-index" ).
                     build();
-
             }
-
         }
 
-        return RepairResultImpl.create().
+        return RepairResult.create().
             repairStatus( RepairStatus.IS_REPAIRABLE ).
             message( "Delete entry in search-index" ).
             build();
     }
 
-    private RepairResult repairMissingBlob( final NodeId nodeId, final boolean repairNow )
+    private RepairResult repairMissingBlob( final NodeId nodeId, final boolean dryRun )
     {
-        LOG.info( "Checking for older versions of node with id: [" + nodeId + "]......" );
+        LOG.info( "Checking for older versions of node with id: [{}]......", nodeId );
 
         final BatchedVersionExecutor executor = BatchedVersionExecutor.create( this.nodeService ).
             nodeId( nodeId ).
             batchSize( 10 ).
             build();
 
-        LOG.info( "Found: " + executor.getTotalHits() + " versions of node" );
+        LOG.info( "Found: {} versions of node", executor.getTotalHits() );
 
         while ( executor.hasMore() )
         {
@@ -112,9 +139,9 @@ class LoadableNodeDoctor
 
             String message = createMessage( workingVersionMetadata );
 
-            if ( !repairNow )
+            if ( dryRun )
             {
-                return RepairResultImpl.create().
+                return RepairResult.create().
                     repairStatus( RepairStatus.IS_REPAIRABLE ).
                     message( message ).
                     build();
@@ -124,13 +151,9 @@ class LoadableNodeDoctor
             {
                 return doRollbackToVersion( nodeId, workingVersionMetadata );
             }
-            else
-            {
-                return createMinimalNode( result );
-            }
         }
 
-        return RepairResultImpl.create().
+        return RepairResult.create().
             repairStatus( RepairStatus.NOT_REPAIRABLE ).
             message( "No working version found, checked " + executor.getTotalHits() + " versions" ).
             build();
@@ -178,14 +201,14 @@ class LoadableNodeDoctor
         return null;
     }
 
-    private RepairResultImpl doRollbackToVersion( final NodeId nodeId, final NodeVersionMetadata nodeVersionMetadata )
+    private RepairResult doRollbackToVersion( final NodeId nodeId, final NodeVersionMetadata nodeVersionMetadata )
     {
         try
         {
             this.nodeService.setActiveVersion( nodeId, nodeVersionMetadata.getNodeVersionId() );
             final String message = "Successfully restored version from [" + nodeVersionMetadata.getTimestamp() + "]";
             LOG.info( message );
-            return RepairResultImpl.create().
+            return RepairResult.create().
                 repairStatus( RepairStatus.REPAIRED ).
                 message( message ).
                 build();
@@ -193,73 +216,10 @@ class LoadableNodeDoctor
         catch ( Exception e )
         {
             LOG.error( "Failed to roll-back version", e );
-            return RepairResultImpl.create().
+            return RepairResult.create().
                 repairStatus( RepairStatus.FAILED ).
-                message( "Failed to roll-back version: " + e.toString() ).
+                message( "Failed to roll-back version: " + e.getMessage() ).
                 build();
         }
-    }
-
-    private RepairResultImpl createMinimalNode( final NodeVersionsMetadata metadata )
-    {
-        final NodeVersionMetadata nodeVersionMetadata = metadata.iterator().next();
-
-        final ByteSource byteSource = MinimalNodeFactory.create( "minimal_content.json", nodeVersionMetadata );
-
-        try
-        {
-            final BlobRecord record = createBlobRecord( nodeVersionMetadata, byteSource );
-
-            this.blobStore.addRecord( Segment.from( "node" ), record );
-
-            LOG.info( "Blob record created for versionId: " + nodeVersionMetadata.getNodeVersionId() );
-        }
-        catch ( Exception e )
-        {
-            return RepairResultImpl.create().
-                message( "Failed to created minimal blob: " + e.getMessage() ).
-                repairStatus( RepairStatus.FAILED ).
-                build();
-        }
-
-        return RepairResultImpl.create().
-            message( "Created minimal node with " + nodeVersionMetadata.getNodeVersionId() ).
-            repairStatus( RepairStatus.REPAIRED ).
-            build();
-    }
-
-    private BlobRecord createBlobRecord( final NodeVersionMetadata nodeVersionMetadata, final ByteSource byteSource )
-        throws IOException
-    {
-        LOG.info( "Creating blob-record for version " + nodeVersionMetadata.getNodeVersionId() );
-
-        final long size = byteSource.size();
-
-        return new BlobRecord()
-        {
-            @Override
-            public BlobKey getKey()
-            {
-                return BlobKey.from( nodeVersionMetadata.getNodeVersionId().toString() );
-            }
-
-            @Override
-            public long getLength()
-            {
-                return size;
-            }
-
-            @Override
-            public ByteSource getBytes()
-            {
-                return byteSource;
-            }
-
-            @Override
-            public long lastModified()
-            {
-                return nodeVersionMetadata.getTimestamp().toEpochMilli();
-            }
-        };
     }
 }

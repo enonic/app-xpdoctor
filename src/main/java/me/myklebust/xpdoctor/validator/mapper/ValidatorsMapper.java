@@ -1,5 +1,6 @@
 package me.myklebust.xpdoctor.validator.mapper;
 
+import java.util.List;
 import java.util.Set;
 
 import me.myklebust.xpdoctor.validator.Validator;
@@ -10,9 +11,9 @@ import com.enonic.xp.script.serializer.MapSerializable;
 public class ValidatorsMapper
     implements MapSerializable
 {
-    private final Set<Validator> validators;
+    private final List<Validator> validators;
 
-    public ValidatorsMapper( final Set<Validator> validators )
+    public ValidatorsMapper( final List<Validator> validators )
     {
         this.validators = validators;
     }

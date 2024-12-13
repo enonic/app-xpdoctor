@@ -5,8 +5,10 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 import me.myklebust.xpdoctor.validator.RepairResult;
+import me.myklebust.xpdoctor.validator.StorageSpyService;
 import me.myklebust.xpdoctor.validator.Validator;
 import me.myklebust.xpdoctor.validator.ValidatorResults;
+import me.myklebust.xpdoctor.validator.nodevalidator.Reporter;
 
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeService;
@@ -17,9 +19,14 @@ import com.enonic.xp.task.ProgressReporter;
 public class UniquePathValidator
     implements Validator
 {
+    @Reference
     private RepositoryService repositoryService;
 
+    @Reference
     private NodeService nodeService;
+
+    @Reference
+    private StorageSpyService storageSpyService;
 
     private UniquePathDoctor doctor;
 
@@ -33,12 +40,6 @@ public class UniquePathValidator
     public int order()
     {
         return 1;
-    }
-
-    @Override
-    public String name()
-    {
-        return this.getClass().getSimpleName();
     }
 
     @Override
@@ -56,36 +57,14 @@ public class UniquePathValidator
     @Override
     public ValidatorResults validate( final ProgressReporter reporter )
     {
-        return UniquePathValidatorExecutor.create().
-            nodeService( this.nodeService ).
-            repositoryService( this.repositoryService ).
-            progressReporter( reporter ).
-            validatorName( this.name() ).
-            build().
-            execute();
+        final Reporter results = new Reporter( name(), reporter );
+        new UniquePathValidatorExecutor( nodeService, repositoryService, storageSpyService ).execute( results );
+        return results.buildResults();
     }
 
     @Override
     public RepairResult repair( final NodeId nodeId )
     {
-        return this.doctor.repairNode( nodeId, true );
-    }
-
-    @Reference
-    public void setRepositoryService( final RepositoryService repositoryService )
-    {
-        this.repositoryService = repositoryService;
-    }
-
-    @Reference
-    public void setNodeService( final NodeService nodeService )
-    {
-        this.nodeService = nodeService;
-    }
-
-    @Override
-    public int compareTo( final Validator o )
-    {
-        return Integer.compare( this.order(), o.order() );
+        return this.doctor.repairNode( nodeId, false );
     }
 }

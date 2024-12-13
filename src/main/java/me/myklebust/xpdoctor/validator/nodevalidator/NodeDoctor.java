@@ -4,7 +4,7 @@ import me.myklebust.xpdoctor.validator.RepairResult;
 
 import com.enonic.xp.node.NodeId;
 
-public interface Doctor
+public interface NodeDoctor
 {
-    RepairResult repair( final NodeId nodeId );
+    RepairResult repairNode( NodeId nodeId, boolean dryRun );
 }

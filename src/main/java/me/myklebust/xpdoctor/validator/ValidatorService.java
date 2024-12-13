@@ -1,13 +1,12 @@
 package me.myklebust.xpdoctor.validator;
 
-import java.util.Set;
+import java.util.List;
 
 public interface ValidatorService
 {
     RepoValidationResults analyze( AnalyzeParams params );
 
-    Set<Validator> getValidators();
+    List<Validator> getValidators();
 
     Validator getValidator( final String validatorName );
-
 }

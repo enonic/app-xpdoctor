@@ -3,7 +3,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
+    <link rel="icon" type="image/png" data-th-href="${portal.assetUrl({'_path=images/favicon-48x48.png'})}" sizes="32x32">
     <title>xpDoctor</title>
 
     <!-- reset css -->
@@ -47,17 +47,18 @@
 <main>
     <nav class="navbar">
 
-        <select class="repoSelector" id="repoSelector">
-        </select>
-
         <span class="progress" id="progressState"></span>
-        <a class="navbar-brand" href="#"><img data-th-src="${portal.assetUrl({'_path=images/xpDoc.png'})}"></img></a>
+        <a class="navbar-brand" href="#"><img data-th-src="${portal.assetUrl({'_path=images/xpDoc.png'})}"/></a>
     </nav>
 
     <div class="mainContainer">
 
         <div class="toolbar">
             <div class="toolbar-items">
+                <div class="repos">
+                    <select class="repoSelector" id="repoSelector" multiple>
+                    </select>
+                </div>
                 <div class="actions">
                     <button id="btnRunValidator" type="button" class="big-action-button analyze" disabled>
                         <i class="material-icons">play_arrow</i>
@@ -70,13 +71,26 @@
                 </div>
 
                 <div class="validators">
+                    <div class="toggleAll">
+                        <button id="toggleAll" class="toggleAllButton">
+                            Toggle All
+                        </button>
+                    </div>
                     <div data-th-each="item,iterStat : ${validators}" class="validatorItems">
                         <div class="validatorItem" data-th-id="${'validator_' + item.name}">
-                            <label class="form-check-label">
-                                <input class="form-check-input" data-th-attr="data-validatorName=${item.name}" type="checkbox" value=""
-                                       checked>
+                            <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    data-th-id="${'checkbox_' + item.name}"
+                                    data-th-attr="data-validatorName=${item.name}"
+                                    value=""
+                                    checked>
+                            <label
+                                    class="form-check-label"
+                                    data-th-attr="for=${'checkbox_' + item.name}">
+                                <!-- This makes the label clickable -->
+                                <span data-th-text="${item.name}"></span>
                             </label>
-                            <span data-th-text="${item.name}"></span>
                             <span class="itemProgress"></span>
                         </div>
                     </div>
@@ -86,7 +100,6 @@
                     <div class="progressReporter" id="progressReporter">
                     </div>
                 </div>
-
             </div>
         </div>
 
