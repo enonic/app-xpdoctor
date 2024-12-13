@@ -78,13 +78,11 @@ public class VersionsExecutor
                                        .nodeVersionId( nodeVersionsMetadata.getNodeVersionId() )
                                        .timestamp( nodeVersionsMetadata.getTimestamp() )
                                        .type( "Unloadable Version" )
-                                       .validatorName( results.validatorName )
                                        .message( "Cannot load version data" )
                                        .repairResult( RepairResult.create()
                                                           .message( "Non repairable automatically" )
                                                           .repairStatus( RepairStatus.NOT_REPAIRABLE )
-                                                          .build() )
-                                       .build() );
+                                                          .build() ) );
             }
         }
     }

@@ -17,7 +17,7 @@ import com.enonic.xp.repository.RepositoryService;
 import com.enonic.xp.task.ProgressReporter;
 
 @Component(immediate = true)
-public class BinaryBlobMissingValidator
+public class BlobMissingValidator
     implements Validator
 {
     @Reference
@@ -32,12 +32,12 @@ public class BinaryBlobMissingValidator
     @Reference
     private FileBlobStoreSpyService fileBlobStoreSpyService;
 
-    private BinaryBlobMissingDoctor doctor;
+    private BlobMissingDoctor doctor;
 
     @Activate
     public void activate()
     {
-        this.doctor = new BinaryBlobMissingDoctor( fileBlobStoreSpyService.getBlobStore(), repositoryService, storageSpyService );
+        this.doctor = new BlobMissingDoctor( fileBlobStoreSpyService.getBlobStore(), repositoryService, storageSpyService );
     }
 
     @Override
@@ -56,7 +56,7 @@ public class BinaryBlobMissingValidator
     public ValidatorResults validate( final ProgressReporter reporter )
     {
         final Reporter results = new Reporter( name(), reporter );
-        new BinaryBlobMissingExecutor( storageSpyService, fileBlobStoreSpyService.getBlobStore(), doctor ).execute( results );
+        new BlobMissingExecutor( storageSpyService, fileBlobStoreSpyService.getBlobStore(), doctor ).execute( results );
         return results.buildResults();
     }
 

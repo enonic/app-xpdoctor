@@ -80,8 +80,7 @@ public class LoadableNodeExecutor
                                    .type( TYPE )
                                    .validatorName( results.validatorName )
                                    .message( message )
-                                   .repairResult( repairResult )
-                                   .build() );
+                                   .repairResult( repairResult ) );
         }
         catch ( Exception e )
         {

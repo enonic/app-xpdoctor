@@ -83,14 +83,12 @@ public class InheritFieldExecutor
                                     .nodeVersionId( node.getNodeVersionId() )
                                     .timestamp( node.getTimestamp() )
                                     .type( "Broken inherit" )
-                                    .validatorName( reporter.validatorName )
                                     .message(
                                         "Node with id : " + node.id() + " has inconsistency between index and blob 'inherit' field value" )
                                     .repairResult( RepairResult.create()
                                                        .message( "Field can be fixed in blob according to search index" )
                                                        .repairStatus( RepairStatus.IS_REPAIRABLE )
-                                                       .build() )
-                                    .build() );
+                                                       .build() ));
         }
     }
 

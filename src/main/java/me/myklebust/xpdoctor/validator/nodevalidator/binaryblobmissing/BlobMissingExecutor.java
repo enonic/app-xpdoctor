@@ -1,33 +1,22 @@
 package me.myklebust.xpdoctor.validator.nodevalidator.binaryblobmissing;
 
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.elasticsearch.action.get.GetResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import me.myklebust.xpdoctor.validator.StorageSpyService;
 import me.myklebust.xpdoctor.validator.RepairResult;
+import me.myklebust.xpdoctor.validator.StorageSpyService;
 import me.myklebust.xpdoctor.validator.ValidatorResult;
 import me.myklebust.xpdoctor.validator.nodevalidator.BatchedQueryExecutor;
 import me.myklebust.xpdoctor.validator.nodevalidator.Reporter;
 
-import com.enonic.xp.blob.BlobKey;
-import com.enonic.xp.blob.BlobRecord;
 import com.enonic.xp.blob.BlobStore;
 import com.enonic.xp.blob.SegmentLevel;
-import com.enonic.xp.context.ContextAccessor;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeIds;
-import com.enonic.xp.node.NodeVersionId;
-import com.enonic.xp.repository.RepositorySegmentUtils;
 
-public class BinaryBlobMissingExecutor
+public class BlobMissingExecutor
 {
-    private static final Logger LOG = LoggerFactory.getLogger( BinaryBlobMissingExecutor.class );
+    private static final Logger LOG = LoggerFactory.getLogger( BlobMissingExecutor.class );
 
     public static final SegmentLevel NODE_SEGMENT_LEVEL = SegmentLevel.from( "node" );
 
@@ -37,16 +26,16 @@ public class BinaryBlobMissingExecutor
 
     public static final SegmentLevel BINARY_SEGMENT_LEVEL = SegmentLevel.from( "binary" );
 
-    private final static String TYPE = "Missing Blob";
+    private final static String TYPE = "Missing Blobs";
 
     private final StorageSpyService storageSpyService;
 
     private final BlobStore blobStore;
 
-    private final BinaryBlobMissingDoctor doctor;
+    private final BlobMissingDoctor doctor;
 
-    public BinaryBlobMissingExecutor( final StorageSpyService storageSpyService, final BlobStore blobStore,
-                                      final BinaryBlobMissingDoctor doctor )
+    public BlobMissingExecutor( final StorageSpyService storageSpyService, final BlobStore blobStore,
+                                final BlobMissingDoctor doctor )
     {
         this.storageSpyService = storageSpyService;
         this.blobStore = blobStore;
@@ -81,13 +70,19 @@ public class BinaryBlobMissingExecutor
     {
         try
         {
-            final MissingBlobsService.BlobRefs binaryBlobKeysToRestore = new MissingBlobsService(blobStore, storageSpyService).missingBlobs( nodeId );
+            final MissingBlobsService.MissingBlobsResult missingBlobsResult =
+                new MissingBlobsService( blobStore, storageSpyService ).checkMissingBlobs( nodeId );
 
-            if (!binaryBlobKeysToRestore.isOk()) {
-                resolveAndRepair( results, nodeId, "Binary blobs missing: " + binaryBlobKeysToRestore.binaryblobkeys + " " +
-                    ( binaryBlobKeysToRestore.nodeblobkey == null ? "nodeblob missing" : "" ) +
-                    ( binaryBlobKeysToRestore.accesscontrolblobkey == null ? "accesscontrolblob missing" : "" ) +
-                    ( binaryBlobKeysToRestore.indexconfigblobkey == null ? "indexconfigblob missing" : "" ) );
+            if ( !missingBlobsResult.isOk() )
+            {
+                final String message =
+                    ( !missingBlobsResult.binaryblobkeys.isEmpty() ? "Binary blobs missing: " + missingBlobsResult.binaryblobkeys : "" ) +
+                        " " + ( missingBlobsResult.nodeblobkey != null ? "nodeblob missing: " + missingBlobsResult.nodeblobkey : "" ) +
+                        " " + ( missingBlobsResult.accesscontrolblobkey != null ? "accesscontrolblob missing " +
+                        missingBlobsResult.accesscontrolblobkey : "" ) + " " + ( missingBlobsResult.indexconfigblobkey != null
+                        ? "indexconfigblob missing " + missingBlobsResult.indexconfigblobkey
+                        : "" );
+                resolveAndRepair( results, nodeId, message );
             }
         }
         catch ( Exception e )
@@ -108,10 +103,8 @@ public class BinaryBlobMissingExecutor
                                    .nodeVersionId( null )
                                    .timestamp( null )
                                    .type( TYPE )
-                                   .validatorName( results.validatorName )
                                    .message( message )
-                                   .repairResult( repairResult )
-                                   .build() );
+                                   .repairResult( repairResult ) );
         }
         catch ( Exception e )
         {

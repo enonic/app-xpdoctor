@@ -1,12 +1,9 @@
 package me.myklebust.xpdoctor.validator.nodevalidator.binaryblobmissing;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-
-import org.elasticsearch.action.get.GetResponse;
+import java.util.stream.Collectors;
 
 import me.myklebust.xpdoctor.validator.RepairResult;
 import me.myklebust.xpdoctor.validator.RepairStatus;
@@ -20,17 +17,17 @@ import com.enonic.xp.blob.Segment;
 import com.enonic.xp.blob.SegmentLevel;
 import com.enonic.xp.context.ContextAccessor;
 import com.enonic.xp.node.NodeId;
-import com.enonic.xp.node.NodeVersionId;
 import com.enonic.xp.repository.Repository;
+import com.enonic.xp.repository.RepositoryId;
 import com.enonic.xp.repository.RepositorySegmentUtils;
 import com.enonic.xp.repository.RepositoryService;
 
-import static me.myklebust.xpdoctor.validator.nodevalidator.binaryblobmissing.BinaryBlobMissingExecutor.ACCESS_CONTROL_SEGMENT_LEVEL;
-import static me.myklebust.xpdoctor.validator.nodevalidator.binaryblobmissing.BinaryBlobMissingExecutor.BINARY_SEGMENT_LEVEL;
-import static me.myklebust.xpdoctor.validator.nodevalidator.binaryblobmissing.BinaryBlobMissingExecutor.INDEX_CONFIG_SEGMENT_LEVEL;
-import static me.myklebust.xpdoctor.validator.nodevalidator.binaryblobmissing.BinaryBlobMissingExecutor.NODE_SEGMENT_LEVEL;
+import static me.myklebust.xpdoctor.validator.nodevalidator.binaryblobmissing.BlobMissingExecutor.ACCESS_CONTROL_SEGMENT_LEVEL;
+import static me.myklebust.xpdoctor.validator.nodevalidator.binaryblobmissing.BlobMissingExecutor.BINARY_SEGMENT_LEVEL;
+import static me.myklebust.xpdoctor.validator.nodevalidator.binaryblobmissing.BlobMissingExecutor.INDEX_CONFIG_SEGMENT_LEVEL;
+import static me.myklebust.xpdoctor.validator.nodevalidator.binaryblobmissing.BlobMissingExecutor.NODE_SEGMENT_LEVEL;
 
-public class BinaryBlobMissingDoctor
+public class BlobMissingDoctor
     implements NodeDoctor
 {
     private final BlobStore blobStore;
@@ -39,8 +36,8 @@ public class BinaryBlobMissingDoctor
 
     private final StorageSpyService storageSpyService;
 
-    public BinaryBlobMissingDoctor( final BlobStore blobStore, final RepositoryService repositoryService,
-                                    final StorageSpyService storageSpyService )
+    public BlobMissingDoctor( final BlobStore blobStore, final RepositoryService repositoryService,
+                              final StorageSpyService storageSpyService )
     {
         this.blobStore = blobStore;
         this.repositoryService = repositoryService;
@@ -50,7 +47,8 @@ public class BinaryBlobMissingDoctor
     @Override
     public RepairResult repairNode( final NodeId nodeId, final boolean dryRun )
     {
-        final MissingBlobsService.BlobRefs binaryBlobKeysToRestore = new MissingBlobsService(blobStore, storageSpyService).missingBlobs( nodeId );
+        final MissingBlobsService.MissingBlobsResult
+            binaryBlobKeysToRestore = new MissingBlobsService( blobStore, storageSpyService).checkMissingBlobs( nodeId );
         if ( binaryBlobKeysToRestore.isOk() )
         {
             return RepairResult.create().repairStatus( RepairStatus.NOT_NEEDED ).message( "Blobs are OK already" ).build();
@@ -65,24 +63,20 @@ public class BinaryBlobMissingDoctor
         final List<BlobRecord> binaryBlobRecords = new ArrayList<>();
         for ( BlobKey blobKey : binaryBlobKeysToRestore.binaryblobkeys )
         {
-            for ( Repository repository : repositoryService.list() )
+            final BlobRecord matchingBlobRecord = findMatchingBlobRecord( BINARY_SEGMENT_LEVEL, blobKey );
+            if ( matchingBlobRecord != null )
             {
-                final BlobRecord record =
-                    blobStore.getRecord( RepositorySegmentUtils.toSegment( repository.getId(), BINARY_SEGMENT_LEVEL ), blobKey );
-                if ( record != null )
-                {
-                    binaryBlobRecords.add( record );
-                    break;
-                }
+                binaryBlobRecords.add( matchingBlobRecord );
             }
         }
 
-        final Segment binarySegment = RepositorySegmentUtils.toSegment( ContextAccessor.current().getRepositoryId(), BINARY_SEGMENT_LEVEL );
-        final Segment nodeSegment = RepositorySegmentUtils.toSegment( ContextAccessor.current().getRepositoryId(), NODE_SEGMENT_LEVEL );
+        final RepositoryId currentRepositoryId = ContextAccessor.current().getRepositoryId();
+        final Segment binarySegment = RepositorySegmentUtils.toSegment( currentRepositoryId, BINARY_SEGMENT_LEVEL );
+        final Segment nodeSegment = RepositorySegmentUtils.toSegment( currentRepositoryId, NODE_SEGMENT_LEVEL );
         final Segment accessSegment =
-            RepositorySegmentUtils.toSegment( ContextAccessor.current().getRepositoryId(), ACCESS_CONTROL_SEGMENT_LEVEL );
+            RepositorySegmentUtils.toSegment( currentRepositoryId, ACCESS_CONTROL_SEGMENT_LEVEL );
         final Segment indexSegment =
-            RepositorySegmentUtils.toSegment( ContextAccessor.current().getRepositoryId(), INDEX_CONFIG_SEGMENT_LEVEL );
+            RepositorySegmentUtils.toSegment( currentRepositoryId, INDEX_CONFIG_SEGMENT_LEVEL );
 
         if ( !dryRun )
         {
@@ -104,11 +98,21 @@ public class BinaryBlobMissingDoctor
             }
         }
 
-        if ( !binaryBlobKeysToRestore.binaryblobkeys.isEmpty() || accesscontrolblobRecord != null || indexconfigblobRecord != null ||
+        if ( !binaryBlobRecords.isEmpty() || accesscontrolblobRecord != null || indexconfigblobRecord != null ||
             nodeblobRecord != null )
         {
+            final Set<BlobKey> binaryBlobsRestored = binaryBlobRecords.stream().map( BlobRecord::getKey ).collect( Collectors.toSet() );
+            final String message = ( !binaryBlobRecords.isEmpty() ? "binary blobs " + ( dryRun ? "have been" : "can be" ) + " restored (" +
+                binaryBlobsRestored.size() + "): " + binaryBlobsRestored : "" ) + " " + ( nodeblobRecord != null
+                ? "nodeblob " + ( dryRun ? "has been" : "can be" ) + " restored: " + nodeblobRecord.getKey()
+                : "" ) + " " +
+                ( accesscontrolblobRecord != null ? "accesscontrolblob " + ( dryRun ? "has been" : "can be" ) + " restored: " +
+                    accesscontrolblobRecord.getKey() : "" ) + " " +
+                ( indexconfigblobRecord != null ? "indexconfigblob " + ( dryRun ? "has been" : "can be" ) + " restored: " +
+                    indexconfigblobRecord.getKey() : "" );
+
             return RepairResult.create()
-                .message( dryRun ? "Some (maybe all)  Blobs can be restored" : "Blobs restored" )
+                .message( message )
                 .repairStatus( dryRun ? RepairStatus.IS_REPAIRABLE : RepairStatus.REPAIRED )
                 .build();
         }

@@ -83,8 +83,7 @@ public class ParentExistsExistsExecutor
                                    .repairResult( RepairResult.create()
                                                       .message( "Create parent with path [" + node.parentPath() + "]" )
                                                       .repairStatus( RepairStatus.MANUAL )
-                                                      .build() )
-                                   .build() );
+                                                      .build() ) );
         }
     }
 }

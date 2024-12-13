@@ -31,9 +31,9 @@ public class Reporter
         this.progressReporter = progressReporter;
     }
 
-    public void addResult( final ValidatorResult result )
+    public void addResult( final ValidatorResult.Builder result )
     {
-        this.results.add( result );
+        this.results.add( result.validatorName( this.validatorName ).build() );
     }
 
     public ValidatorResults buildResults()

@@ -92,7 +92,7 @@ public class UniquePathValidatorExecutor
                                                       : "rename to " + tmpResult.nodePath().getName() + PREFIX )
                                         .repairStatus( childHasTrouble ? RepairStatus.DEPENDENT_ON_OTHER : RepairStatus.IS_REPAIRABLE )
                                         .build() ).validatorName( reporter.validatorName );
-            reporter.addResult( tmpResult.build() );
+            reporter.addResult( tmpResult );
         }
     }
 
