@@ -62,14 +62,14 @@ public class StorageSpyService
         return getResponse;
     }
 
-    public SearchResponse findAllInBranch( final RepositoryId repositoryId, final Branch branch, final int size, final String lastNodeId )
+    public SearchResponse findAllInBranch( final RepositoryId repositoryId, final Branch branch, final int size, final String fromNodeId )
     {
         final String indexName = getStorageIndexName( repositoryId );
         final BoolQueryBuilder query = QueryBuilders.boolQuery().must( QueryBuilders.termQuery( "branch", branch.getValue() ) );
 
-        if ( lastNodeId != null )
+        if ( fromNodeId != null )
         {
-            query.must( QueryBuilders.rangeQuery( "nodeid" ).gt( lastNodeId ) );
+            query.must( QueryBuilders.rangeQuery( "nodeid" ).gt( fromNodeId ) );
         }
 
         return client.prepareSearch( indexName )

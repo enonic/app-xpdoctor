@@ -20,6 +20,8 @@ import com.enonic.xp.repository.RepositorySegmentUtils;
 
 import static me.myklebust.xpdoctor.validator.nodevalidator.binaryblobmissing.BlobMissingExecutor.ACCESS_CONTROL_SEGMENT_LEVEL;
 import static me.myklebust.xpdoctor.validator.nodevalidator.binaryblobmissing.BlobMissingExecutor.BINARY_SEGMENT_LEVEL;
+import static me.myklebust.xpdoctor.validator.nodevalidator.binaryblobmissing.BlobMissingExecutor.INDEX_CONFIG_SEGMENT_LEVEL;
+import static me.myklebust.xpdoctor.validator.nodevalidator.binaryblobmissing.BlobMissingExecutor.NODE_SEGMENT_LEVEL;
 
 public class MissingBlobsService
 {
@@ -43,9 +45,9 @@ public class MissingBlobsService
 
         final NodeVersionId versionid = NodeVersionId.from( ( (List<String>) sourceAsMap.get( "versionid" ) ).get( 0 ) );
 
-        missingBlobsResult.nodeblobkey = checkBlob( BINARY_SEGMENT_LEVEL, sourceAsMap, "nodeblobkey" );
+        missingBlobsResult.nodeblobkey = checkBlob( NODE_SEGMENT_LEVEL, sourceAsMap, "nodeblobkey" );
         missingBlobsResult.accesscontrolblobkey = checkBlob( ACCESS_CONTROL_SEGMENT_LEVEL, sourceAsMap, "accesscontrolblobkey" );
-        missingBlobsResult.indexconfigblobkey = checkBlob( BINARY_SEGMENT_LEVEL, sourceAsMap, "indexconfigblobkey" );
+        missingBlobsResult.indexconfigblobkey = checkBlob( INDEX_CONFIG_SEGMENT_LEVEL, sourceAsMap, "indexconfigblobkey" );
 
         final GetResponse versionResponse = storageSpyService.getVersion( nodeId, versionid, ContextAccessor.current().getRepositoryId() );
         final List<String> binaryblobkeys = (List<String>) versionResponse.getSourceAsMap().get( "binaryblobkeys" );

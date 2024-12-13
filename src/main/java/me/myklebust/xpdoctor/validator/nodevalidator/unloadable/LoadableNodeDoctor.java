@@ -1,11 +1,7 @@
 package me.myklebust.xpdoctor.validator.nodevalidator.unloadable;
 
-import java.io.IOException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.io.ByteSource;
 
 import me.myklebust.xpdoctor.validator.StorageSpyService;
 import me.myklebust.xpdoctor.validator.RepairResult;
@@ -13,10 +9,7 @@ import me.myklebust.xpdoctor.validator.RepairStatus;
 import me.myklebust.xpdoctor.validator.nodevalidator.BatchedVersionExecutor;
 import me.myklebust.xpdoctor.validator.nodevalidator.NodeDoctor;
 
-import com.enonic.xp.blob.BlobKey;
-import com.enonic.xp.blob.BlobRecord;
 import com.enonic.xp.blob.BlobStore;
-import com.enonic.xp.blob.Segment;
 import com.enonic.xp.context.ContextAccessor;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeService;
@@ -48,7 +41,7 @@ implements NodeDoctor
     @Override
     public RepairResult repairNode( final NodeId nodeId, final boolean dryRun )
     {
-        LOG.info( "Trying to repaid un-loadable node with id [{}]", nodeId );
+        LOG.info( "Trying to repair un-loadable node with id [{}]", nodeId );
         try
         {
             UnloadableReason reason = reasonResolver.resolve( nodeId );
@@ -134,10 +127,6 @@ implements NodeDoctor
             {
                 return doRollbackToVersion( nodeId, workingVersionMetadata );
             }
-            else
-            {
-                return createMinimalNode( result );
-            }
         }
 
         return RepairResult.create().
@@ -208,68 +197,5 @@ implements NodeDoctor
                 message( "Failed to roll-back version: " + e.getMessage() ).
                 build();
         }
-    }
-
-    private RepairResult createMinimalNode( final NodeVersionsMetadata metadata )
-    {
-        final NodeVersionMetadata nodeVersionMetadata = metadata.iterator().next();
-
-        final ByteSource byteSource = MinimalNodeFactory.create( "minimal_content.json", nodeVersionMetadata );
-
-        try
-        {
-            final BlobRecord record = createBlobRecord( nodeVersionMetadata, byteSource );
-
-            this.blobStore.addRecord( Segment.from( "node" ), record );
-
-            LOG.info( "Blob record created for versionId: " + nodeVersionMetadata.getNodeVersionId() );
-        }
-        catch ( Exception e )
-        {
-            return RepairResult.create().
-                message( "Failed to created minimal blob: " + e.getMessage() ).
-                repairStatus( RepairStatus.FAILED ).
-                build();
-        }
-
-        return RepairResult.create().
-            message( "Created minimal node with " + nodeVersionMetadata.getNodeVersionId() ).
-            repairStatus( RepairStatus.REPAIRED ).
-            build();
-    }
-
-    private BlobRecord createBlobRecord( final NodeVersionMetadata nodeVersionMetadata, final ByteSource byteSource )
-        throws IOException
-    {
-        LOG.info( "Creating blob-record for version " + nodeVersionMetadata.getNodeVersionId() );
-
-        final long size = byteSource.size();
-
-        return new BlobRecord()
-        {
-            @Override
-            public BlobKey getKey()
-            {
-                return BlobKey.from( nodeVersionMetadata.getNodeVersionId().toString() );
-            }
-
-            @Override
-            public long getLength()
-            {
-                return size;
-            }
-
-            @Override
-            public ByteSource getBytes()
-            {
-                return byteSource;
-            }
-
-            @Override
-            public long lastModified()
-            {
-                return nodeVersionMetadata.getTimestamp().toEpochMilli();
-            }
-        };
     }
 }
