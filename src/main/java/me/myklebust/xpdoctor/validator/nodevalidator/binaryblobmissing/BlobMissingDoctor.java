@@ -102,13 +102,13 @@ public class BlobMissingDoctor
             nodeblobRecord != null )
         {
             final Set<BlobKey> binaryBlobsRestored = binaryBlobRecords.stream().map( BlobRecord::getKey ).collect( Collectors.toSet() );
-            final String message = ( !binaryBlobRecords.isEmpty() ? "binary blobs " + ( dryRun ? "have been" : "can be" ) + " restored (" +
+            final String message = ( !binaryBlobRecords.isEmpty() ? "binary blobs " + ( dryRun ? "can be" : "have been" ) + " restored (" +
                 binaryBlobsRestored.size() + "): " + binaryBlobsRestored : "" ) + " " + ( nodeblobRecord != null
-                ? "nodeblob " + ( dryRun ? "has been" : "can be" ) + " restored: " + nodeblobRecord.getKey()
+                ? "nodeblob " + ( dryRun ? "can be" : "has been" ) + " restored: " + nodeblobRecord.getKey()
                 : "" ) + " " +
-                ( accesscontrolblobRecord != null ? "accesscontrolblob " + ( dryRun ? "has been" : "can be" ) + " restored: " +
+                ( accesscontrolblobRecord != null ? "accesscontrolblob " + ( dryRun ? "can be" : "has been" ) + " restored: " +
                     accesscontrolblobRecord.getKey() : "" ) + " " +
-                ( indexconfigblobRecord != null ? "indexconfigblob " + ( dryRun ? "has been" : "can be" ) + " restored: " +
+                ( indexconfigblobRecord != null ? "indexconfigblob " + ( dryRun ? "can be" : "has been" ) + " restored: " +
                     indexconfigblobRecord.getKey() : "" );
 
             return RepairResult.create()

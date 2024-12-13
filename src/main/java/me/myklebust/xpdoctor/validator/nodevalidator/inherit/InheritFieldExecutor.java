@@ -11,10 +11,11 @@ import me.myklebust.xpdoctor.validator.RepairResult;
 import me.myklebust.xpdoctor.validator.RepairStatus;
 import me.myklebust.xpdoctor.validator.StorageSpyService;
 import me.myklebust.xpdoctor.validator.ValidatorResult;
-import me.myklebust.xpdoctor.validator.nodevalidator.BatchedQueryExecutor;
 import me.myklebust.xpdoctor.validator.nodevalidator.Reporter;
+import me.myklebust.xpdoctor.validator.nodevalidator.ScrollQueryExecutor;
 
 import com.enonic.xp.data.PropertyTree;
+import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeIds;
 import com.enonic.xp.node.NodeService;
@@ -43,8 +44,9 @@ public class InheritFieldExecutor
 
         reporter.reportStart();
 
-        BatchedQueryExecutor.create()
+        ScrollQueryExecutor.create()
             .progressReporter( reporter.getProgressReporter() )
+            .indexType( ScrollQueryExecutor.IndexType.STORAGE )
             .spyStorageService( this.storageSpyService )
             .build()
             .execute( nodesToCheck -> checkNodes( nodesToCheck, reporter ) );
@@ -69,8 +71,7 @@ public class InheritFieldExecutor
 
     private void doCheckNode( final NodeId nodeId, final Reporter reporter )
     {
-
-        final com.enonic.xp.node.Node node = nodeService.getById( nodeId );
+        final Node node = nodeService.getById( nodeId );
         final Set<String> inheritFromBlobs = extractInherit( node.data() );
 
         final Set<String> docValues = indexValueService.getFieldsValue( nodeId, "search", InheritFieldValidator.FIELDS_TO_VALIDATE );

@@ -1,4 +1,4 @@
-package me.myklebust.xpdoctor.validator.nodevalidator.parentexists;
+package me.myklebust.xpdoctor.validator.nodevalidator.unsearchable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,24 +7,26 @@ import me.myklebust.xpdoctor.validator.RepairResult;
 import me.myklebust.xpdoctor.validator.RepairStatus;
 import me.myklebust.xpdoctor.validator.StorageSpyService;
 import me.myklebust.xpdoctor.validator.ValidatorResult;
-import me.myklebust.xpdoctor.validator.nodevalidator.BatchedQueryExecutor;
 import me.myklebust.xpdoctor.validator.nodevalidator.Reporter;
+import me.myklebust.xpdoctor.validator.nodevalidator.ScrollQueryExecutor;
 
-import com.enonic.xp.node.Node;
+import com.enonic.xp.context.ContextAccessor;
+import com.enonic.xp.node.GetNodeVersionsParams;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeIds;
-import com.enonic.xp.node.NodePath;
 import com.enonic.xp.node.NodeService;
+import com.enonic.xp.node.NodeVersionMetadata;
+import com.enonic.xp.node.NodeVersionQueryResult;
 
-public class ParentExistsExistsExecutor
+public class UnsearchableExecutor
 {
-    private static final Logger LOG = LoggerFactory.getLogger( ParentExistsExistsExecutor.class );
+    private static final Logger LOG = LoggerFactory.getLogger( UnsearchableExecutor.class );
 
     private final NodeService nodeService;
 
     private final StorageSpyService storageSpyService;
 
-    public ParentExistsExistsExecutor( final NodeService nodeService, final StorageSpyService storageSpyService )
+    public UnsearchableExecutor( final NodeService nodeService, final StorageSpyService storageSpyService )
     {
         this.nodeService = nodeService;
         this.storageSpyService = storageSpyService;
@@ -32,57 +34,47 @@ public class ParentExistsExistsExecutor
 
     public void execute( final Reporter reporter )
     {
-        LOG.info( "Running LoadableNodeExecutor..." );
+        LOG.info( "Running UnsearchableExecutor..." );
         reporter.reportStart();
 
-        BatchedQueryExecutor.create()
+        ScrollQueryExecutor.create()
             .progressReporter( reporter.getProgressReporter() )
+            .indexType( ScrollQueryExecutor.IndexType.STORAGE )
             .spyStorageService( this.storageSpyService )
             .build()
             .execute( nodesToCheck -> checkNodes( nodesToCheck, reporter ) );
 
-        LOG.info( "... LoadableNodeExecutor done" );
+        LOG.info( "... UnsearchableExecutor done" );
     }
 
     private void checkNodes( final NodeIds nodeIds, final Reporter results )
     {
-
         for ( final NodeId nodeId : nodeIds )
         {
             try
             {
                 doCheckNode( results, nodeId );
-
             }
             catch ( Exception e )
             {
-                LOG.error( "Cannot check parent exists for node with id: {}", nodeId, e );
+                LOG.error( "Cannot check node with id: " + nodeId, e );
             }
         }
-
     }
 
     private void doCheckNode( final Reporter results, final NodeId nodeId )
     {
-        final Node node = this.nodeService.getById( nodeId );
-
-        final NodePath parentPath = node.path().getParentPath();
-
-        final Node parent = this.nodeService.getByPath( parentPath );
-
-        if ( parent == null )
+        boolean inSearch =
+            storageSpyService.existsInSearch( nodeId, ContextAccessor.current().getRepositoryId(), ContextAccessor.current().getBranch() );
+        if (!inSearch)
         {
             results.addResult( ValidatorResult.create()
                                    .nodeId( nodeId )
-                                   .nodePath( node.path() )
-                                   .nodeVersionId( node.getNodeVersionId() )
-                                   .timestamp( node.getTimestamp() )
-                                   .type( "No parent" )
-                                   .validatorName( results.validatorName )
-                                   .message( "Parent with path : " + node.parentPath() + " not found" )
+                                   .type( "Unsearchable node" )
+                                   .message( "Node is not searchable" )
                                    .repairResult( RepairResult.create()
-                                                      .message( "Create parent with path [" + node.parentPath() + "]" )
-                                                      .repairStatus( RepairStatus.MANUAL )
+                                                      .message( "Non repairable automatically. Reindex search" )
+                                                      .repairStatus( RepairStatus.NOT_REPAIRABLE )
                                                       .build() ) );
         }
     }

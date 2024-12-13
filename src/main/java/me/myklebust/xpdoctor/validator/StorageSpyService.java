@@ -6,8 +6,10 @@ import org.elasticsearch.action.get.GetAction;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetRequestBuilder;
 import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.action.search.ClearScrollRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.sort.SortOrder;
@@ -110,6 +112,11 @@ public class StorageSpyService
     public boolean deleteInSearch( final NodeId nodeId, final RepositoryId repositoryId, final Branch branch )
     {
         return deleteFromIndex( nodeId, IndexType.SEARCH, repositoryId, branch );
+    }
+
+    public Client getClient()
+    {
+        return client;
     }
 
     private boolean deleteFromIndex( final NodeId nodeId, final IndexType indexType, final RepositoryId repositoryId, final Branch branch )

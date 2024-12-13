@@ -1,10 +1,10 @@
-package me.myklebust.xpdoctor.validator.nodevalidator.parentexists;
+package me.myklebust.xpdoctor.validator.nodevalidator.unsearchable;
 
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 import me.myklebust.xpdoctor.validator.RepairResult;
+import me.myklebust.xpdoctor.validator.RepairStatus;
 import me.myklebust.xpdoctor.validator.StorageSpyService;
 import me.myklebust.xpdoctor.validator.Validator;
 import me.myklebust.xpdoctor.validator.ValidatorResults;
@@ -15,33 +15,25 @@ import com.enonic.xp.node.NodeService;
 import com.enonic.xp.task.ProgressReporter;
 
 @Component(immediate = true)
-public class ParentExistsValidator
+public class UnsearchableValidator
     implements Validator
 {
     @Reference
     private NodeService nodeService;
 
-    private NoParentDoctor doctor;
-
     @Reference
     private StorageSpyService storageSpyService;
-
-    @Activate
-    public void activate()
-    {
-        this.doctor = new NoParentDoctor( this.nodeService );
-    }
 
     @Override
     public int order()
     {
-        return 2;
+        return 6;
     }
 
     @Override
     public String getDescription()
     {
-        return "Validates that a node has a valid parent";
+        return "Validates that node is searchable";
     }
 
     @Override
@@ -54,13 +46,16 @@ public class ParentExistsValidator
     public ValidatorResults validate( final ProgressReporter reporter )
     {
         final Reporter results = new Reporter( name(), reporter );
-        new ParentExistsExecutor( nodeService, storageSpyService ).execute( results );
+        new UnsearchableExecutor( nodeService, storageSpyService ).execute( results );
         return results.buildResults();
     }
 
     @Override
     public RepairResult repair( final NodeId nodeId )
     {
-        return this.doctor.repairNode( nodeId, false );
+        return RepairResult.create()
+            .repairStatus( RepairStatus.NOT_REPAIRABLE )
+            .message( "cannot automatically node searchable" )
+            .build();
     }
 }

@@ -28,14 +28,11 @@ implements NodeDoctor
 
     private final StorageSpyService storageSpyService;
 
-    private final UnloadableNodeReasonResolver reasonResolver;
-
     LoadableNodeDoctor( final NodeService nodeService, final BlobStore blobStore, final StorageSpyService storageSpyService )
     {
         this.nodeService = nodeService;
         this.blobStore = blobStore;
         this.storageSpyService = storageSpyService;
-        this.reasonResolver = new UnloadableNodeReasonResolver( storageSpyService );
     }
 
     @Override
@@ -44,7 +41,7 @@ implements NodeDoctor
         LOG.info( "Trying to repair un-loadable node with id [{}]", nodeId );
         try
         {
-            UnloadableReason reason = reasonResolver.resolve( nodeId );
+            UnloadableReason reason = resolve( nodeId );
             switch ( reason )
             {
                 case MISSING_BLOB:
@@ -62,6 +59,33 @@ implements NodeDoctor
             repairStatus( RepairStatus.UNKNOW ).
             message( "Not able to repair, unknown reason for node to be unloadable, check log" ).
             build();
+    }
+
+    private UnloadableReason resolve( final NodeId nodeId )
+    {
+        LOG.info( "Node with id " + nodeId + " loading failed, try to decide why....." );
+
+        boolean inBranch =
+            storageSpyService.existsInBranch( nodeId, ContextAccessor.current().getRepositoryId(), ContextAccessor.current().getBranch() );
+
+        boolean inSearch =
+            storageSpyService.existsInSearch( nodeId, ContextAccessor.current().getRepositoryId(), ContextAccessor.current().getBranch() );
+
+        if ( !inBranch && !inSearch )
+        {
+            LOG.error( "Neither in branch or search, this should not appear at all" );
+            return UnloadableReason.UNKNOWN;
+        }
+
+        if ( !inBranch )
+        {
+            LOG.error( "Node in storage, not in search" );
+            return UnloadableReason.NOT_IN_STORAGE_BUT_IN_SEARCH;
+        }
+
+        // Check if blob is missing, for now just assume this
+        LOG.error( "No storage inconsistencies found, assuming that blob is missing" );
+        return UnloadableReason.MISSING_BLOB;
     }
 
     private RepairResult repairMissingStorageButInSearch( final NodeId nodeId, final boolean dryRun )

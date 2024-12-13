@@ -7,8 +7,8 @@ import me.myklebust.xpdoctor.validator.RepairResult;
 import me.myklebust.xpdoctor.validator.RepairStatus;
 import me.myklebust.xpdoctor.validator.StorageSpyService;
 import me.myklebust.xpdoctor.validator.ValidatorResult;
-import me.myklebust.xpdoctor.validator.nodevalidator.BatchedQueryExecutor;
 import me.myklebust.xpdoctor.validator.nodevalidator.Reporter;
+import me.myklebust.xpdoctor.validator.nodevalidator.ScrollQueryExecutor;
 
 import com.enonic.xp.node.GetNodeVersionsParams;
 import com.enonic.xp.node.NodeId;
@@ -36,8 +36,9 @@ public class VersionsExecutor
         LOG.info( "Running VersionsExecutor..." );
         reporter.reportStart();
 
-        BatchedQueryExecutor.create()
+        ScrollQueryExecutor.create()
             .progressReporter( reporter.getProgressReporter() )
+            .indexType( ScrollQueryExecutor.IndexType.STORAGE )
             .spyStorageService( this.storageSpyService )
             .build()
             .execute( nodesToCheck -> checkNodes( nodesToCheck, reporter ) );

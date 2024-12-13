@@ -1,14 +1,13 @@
 package me.myklebust.xpdoctor.validator.nodevalidator.unloadable;
 
-import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import me.myklebust.xpdoctor.validator.RepairResult;
 import me.myklebust.xpdoctor.validator.StorageSpyService;
 import me.myklebust.xpdoctor.validator.ValidatorResult;
-import me.myklebust.xpdoctor.validator.nodevalidator.BatchedQueryExecutor;
 import me.myklebust.xpdoctor.validator.nodevalidator.Reporter;
+import me.myklebust.xpdoctor.validator.nodevalidator.ScrollQueryExecutor;
 
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeIds;
@@ -37,8 +36,9 @@ public class LoadableNodeExecutor
     {
         LOG.info( "Running LoadableNodeExecutor..." );
 
-        BatchedQueryExecutor.create()
+        ScrollQueryExecutor.create()
             .progressReporter( reporter.getProgressReporter() )
+            .indexType( ScrollQueryExecutor.IndexType.SEARCH )
             .spyStorageService( storageSpyService )
             .build()
             .execute( nodesToCheck -> checkNodes( nodesToCheck, reporter ) );

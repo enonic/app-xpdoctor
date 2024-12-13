@@ -15,8 +15,8 @@ import me.myklebust.xpdoctor.validator.RepairResult;
 import me.myklebust.xpdoctor.validator.RepairStatus;
 import me.myklebust.xpdoctor.validator.StorageSpyService;
 import me.myklebust.xpdoctor.validator.ValidatorResult;
-import me.myklebust.xpdoctor.validator.nodevalidator.BatchedQueryExecutor;
 import me.myklebust.xpdoctor.validator.nodevalidator.Reporter;
+import me.myklebust.xpdoctor.validator.nodevalidator.ScrollQueryExecutor;
 
 import com.enonic.xp.branch.Branch;
 import com.enonic.xp.context.ContextAccessor;
@@ -60,9 +60,12 @@ public class UniquePathValidatorExecutor
         LOG.info( "Running UniquePathValidatorExecutor..." );
         reporter.reportStart();
 
-        BatchedQueryExecutor.create().spyStorageService( this.storageSpyService ).
-            progressReporter( reporter.getProgressReporter() ).
-            build().execute( nodesToCheck -> checkNodes( nodesToCheck, reporter ) );
+        ScrollQueryExecutor.create()
+            .progressReporter( reporter.getProgressReporter() )
+            .indexType( ScrollQueryExecutor.IndexType.STORAGE )
+            .spyStorageService( this.storageSpyService )
+            .build()
+            .execute( nodesToCheck -> checkNodes( nodesToCheck, reporter ) );
 
         LOG.info( "... UniquePathValidatorExecutor done" );
     }
