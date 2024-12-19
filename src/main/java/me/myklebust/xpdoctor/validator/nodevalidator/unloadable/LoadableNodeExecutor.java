@@ -35,6 +35,7 @@ public class LoadableNodeExecutor
     public void execute( final Reporter reporter )
     {
         LOG.info( "Running LoadableNodeExecutor..." );
+        reporter.reportStart();
 
         ScrollQueryExecutor.create()
             .progressReporter( reporter.getProgressReporter() )

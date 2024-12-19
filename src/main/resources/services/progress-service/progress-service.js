@@ -1,8 +1,7 @@
 var taskLib = require('/lib/xp/task');
 
 exports.get = function (req) {
-
-    var taskId = getTaskId(req);
+    var taskId = req.params.taskId;
 
     if (!taskId) {
         return {
@@ -27,33 +26,26 @@ exports.get = function (req) {
 
 var createModel = function (task) {
 
+    let info;
+    try {
+        info = JSON.parse(task.progress.info);
+    } catch (e) {
+        info = {
+            validator: "?",
+            repositoryId: "?",
+            branch: "?"
+        };
+    }
+
     return {
         state: task.state,
         description: task.description,
         progress: {
-            info: task.state === "RUNNING" ? JSON.parse(task.progress.info) : "done",
+            info: info,
             current: task.progress.current,
             total: task.progress.total
         }
     }
-};
-
-
-var getTaskId = function (req) {
-    var taskId = req.params.taskId;
-
-    if (!taskId) {
-
-        var tasks = taskLib.list();
-
-        for (var i = 0; i < tasks.length; i++) {
-            if (tasks[i].description === "com.enonic.app.repocleaner" && tasks[i].state === "RUNNING") {
-                return tasks[i].id
-            }
-        }
-    }
-
-    return taskId;
 };
 
 var errorMsg = function (msg) {

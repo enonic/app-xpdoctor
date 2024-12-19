@@ -470,7 +470,7 @@ var displayProgressInfo = function (result) {
 var markCurrentValidator = function (result) {
 
     var infoElement = result.progress.info;
-    var currentRunning = getRunningValidator(infoElement);
+    var currentRunning = getRunningValidator(infoElement.validator);
 
     if (!currentRunning) {
         console.log("Current running not found", infoElement.validator);
@@ -481,20 +481,20 @@ var markCurrentValidator = function (result) {
         var validatorItem = $(this);
 
         if (currentRunning.is(validatorItem)) {
-            markAsRunning(validatorItem, result.progress);
+            markAsRunning(validatorItem, result.progress.current, result.progress.total);
         } else {
             removeActiveMark(validatorItem);
         }
     });
 };
 
-var getRunningValidator = function (infoElement) {
-    return $(model.item.validatorItem + infoElement.validator);
+var getRunningValidator = function (validator) {
+    return $(model.item.validatorItem + validator);
 };
 
-var markAsRunning = function (element, info) {
+var markAsRunning = function (element, current, total) {
     element.addClass("active");
-    var progressInfoMessage = " (" + info.current + "/" + info.total + ") ";
+    var progressInfoMessage = " (" + current + "/" + total + ") ";
     getProgressInfoElement(element).html(progressInfoMessage);
 };
 

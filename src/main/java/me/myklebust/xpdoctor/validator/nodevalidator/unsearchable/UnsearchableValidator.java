@@ -19,9 +19,6 @@ public class UnsearchableValidator
     implements Validator
 {
     @Reference
-    private NodeService nodeService;
-
-    @Reference
     private StorageSpyService storageSpyService;
 
     @Override
@@ -46,7 +43,7 @@ public class UnsearchableValidator
     public ValidatorResults validate( final ProgressReporter reporter )
     {
         final Reporter results = new Reporter( name(), reporter );
-        new UnsearchableExecutor( nodeService, storageSpyService ).execute( results );
+        new UnsearchableExecutor( storageSpyService ).execute( results );
         return results.buildResults();
     }
 

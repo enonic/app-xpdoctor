@@ -2,9 +2,6 @@ package me.myklebust.xpdoctor.validator.nodevalidator;
 
 import java.io.UncheckedIOException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -48,7 +45,7 @@ public class Reporter
         final ProgressDescription description = ProgressDescription.create().
             branch( context.getBranch() ).
             repositoryId( context.getRepositoryId() ).
-            validatorName( validatorName ).
+            validator( validatorName ).
             build();
 
         try

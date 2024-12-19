@@ -89,7 +89,7 @@ public class ScrollQueryExecutor
                 else
                 {
                     LOG.info( "Checking nodes {}-{} of {}", currentFrom, Math.min( currentFrom - 1 + batchSize, totalHits ), totalHits );
-                    progressReporter.progress( totalHits, currentFrom );
+                    progressReporter.progress( currentFrom, totalHits );
                     currentFrom += nodeIds.getSize();
 
                     consumer.accept( nodeIds );

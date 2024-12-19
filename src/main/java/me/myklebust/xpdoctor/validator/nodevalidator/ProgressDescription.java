@@ -62,9 +62,9 @@ public class ProgressDescription
             return this;
         }
 
-        public Builder validatorName( final String validatorName )
+        public Builder validator( final String validator )
         {
-            validator = validatorName;
+            this.validator = validator;
             return this;
         }
 

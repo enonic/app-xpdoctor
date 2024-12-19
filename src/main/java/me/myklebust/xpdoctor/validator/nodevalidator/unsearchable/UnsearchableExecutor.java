@@ -22,13 +22,10 @@ public class UnsearchableExecutor
 {
     private static final Logger LOG = LoggerFactory.getLogger( UnsearchableExecutor.class );
 
-    private final NodeService nodeService;
-
     private final StorageSpyService storageSpyService;
 
-    public UnsearchableExecutor( final NodeService nodeService, final StorageSpyService storageSpyService )
+    public UnsearchableExecutor( final StorageSpyService storageSpyService )
     {
-        this.nodeService = nodeService;
         this.storageSpyService = storageSpyService;
     }
 
