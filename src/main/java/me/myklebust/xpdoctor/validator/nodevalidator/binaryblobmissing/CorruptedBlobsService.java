@@ -1,9 +1,8 @@
 package me.myklebust.xpdoctor.validator.nodevalidator.binaryblobmissing;
 
-import java.util.LinkedHashSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.elasticsearch.action.get.GetResponse;
 
@@ -18,18 +17,19 @@ import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeVersionId;
 import com.enonic.xp.repository.RepositorySegmentUtils;
 
-import static me.myklebust.xpdoctor.validator.nodevalidator.binaryblobmissing.BlobMissingExecutor.ACCESS_CONTROL_SEGMENT_LEVEL;
-import static me.myklebust.xpdoctor.validator.nodevalidator.binaryblobmissing.BlobMissingExecutor.BINARY_SEGMENT_LEVEL;
-import static me.myklebust.xpdoctor.validator.nodevalidator.binaryblobmissing.BlobMissingExecutor.INDEX_CONFIG_SEGMENT_LEVEL;
-import static me.myklebust.xpdoctor.validator.nodevalidator.binaryblobmissing.BlobMissingExecutor.NODE_SEGMENT_LEVEL;
+import static me.myklebust.xpdoctor.validator.nodevalidator.binaryblobmissing.BlobCorruptedDoctor.ACCESS_CONTROL_SEGMENT_LEVEL;
+import static me.myklebust.xpdoctor.validator.nodevalidator.binaryblobmissing.BlobCorruptedDoctor.BINARY_SEGMENT_LEVEL;
+import static me.myklebust.xpdoctor.validator.nodevalidator.binaryblobmissing.BlobCorruptedDoctor.INDEX_CONFIG_SEGMENT_LEVEL;
+import static me.myklebust.xpdoctor.validator.nodevalidator.binaryblobmissing.BlobCorruptedDoctor.NODE_SEGMENT_LEVEL;
 
-public class MissingBlobsService
+public class CorruptedBlobsService
 {
+
     private final BlobStore blobStore;
 
     private final StorageSpyService storageSpyService;
 
-    public MissingBlobsService( final BlobStore blobStore, final StorageSpyService storageSpyService )
+    public CorruptedBlobsService( final BlobStore blobStore, final StorageSpyService storageSpyService )
     {
         this.blobStore = blobStore;
         this.storageSpyService = storageSpyService;
@@ -45,9 +45,9 @@ public class MissingBlobsService
 
         final NodeVersionId versionid = NodeVersionId.from( ( (List<String>) sourceAsMap.get( "versionid" ) ).get( 0 ) );
 
-        missingBlobsResult.nodeblobkey = checkBlob( NODE_SEGMENT_LEVEL, sourceAsMap, "nodeblobkey" );
-        missingBlobsResult.accesscontrolblobkey = checkBlob( ACCESS_CONTROL_SEGMENT_LEVEL, sourceAsMap, "accesscontrolblobkey" );
-        missingBlobsResult.indexconfigblobkey = checkBlob( INDEX_CONFIG_SEGMENT_LEVEL, sourceAsMap, "indexconfigblobkey" );
+        checkBlob( NODE_SEGMENT_LEVEL, sourceAsMap, "nodeblobkey", missingBlobsResult );
+        checkBlob( ACCESS_CONTROL_SEGMENT_LEVEL, sourceAsMap, "accesscontrolblobkey", missingBlobsResult );
+        checkBlob( INDEX_CONFIG_SEGMENT_LEVEL, sourceAsMap, "indexconfigblobkey", missingBlobsResult );
 
         final GetResponse versionResponse = storageSpyService.getVersion( nodeId, versionid, ContextAccessor.current().getRepositoryId() );
         final List<String> binaryblobkeys = (List<String>) versionResponse.getSourceAsMap().get( "binaryblobkeys" );
@@ -60,14 +60,21 @@ public class MissingBlobsService
                     RepositorySegmentUtils.toSegment( ContextAccessor.current().getRepositoryId(), BINARY_SEGMENT_LEVEL ), blobKey );
                 if ( binaryBlobRecord == null )
                 {
-                    missingBlobsResult.binaryblobkeys.add( blobKey );
+                    missingBlobsResult.blobReports.add( new BlobReport( BINARY_SEGMENT_LEVEL, blobKey, BlobReport.BlobState.MISSING ) );
+                }
+                else
+                {
+                    if ( !binaryBlobRecord.getKey().equals( BlobKey.from( binaryBlobRecord.getBytes() ) ) )
+                    {
+                        missingBlobsResult.blobReports.add( new BlobReport( BINARY_SEGMENT_LEVEL, blobKey, BlobReport.BlobState.CORRUPTED ) );
+                    }
                 }
             }
         }
         return missingBlobsResult;
     }
 
-    private BlobKey checkBlob( final SegmentLevel segmentLevel, final Map<String, Object> sourceAsMap, final String blobField )
+    private void checkBlob( final SegmentLevel segmentLevel, final Map<String, Object> sourceAsMap, final String blobField, MissingBlobsResult missingBlobsResult )
     {
         final BlobKey blobKey = BlobKey.from( ( (List<String>) sourceAsMap.get( blobField ) ).get( 0 ) );
         final BlobRecord blobStoreRecord =
@@ -75,27 +82,27 @@ public class MissingBlobsService
 
         if ( blobStoreRecord == null )
         {
-            return blobKey;
+            missingBlobsResult.blobReports.add( new BlobReport( segmentLevel, blobKey, BlobReport.BlobState.MISSING ) );
         }
-        else
+        else if ( !blobStoreRecord.getKey().equals( BlobKey.from( blobStoreRecord.getBytes() ) ) )
         {
-            return null;
+            missingBlobsResult.blobReports.add( new BlobReport( segmentLevel, blobKey, BlobReport.BlobState.CORRUPTED ) );
         }
     }
 
     public static class MissingBlobsResult
     {
-        BlobKey accesscontrolblobkey;
-
-        BlobKey indexconfigblobkey;
-
-        BlobKey nodeblobkey;
-
-        Set<BlobKey> binaryblobkeys = new LinkedHashSet<>();
-
+        List<BlobReport> blobReports = new ArrayList<>();
         boolean isOk()
         {
-            return accesscontrolblobkey == null && indexconfigblobkey == null && nodeblobkey == null && binaryblobkeys.isEmpty();
+            return blobReports.isEmpty();
+        }
+
+        @Override
+        public String toString()
+        {
+            return blobReports.toString();
         }
     }
+
 }
