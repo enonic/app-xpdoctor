@@ -6,6 +6,7 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
+import me.myklebust.xpdoctor.json.JsonMapGenerator;
 import me.myklebust.xpdoctor.validator.BranchValidationResult;
 import me.myklebust.xpdoctor.validator.RepairResult;
 import me.myklebust.xpdoctor.validator.RepairStatus;
@@ -19,11 +20,9 @@ import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodePath;
 import com.enonic.xp.node.NodeVersionId;
 import com.enonic.xp.repository.RepositoryId;
-import com.enonic.xp.script.serializer.JsonMapGenerator;
 
 public class RepoResultsMapperTest
 {
-
     private JsonMapGenerator generator;
 
     private ObjectMapper mapper;

@@ -1,8 +1,6 @@
 package me.myklebust.xpdoctor.validator;
 
-import java.time.Instant;
-import java.util.Set;
-
+import me.myklebust.xpdoctor.json.JsonMapGenerator;
 import me.myklebust.xpdoctor.validator.mapper.RepairResultMapper;
 import me.myklebust.xpdoctor.validator.mapper.RepoResultsMapper;
 import me.myklebust.xpdoctor.validator.mapper.ValidatorsMapper;
@@ -13,7 +11,6 @@ import com.enonic.xp.event.Event;
 import com.enonic.xp.event.EventPublisher;
 import com.enonic.xp.script.bean.BeanContext;
 import com.enonic.xp.script.bean.ScriptBean;
-import com.enonic.xp.script.serializer.JsonMapGenerator;
 import com.enonic.xp.task.ProgressReporter;
 import com.enonic.xp.task.RunnableTask;
 import com.enonic.xp.task.TaskId;

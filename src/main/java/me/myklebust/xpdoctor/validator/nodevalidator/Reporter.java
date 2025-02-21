@@ -5,6 +5,7 @@ import java.io.UncheckedIOException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import me.myklebust.xpdoctor.json.ObjectMapperHelper;
 import me.myklebust.xpdoctor.validator.ValidatorResult;
 import me.myklebust.xpdoctor.validator.ValidatorResults;
 
@@ -14,7 +15,7 @@ import com.enonic.xp.task.ProgressReporter;
 
 public class Reporter
 {
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = ObjectMapperHelper.create();
 
     final ProgressReporter progressReporter;
 
