@@ -3,9 +3,6 @@ package me.myklebust.xpdoctor.validator.mapper;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-
 import me.myklebust.xpdoctor.json.JsonMapGenerator;
 import me.myklebust.xpdoctor.validator.BranchValidationResult;
 import me.myklebust.xpdoctor.validator.RepairResult;
@@ -25,18 +22,11 @@ public class RepoResultsMapperTest
 {
     private JsonMapGenerator generator;
 
-    private ObjectMapper mapper;
-
     @Before
     public void setUp()
         throws Exception
     {
         this.generator = new JsonMapGenerator();
-
-        this.mapper = new ObjectMapper();
-        this.mapper.enable( SerializationFeature.INDENT_OUTPUT );
-        this.mapper.enable( SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS );
-        this.mapper.enable( SerializationFeature.WRITE_NULL_MAP_VALUES );
     }
 
     @Test
@@ -49,8 +39,7 @@ public class RepoResultsMapperTest
 
         mapper.serialize( generator );
 
-        final String resultString = this.mapper.writeValueAsString( generator.getRoot() );
-        System.out.println( resultString );
+        System.out.println( generator.getRoot() );
     }
 
     private RepoValidationResults createResult()

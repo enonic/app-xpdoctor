@@ -14,6 +14,8 @@ dependencies {
     implementation xplibs.api.core
     implementation xplibs.api.portal
     implementation "com.enonic.xp:core-elasticsearch:${xpVersion}"
+    implementation "com.fasterxml.jackson.core:jackson-databind:2.18.6"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.6"
     include "com.enonic.lib:lib-thymeleaf:3.0.0-SNAPSHOT"
     include xplibs.content
     include xplibs.portal

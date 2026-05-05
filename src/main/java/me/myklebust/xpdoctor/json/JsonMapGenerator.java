@@ -1,16 +1,9 @@
 package me.myklebust.xpdoctor.json;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.BooleanNode;
-import com.fasterxml.jackson.databind.node.DoubleNode;
-import com.fasterxml.jackson.databind.node.FloatNode;
-import com.fasterxml.jackson.databind.node.IntNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.LongNode;
-import com.fasterxml.jackson.databind.node.NullNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.TextNode;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import com.enonic.xp.script.serializer.MapGeneratorBase;
 
@@ -25,77 +18,39 @@ public final class JsonMapGenerator
     @Override
     protected Object newMap()
     {
-        return JsonNodeFactory.instance.objectNode();
+        return new LinkedHashMap<String, Object>();
     }
 
     @Override
     protected Object newArray()
     {
-        return JsonNodeFactory.instance.arrayNode();
+        return new ArrayList<>();
     }
 
     @Override
     protected boolean isMap( final Object value )
     {
-        return value instanceof ObjectNode;
+        return value instanceof Map;
     }
 
     @Override
     protected boolean isArray( final Object value )
     {
-        return value instanceof ArrayNode;
+        return value instanceof List;
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     protected void putInMap( final Object map, final String key, final Object value )
     {
-        ( (ObjectNode) map ).set( key, toValue( value ) );
+        ( (Map<String, Object>) map ).put( key, value );
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     protected void addToArray( final Object array, final Object value )
     {
-        ( (ArrayNode) array ).add( toValue( value ) );
-    }
-
-    private JsonNode toValue( final Object value )
-    {
-        if ( value instanceof JsonNode )
-        {
-            return (JsonNode) value;
-        }
-
-        if ( value instanceof Integer )
-        {
-            return IntNode.valueOf( (Integer) value );
-        }
-
-        if ( value instanceof Float )
-        {
-            return FloatNode.valueOf( (Float) value );
-        }
-
-        if ( value instanceof Double )
-        {
-            return DoubleNode.valueOf( (Double) value );
-        }
-
-        if ( value instanceof Number )
-        {
-            return LongNode.valueOf( ( (Number) value ).longValue() );
-        }
-
-        if ( value instanceof Boolean )
-        {
-            return BooleanNode.valueOf( (Boolean) value );
-        }
-
-        if ( value == null )
-        {
-            return NullNode.getInstance();
-        }
-
-        return TextNode.valueOf( value.toString() );
+        ( (List<Object>) array ).add( value );
     }
 
     @Override
