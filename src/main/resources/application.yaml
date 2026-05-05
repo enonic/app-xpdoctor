@@ -1,0 +1,5 @@
+kind: "Application"
+title: "xpDoctor"
+description: "Analyze and repair data"
+vendorName: "Enonic AS"
+vendorUrl: "https://enonic.com"
