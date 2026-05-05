@@ -1,11 +1,5 @@
 package me.myklebust.xpdoctor.validator.nodevalidator;
 
-import java.io.UncheckedIOException;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import me.myklebust.xpdoctor.json.ObjectMapperHelper;
 import me.myklebust.xpdoctor.validator.ValidatorResult;
 import me.myklebust.xpdoctor.validator.ValidatorResults;
 
@@ -15,8 +9,6 @@ import com.enonic.xp.task.ProgressReporter;
 
 public class Reporter
 {
-    private static final ObjectMapper OBJECT_MAPPER = ObjectMapperHelper.create();
-
     final ProgressReporter progressReporter;
 
     public final String validatorName;
@@ -49,15 +41,23 @@ public class Reporter
             validator( validatorName ).
             build();
 
-        try
+        progressReporter.info( toJson( description ) );
+    }
+
+    private static String toJson( final ProgressDescription description )
+    {
+        return "{\"repositoryId\":\"" + escapeJson( description.getRepositoryId() ) + "\"" +
+            ",\"branch\":\"" + escapeJson( description.getBranch() ) + "\"" +
+            ",\"validator\":\"" + escapeJson( description.getValidator() ) + "\"}";
+    }
+
+    private static String escapeJson( final String value )
+    {
+        if ( value == null )
         {
-            final String value = OBJECT_MAPPER.writeValueAsString( description );
-            progressReporter.info( value );
+            return "";
         }
-        catch ( JsonProcessingException e )
-        {
-            throw new UncheckedIOException( e );
-        }
+        return value.replace( "\\", "\\\\" ).replace( "\"", "\\\"" ).replace( "\n", "\\n" ).replace( "\r", "\\r" ).replace( "\t", "\\t" );
     }
 
     public ProgressReporter getProgressReporter()
