@@ -3,3 +3,5 @@ title: "XP-Doctor"
 description: "Analyze and repair data"
 allow:
   - "role:system.admin"
+apis:
+  - "asset"

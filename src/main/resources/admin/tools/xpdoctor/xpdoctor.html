@@ -3,31 +3,31 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="icon" type="image/png" data-th-href="${portal.assetUrl({'_path=images/favicon-48x48.png'})}" sizes="32x32">
+    <link rel="icon" type="image/png" data-th-href="${faviconUrl}" sizes="32x32">
     <title>xpDoctor</title>
 
     <!-- reset css -->
-    <link rel="stylesheet" data-th-href="${portal.assetUrl({'_path=css/reset.css'})}"/>
+    <link rel="stylesheet" data-th-href="${resetCssUrl}"/>
 
 
     <!-- app css -->
-    <link rel="stylesheet" data-th-href="${portal.assetUrl({'_path=css/main.css'})}"/>
+    <link rel="stylesheet" data-th-href="${mainCssUrl}"/>
 
     <!--Import Google Icon Font-->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
     <!-- JQuery -->
-    <script data-th-src="${portal.assetUrl({'_path=js/jquery-3.1.1.min.js'})}"></script>
+    <script data-th-src="${jqueryUrl}"></script>
 
     <!-- Roboto -->
     <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
 
-    <script type="text/javascript" data-th-src="${portal.assetUrl({'_path=js/renderjson.js'})}"></script>
-    <script data-th-src="${portal.assetUrl({'_path=js/main.js'})}"></script>
+    <script type="text/javascript" data-th-src="${renderJsonUrl}"></script>
+    <script data-th-src="${mainJsUrl}"></script>
 
     <!-- DataTables -->
-    <script data-th-src="${portal.assetUrl({'_path=js/jquery.dataTables.min.js'})}"></script>
-    <link rel="stylesheet" data-th-href="${portal.assetUrl({'_path=css/jquery.dataTables.min.css'})}"></link>
+    <script data-th-src="${dataTablesJsUrl}"></script>
+    <link rel="stylesheet" data-th-href="${dataTablesCssUrl}"></link>
 
     <script data-th-inline="javascript">
         /*<![CDATA[*/
@@ -48,7 +48,7 @@
     <nav class="navbar">
 
         <span class="progress" id="progressState"></span>
-        <a class="navbar-brand" href="#"><img data-th-src="${portal.assetUrl({'_path=images/xpDoc.png'})}"/></a>
+        <a class="navbar-brand" href="#"><img data-th-src="${logoUrl}"/></a>
     </nav>
 
     <div class="mainContainer">
