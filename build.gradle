@@ -10,14 +10,14 @@ java {
 }
 
 dependencies {
-    testImplementation 'junit:junit:4.13.2'
+    testImplementation libs.junit
     implementation xplibs.api.core
     implementation xplibs.api.portal
     implementation "com.enonic.xp:core-elasticsearch:${xpVersion}"
-    implementation "com.fasterxml.jackson.core:jackson-databind:2.18.6"
-    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.6"
-    include "com.enonic.lib:lib-thymeleaf:3.0.0-SNAPSHOT"
-    include "com.enonic.lib:lib-asset:2.0.0-SNAPSHOT"
+    implementation libs.jackson.databind
+    implementation libs.jackson.datatype.jsr310
+    include libs.lib.thymeleaf
+    include libs.lib.asset
     include xplibs.content
     include xplibs.portal
     include xplibs.node
