@@ -11,11 +11,9 @@ import me.myklebust.xpdoctor.validator.nodevalidator.Reporter;
 import me.myklebust.xpdoctor.validator.nodevalidator.ScrollQueryExecutor;
 
 import com.enonic.xp.context.ContextAccessor;
-import com.enonic.xp.node.GetNodeVersionsParams;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeIds;
 import com.enonic.xp.node.NodeService;
-import com.enonic.xp.node.NodeVersionQueryResult;
 
 public class UnsearchableExecutor
 {

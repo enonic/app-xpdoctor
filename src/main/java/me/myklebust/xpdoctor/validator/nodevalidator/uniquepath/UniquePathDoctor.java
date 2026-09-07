@@ -55,7 +55,7 @@ public class UniquePathDoctor
             {
                 return RepairResult.create().
                     repairStatus( RepairStatus.NOT_NEEDED ).
-                    message( "Path no longer non-uniquer" ).
+                    message( "Path is now unique" ).
                     build();
             }
 

@@ -217,7 +217,8 @@ implements NodeDoctor
                     editableNode.nodeType = workingNode.getNodeType();
                 } ).
                 build() );
-            final String message = "Successfully restored version from [" + nodeVersionMetadata.getTimestamp() + "]";
+            final String message = "Successfully created new version based on version [" + nodeVersionMetadata.getNodeVersionId() + "] from [" +
+                nodeVersionMetadata.getTimestamp() + "]";
             LOG.info( message );
             return RepairResult.create().
                 repairStatus( RepairStatus.REPAIRED ).
