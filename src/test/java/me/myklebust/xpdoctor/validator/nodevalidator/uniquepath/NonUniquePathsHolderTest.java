@@ -14,8 +14,8 @@ public class NonUniquePathsHolderTest
     public void first_level_child()
         throws Exception
     {
-        NodePath parent = NodePath.create( "/a/b/c/d" ).build();
-        NodePath child = NodePath.create( "/a/b/c/d/e" ).build();
+        NodePath parent = new NodePath( "/a/b/c/d" );
+        NodePath child = new NodePath( "/a/b/c/d/e" );
         final NonUniquePathsHolder holder = new NonUniquePathsHolder();
         holder.add( child );
         assertTrue( holder.myChildHasAProblem( parent ) );
@@ -25,8 +25,8 @@ public class NonUniquePathsHolderTest
     public void second_level_child()
         throws Exception
     {
-        NodePath parent = NodePath.create( "/a/b/c/d" ).build();
-        NodePath child = NodePath.create( "/a/b/c/d/e/f" ).build();
+        NodePath parent = new NodePath( "/a/b/c/d" );
+        NodePath child = new NodePath( "/a/b/c/d/e/f" );
         final NonUniquePathsHolder holder = new NonUniquePathsHolder();
         holder.add( child );
         assertTrue( holder.myChildHasAProblem( parent ) );
@@ -36,8 +36,8 @@ public class NonUniquePathsHolderTest
     public void same()
         throws Exception
     {
-        NodePath parent = NodePath.create( "/a/b/c/d" ).build();
-        NodePath child = NodePath.create( "/a/b/c/d" ).build();
+        NodePath parent = new NodePath( "/a/b/c/d" );
+        NodePath child = new NodePath( "/a/b/c/d" );
         final NonUniquePathsHolder holder = new NonUniquePathsHolder();
         holder.add( child );
         assertFalse( holder.myChildHasAProblem( parent ) );
@@ -47,8 +47,8 @@ public class NonUniquePathsHolderTest
     public void less()
         throws Exception
     {
-        NodePath parent = NodePath.create( "/a/b/c/d" ).build();
-        NodePath child = NodePath.create( "/a/b/c" ).build();
+        NodePath parent = new NodePath( "/a/b/c/d" );
+        NodePath child = new NodePath( "/a/b/c" );
         final NonUniquePathsHolder holder = new NonUniquePathsHolder();
         holder.add( child );
         assertFalse( holder.myChildHasAProblem( parent ) );
@@ -59,8 +59,8 @@ public class NonUniquePathsHolderTest
     public void not_parent()
         throws Exception
     {
-        NodePath parent = NodePath.create( "/a/b/c/d" ).build();
-        NodePath child = NodePath.create( "/b/b/c/d/e/f" ).build();
+        NodePath parent = new NodePath( "/a/b/c/d" );
+        NodePath child = new NodePath( "/b/b/c/d/e/f" );
         final NonUniquePathsHolder holder = new NonUniquePathsHolder();
         holder.add( child );
         assertFalse( holder.myChildHasAProblem( parent ) );

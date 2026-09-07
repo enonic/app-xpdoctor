@@ -43,8 +43,6 @@ public class ValidatorServiceImpl
 
     public RepoValidationResults analyze( final AnalyzeParams params )
     {
-        this.repoService.invalidateAll();
-
         return ValidatorExecutor.create()
             .repoService( this.repoService )
             .progressReporter( params.getProgressReporter() )

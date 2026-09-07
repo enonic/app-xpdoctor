@@ -8,14 +8,19 @@ import me.myklebust.xpdoctor.validator.RepairStatus;
 import me.myklebust.xpdoctor.validator.nodevalidator.NodeDoctor;
 
 import com.enonic.xp.node.FindNodesByQueryResult;
+import com.enonic.xp.node.MoveNodeParams;
 import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodeId;
+import com.enonic.xp.node.NodeIndexPath;
 import com.enonic.xp.node.NodeName;
 import com.enonic.xp.node.NodePath;
 import com.enonic.xp.node.NodeQuery;
 import com.enonic.xp.node.NodeService;
 import com.enonic.xp.node.RefreshMode;
-import com.enonic.xp.node.RenameNodeParams;
+import com.enonic.xp.query.expr.CompareExpr;
+import com.enonic.xp.query.expr.FieldExpr;
+import com.enonic.xp.query.expr.QueryExpr;
+import com.enonic.xp.query.expr.ValueExpr;
 
 public class UniquePathDoctor
     implements NodeDoctor
@@ -43,10 +48,10 @@ public class UniquePathDoctor
             final NodePath nonUniquePath = nodeToBeRenamed.path();
 
             final FindNodesByQueryResult nodes = nodeService.findByQuery( NodeQuery.create().
-                path( nonUniquePath ).
+                query( QueryExpr.from( CompareExpr.eq( FieldExpr.from( NodeIndexPath.PATH ), ValueExpr.string( nonUniquePath.toString() ) ) ) ).
                 build() );
 
-            if ( nodes.getHits() <= 1 )
+            if ( nodes.getTotalHits() <= 1 )
             {
                 return RepairResult.create().
                     repairStatus( RepairStatus.NOT_NEEDED ).
@@ -77,9 +82,9 @@ public class UniquePathDoctor
     private String doRename( final Node nodeToBeRenamed )
     {
         final String newName = nodeToBeRenamed.name().toString() + PREFIX;
-        this.nodeService.rename( RenameNodeParams.create().
+        this.nodeService.move( MoveNodeParams.create().
             nodeId( nodeToBeRenamed.id() ).
-            nodeName( NodeName.from( newName ) ).
+            newName( NodeName.from( newName ) ).
             build() );
         return newName;
     }

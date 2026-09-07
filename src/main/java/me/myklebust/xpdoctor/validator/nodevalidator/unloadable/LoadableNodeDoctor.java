@@ -11,11 +11,12 @@ import me.myklebust.xpdoctor.validator.nodevalidator.NodeDoctor;
 
 import com.enonic.xp.blob.BlobStore;
 import com.enonic.xp.context.ContextAccessor;
+import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeService;
 import com.enonic.xp.node.NodeVersion;
-import com.enonic.xp.node.NodeVersionMetadata;
-import com.enonic.xp.node.NodeVersionsMetadata;
+import com.enonic.xp.node.NodeVersions;
+import com.enonic.xp.node.UpdateNodeParams;
 
 class LoadableNodeDoctor
 implements NodeDoctor
@@ -133,9 +134,9 @@ implements NodeDoctor
 
         while ( executor.hasMore() )
         {
-            final NodeVersionsMetadata result = executor.execute();
+            final NodeVersions result = executor.execute();
 
-            final NodeVersionMetadata workingVersionMetadata = findNewestWorkingVersion( result );
+            final NodeVersion workingVersionMetadata = findNewestWorkingVersion( result );
 
             String message = createMessage( workingVersionMetadata );
 
@@ -159,7 +160,7 @@ implements NodeDoctor
             build();
     }
 
-    private String createMessage( final NodeVersionMetadata workingVersionMetadata )
+    private String createMessage( final NodeVersion workingVersionMetadata )
     {
         String message;
 
@@ -177,13 +178,13 @@ implements NodeDoctor
         return message;
     }
 
-    private NodeVersionMetadata findNewestWorkingVersion( final NodeVersionsMetadata result )
+    private NodeVersion findNewestWorkingVersion( final NodeVersions result )
     {
-        for ( final NodeVersionMetadata version : result )
+        for ( final NodeVersion version : result )
         {
             try
             {
-                final NodeVersion byNodeVersion = this.nodeService.getByNodeVersionKey( version.getNodeVersionKey() );
+                final Node byNodeVersion = this.nodeService.getByIdAndVersionId( version.getNodeId(), version.getNodeVersionId() );
                 if ( byNodeVersion != null )
                 {
                     return version;
@@ -201,11 +202,21 @@ implements NodeDoctor
         return null;
     }
 
-    private RepairResult doRollbackToVersion( final NodeId nodeId, final NodeVersionMetadata nodeVersionMetadata )
+    private RepairResult doRollbackToVersion( final NodeId nodeId, final NodeVersion nodeVersionMetadata )
     {
         try
         {
-            this.nodeService.setActiveVersion( nodeId, nodeVersionMetadata.getNodeVersionId() );
+            final Node workingNode = this.nodeService.getByIdAndVersionId( nodeId, nodeVersionMetadata.getNodeVersionId() );
+            this.nodeService.update( UpdateNodeParams.create().
+                id( nodeId ).
+                editor( editableNode -> {
+                    editableNode.data = workingNode.data();
+                    editableNode.indexConfigDocument = workingNode.getIndexConfigDocument();
+                    editableNode.childOrder = workingNode.getChildOrder();
+                    editableNode.manualOrderValue = workingNode.getManualOrderValue();
+                    editableNode.nodeType = workingNode.getNodeType();
+                } ).
+                build() );
             final String message = "Successfully restored version from [" + nodeVersionMetadata.getTimestamp() + "]";
             LOG.info( message );
             return RepairResult.create().

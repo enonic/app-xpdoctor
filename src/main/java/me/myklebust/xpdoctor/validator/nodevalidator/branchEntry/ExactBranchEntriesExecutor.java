@@ -64,15 +64,15 @@ public class ExactBranchEntriesExecutor
 
     private void doCheckNode( final Reporter results, final NodeId nodeId )
     {
-        final Map<Branch, NodeVersionMetadata> versions = nodeService.getActiveVersions( GetActiveNodeVersionsParams.create()
+        final Map<Branch, NodeVersion> versions = nodeService.getActiveVersions( GetActiveNodeVersionsParams.create()
                                                                                              .nodeId( nodeId )
                                                                                              .branches( Branches.from(
                                                                                                  ContentConstants.BRANCH_DRAFT,
                                                                                                  ContentConstants.BRANCH_MASTER ) )
                                                                                              .build() ).getNodeVersions();
 
-        final NodeVersionMetadata draft = versions.get( ContentConstants.BRANCH_DRAFT );
-        final NodeVersionMetadata master = versions.get( ContentConstants.BRANCH_MASTER );
+        final NodeVersion draft = versions.get( ContentConstants.BRANCH_DRAFT );
+        final NodeVersion master = versions.get( ContentConstants.BRANCH_MASTER );
 
         if ( draft != null && master != null )
         {
@@ -97,14 +97,14 @@ public class ExactBranchEntriesExecutor
         }
     }
 
-    private boolean areEntriesExact( NodeVersionMetadata draft, NodeVersionMetadata master )
+    private boolean areEntriesExact( NodeVersion draft, NodeVersion master )
     {
         return draft.getNodeId().equals( master.getNodeId() ) && draft.getBinaryBlobKeys().equals( master.getBinaryBlobKeys() ) &&
             draft.getNodePath().equals( master.getNodePath() ) && draft.getTimestamp().equals( master.getTimestamp() ) &&
             draft.getNodeVersionKey().equals( master.getNodeVersionKey() );
     }
 
-    private boolean areVersionIdDifferent( NodeVersionMetadata draft, NodeVersionMetadata master )
+    private boolean areVersionIdDifferent( NodeVersion draft, NodeVersion master )
     {
         return !draft.getNodeVersionId().equals( master.getNodeVersionId() );
     }

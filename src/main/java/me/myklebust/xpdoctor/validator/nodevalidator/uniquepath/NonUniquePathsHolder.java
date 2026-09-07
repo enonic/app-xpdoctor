@@ -25,7 +25,7 @@ public class NonUniquePathsHolder
         {
             NodePath currentPath = nodePath;
 
-            while ( currentPath.elementCount() > parent.elementCount() )
+            while ( currentPath.getParentPaths().size() > parent.getParentPaths().size() )
             {
                 if ( currentPath.getParentPath().equals( parent ) )
                 {

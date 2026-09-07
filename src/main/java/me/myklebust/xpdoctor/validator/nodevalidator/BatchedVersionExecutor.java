@@ -1,10 +1,13 @@
 package me.myklebust.xpdoctor.validator.nodevalidator;
 
-import com.enonic.xp.node.GetNodeVersionsParams;
+import com.enonic.xp.index.IndexPath;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeService;
+import com.enonic.xp.node.NodeVersionQuery;
 import com.enonic.xp.node.NodeVersionQueryResult;
-import com.enonic.xp.node.NodeVersionsMetadata;
+import com.enonic.xp.node.NodeVersions;
+import com.enonic.xp.query.expr.FieldOrderExpr;
+import com.enonic.xp.query.expr.OrderExpr;
 
 public class BatchedVersionExecutor
 {
@@ -28,15 +31,16 @@ public class BatchedVersionExecutor
         this.totalHits = initTotalHits();
     }
 
-    public NodeVersionsMetadata execute()
+    public NodeVersions execute()
     {
-        final NodeVersionQueryResult result = this.nodeService.findVersions( GetNodeVersionsParams.create().
+        final NodeVersionQueryResult result = this.nodeService.findVersions( NodeVersionQuery.create().
             nodeId( this.nodeId ).
             from( this.currentFrom ).
             size( this.batchSize ).
+            addOrderBy( FieldOrderExpr.create( IndexPath.from( "timestamp" ), OrderExpr.Direction.DESC ) ).
             build() );
 
-        if ( result.getNodeVersionsMetadata().size() == 0 )
+        if ( result.getNodeVersions().isEmpty() )
         {
             this.hasMore = false;
         }
@@ -46,7 +50,7 @@ public class BatchedVersionExecutor
 
             this.hasMore = currentFrom < result.getTotalHits();
         }
-        return result.getNodeVersionsMetadata();
+        return result.getNodeVersions();
     }
 
     public boolean hasMore()
@@ -61,7 +65,7 @@ public class BatchedVersionExecutor
 
     private long initTotalHits()
     {
-        final NodeVersionQueryResult result = this.nodeService.findVersions( GetNodeVersionsParams.create().
+        final NodeVersionQueryResult result = this.nodeService.findVersions( NodeVersionQuery.create().
             nodeId( this.nodeId ).
             from( 0 ).
             size( 0 ).

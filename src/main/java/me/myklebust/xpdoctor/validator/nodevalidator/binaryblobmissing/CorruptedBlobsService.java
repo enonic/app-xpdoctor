@@ -64,7 +64,7 @@ public class CorruptedBlobsService
                 }
                 else
                 {
-                    if ( !binaryBlobRecord.getKey().equals( BlobKey.from( binaryBlobRecord.getBytes() ) ) )
+                    if ( !binaryBlobRecord.getKey().equals( BlobKey.sha256( binaryBlobRecord.getBytes() ) ) )
                     {
                         missingBlobsResult.blobReports.add( new BlobReport( BINARY_SEGMENT_LEVEL, blobKey, BlobReport.BlobState.CORRUPTED ) );
                     }
@@ -84,7 +84,7 @@ public class CorruptedBlobsService
         {
             missingBlobsResult.blobReports.add( new BlobReport( segmentLevel, blobKey, BlobReport.BlobState.MISSING ) );
         }
-        else if ( !blobStoreRecord.getKey().equals( BlobKey.from( blobStoreRecord.getBytes() ) ) )
+        else if ( !blobStoreRecord.getKey().equals( BlobKey.sha256( blobStoreRecord.getBytes() ) ) )
         {
             missingBlobsResult.blobReports.add( new BlobReport( segmentLevel, blobKey, BlobReport.BlobState.CORRUPTED ) );
         }
