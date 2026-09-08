@@ -1,5 +1,5 @@
 [versions]
-asset = "2.0.0"
+asset = "2.0.1"
 jackson = "2.21.3"
 junit = "4.13.2"
 thymeleaf = "3.0.0"
