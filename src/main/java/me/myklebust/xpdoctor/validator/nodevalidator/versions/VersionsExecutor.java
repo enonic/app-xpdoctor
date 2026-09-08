@@ -10,11 +10,11 @@ import me.myklebust.xpdoctor.validator.ValidatorResult;
 import me.myklebust.xpdoctor.validator.nodevalidator.Reporter;
 import me.myklebust.xpdoctor.validator.nodevalidator.ScrollQueryExecutor;
 
-import com.enonic.xp.node.GetNodeVersionsParams;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeIds;
 import com.enonic.xp.node.NodeService;
-import com.enonic.xp.node.NodeVersionMetadata;
+import com.enonic.xp.node.NodeVersion;
+import com.enonic.xp.node.NodeVersionQuery;
 import com.enonic.xp.node.NodeVersionQueryResult;
 
 public class VersionsExecutor
@@ -64,12 +64,12 @@ public class VersionsExecutor
     private void doCheckNode( final Reporter results, final NodeId nodeId )
     {
         final NodeVersionQueryResult versions =
-            nodeService.findVersions( GetNodeVersionsParams.create().nodeId( nodeId ).size( -1 ).build() );
-        for ( NodeVersionMetadata nodeVersionsMetadata : versions.getNodeVersionsMetadata() )
+            nodeService.findVersions( NodeVersionQuery.create().nodeId( nodeId ).size( -1 ).build() );
+        for ( NodeVersion nodeVersionsMetadata : versions.getNodeVersions() )
         {
             try
             {
-                nodeService.getByNodeVersionKey( nodeVersionsMetadata.getNodeVersionKey() );
+                nodeService.getByIdAndVersionId( nodeId, nodeVersionsMetadata.getNodeVersionId() );
             }
             catch ( Exception e )
             {

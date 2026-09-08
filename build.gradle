@@ -14,6 +14,7 @@ dependencies {
     implementation xplibs.api.core
     implementation xplibs.api.portal
     implementation "com.enonic.xp:core-elasticsearch:${xpVersion}"
+    compileOnly "org.elasticsearch:elasticsearch:2.4.6"
     implementation libs.jackson.databind
     implementation libs.jackson.datatype.jsr310
     include libs.lib.thymeleaf

@@ -13,6 +13,7 @@ import com.enonic.xp.script.bean.BeanContext;
 import com.enonic.xp.script.bean.ScriptBean;
 import com.enonic.xp.task.ProgressReporter;
 import com.enonic.xp.task.RunnableTask;
+import com.enonic.xp.task.SubmitLocalTaskParams;
 import com.enonic.xp.task.TaskId;
 import com.enonic.xp.task.TaskService;
 
@@ -53,7 +54,7 @@ public class IntegrityBean
 
         final RunnableTask task = ( id, progressReporter ) -> validatorTask( progressReporter, params );
 
-        final TaskId taskId = taskService.submitTask( task, "com.enonic.app.xpdoctor" );
+        final TaskId taskId = taskService.submitLocalTask( SubmitLocalTaskParams.create().runnableTask( task ).description( "com.enonic.app.xpdoctor" ).build() );
 
         return taskId.toString();
     }

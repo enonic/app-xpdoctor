@@ -29,9 +29,10 @@ public class ExactBranchEntriesDoctor
 
         try
         {
-            final PushNodesResult result = this.nodeService.push( NodeIds.from( nodeId ), ContentConstants.BRANCH_MASTER );
+            final PushNodesResult result =
+                this.nodeService.push( PushNodeParams.create().ids( NodeIds.from( nodeId ) ).target( ContentConstants.BRANCH_MASTER ).build() );
 
-            if ( result.getSuccessful().isNotEmpty() )
+            if ( !result.getSuccessful().isEmpty() )
             {
                 return RepairResult.create()
                     .repairStatus( RepairStatus.REPAIRED )
@@ -45,7 +46,7 @@ public class ExactBranchEntriesDoctor
                     .message( String.format( "Node with id: %s could not be pushed to master. %s", nodeId, result.getFailed()
                         .stream()
                         .findFirst()
-                        .map( f -> f.getReason().toString() )
+                        .map( f -> f.getFailureReason().toString() )
                         .orElse( "No details available" ) ) )
                     .build();
             }

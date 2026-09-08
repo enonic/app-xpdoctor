@@ -6,13 +6,13 @@ import java.net.URL;
 import com.google.common.base.Charsets;
 import com.google.common.io.ByteSource;
 
-import com.enonic.xp.node.NodeVersionMetadata;
+import com.enonic.xp.node.NodeVersion;
 
 import static com.google.common.io.Resources.getResource;
 
 class MinimalNodeFactory
 {
-    static ByteSource create( final String name, final NodeVersionMetadata version )
+    static ByteSource create( final String name, final NodeVersion version )
     {
         final String resourceValue = loadResource( name );
 

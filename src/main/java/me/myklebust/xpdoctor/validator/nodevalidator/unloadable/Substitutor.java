@@ -3,22 +3,24 @@ package me.myklebust.xpdoctor.validator.nodevalidator.unloadable;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang.text.StrSubstitutor;
-
-import com.enonic.xp.node.NodeVersionMetadata;
+import com.enonic.xp.node.NodeVersion;
 
 class Substitutor
 {
-    static String substitute( final String source, final NodeVersionMetadata version )
+    static String substitute( final String source, final NodeVersion version )
     {
         final Map<String, String> valueMap = new HashMap<>();
         valueMap.put( "name", version.getNodePath().getName() + " [xpDoctor-revived]" );
         valueMap.put( "nodeId", version.getNodeId().toString() );
         valueMap.put( "timestamp", version.getTimestamp().toString() );
 
-        final StrSubstitutor strSubstitutor = new StrSubstitutor( valueMap );
+        String result = source;
+        for ( final Map.Entry<String, String> entry : valueMap.entrySet() )
+        {
+            result = result.replace( "${" + entry.getKey() + "}", entry.getValue() );
+        }
 
-        return strSubstitutor.replace( source );
+        return result;
     }
 
 }

@@ -31,7 +31,7 @@ import com.enonic.xp.node.GetActiveNodeVersionsParams;
 import com.enonic.xp.node.GetActiveNodeVersionsResult;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeService;
-import com.enonic.xp.node.NodeVersionMetadata;
+import com.enonic.xp.node.NodeVersion;
 import com.enonic.xp.repository.RepositorySegmentUtils;
 
 public class InheritFieldDoctor
@@ -70,7 +70,7 @@ public class InheritFieldDoctor
                                                                                                           .getBranch() ) )
                                                                                                   .build() );
 
-            final NodeVersionMetadata nodeVersionMetadata = versionsResult.getNodeVersions().get( ContextAccessor.current().getBranch() );
+            final NodeVersion nodeVersionMetadata = versionsResult.getNodeVersions().get( ContextAccessor.current().getBranch() );
             if ( nodeVersionMetadata != null )
             {
                 final Segment nodeSegment =

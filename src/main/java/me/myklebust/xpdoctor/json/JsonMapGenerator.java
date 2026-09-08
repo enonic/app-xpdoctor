@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import com.enonic.xp.script.serializer.MapGeneratorBase;
 
@@ -28,6 +29,12 @@ public final class JsonMapGenerator
     }
 
     @Override
+    protected Object newFunction( final Function<?, ?> function )
+    {
+        return function;
+    }
+
+    @Override
     protected boolean isMap( final Object value )
     {
         return value instanceof Map;
@@ -44,6 +51,12 @@ public final class JsonMapGenerator
     protected void putInMap( final Object map, final String key, final Object value )
     {
         ( (Map<String, Object>) map ).put( key, value );
+    }
+
+    @Override
+    protected void putRawValueInMap( final Object map, final String key, final Object value )
+    {
+        putInMap( map, key, value );
     }
 
     @Override

@@ -2,6 +2,7 @@ package me.myklebust.xpdoctor.validator.nodevalidator.uniquepath;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -9,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableMap;
 
 import me.myklebust.xpdoctor.validator.RepairResult;
 import me.myklebust.xpdoctor.validator.RepairStatus;
@@ -26,9 +26,14 @@ import com.enonic.xp.node.GetActiveNodeVersionsResult;
 import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeIds;
+import com.enonic.xp.node.NodeIndexPath;
 import com.enonic.xp.node.NodeQuery;
 import com.enonic.xp.node.NodeService;
-import com.enonic.xp.node.NodeVersionMetadata;
+import com.enonic.xp.node.NodeVersion;
+import com.enonic.xp.query.expr.CompareExpr;
+import com.enonic.xp.query.expr.FieldExpr;
+import com.enonic.xp.query.expr.QueryExpr;
+import com.enonic.xp.query.expr.ValueExpr;
 import com.enonic.xp.repository.Repository;
 import com.enonic.xp.repository.RepositoryService;
 
@@ -107,7 +112,7 @@ public class UniquePathValidatorExecutor
         }
 
         final FindNodesByQueryResult queryResult = this.nodeService.findByQuery( NodeQuery.create().
-            path( node.path() ).
+            query( QueryExpr.from( CompareExpr.eq( FieldExpr.from( NodeIndexPath.PATH ), ValueExpr.string( node.path().toString() ) ) ) ).
             size( -1 ).
             build() );
 
@@ -141,10 +146,10 @@ public class UniquePathValidatorExecutor
         final GetActiveNodeVersionsResult activeVersions = this.nodeService.getActiveVersions(
             GetActiveNodeVersionsParams.create().nodeId( nodeId ).branches( repository.getBranches() ).build() );
 
-        final ImmutableMap<Branch, NodeVersionMetadata> nodeVersions = activeVersions.getNodeVersions();
+        final Map<Branch, NodeVersion> nodeVersions = activeVersions.getNodeVersions();
 
         final Set<NodeId> ids = nodeVersions.values().stream().
-            map( NodeVersionMetadata::getNodeId ).
+            map( NodeVersion::getNodeId ).
             collect( Collectors.toSet() );
 
         return String.format( "id: [%s]", Joiner.on( "," ).join( ids ) );
