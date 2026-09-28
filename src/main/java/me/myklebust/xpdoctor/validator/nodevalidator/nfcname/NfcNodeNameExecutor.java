@@ -1,12 +1,8 @@
 package me.myklebust.xpdoctor.validator.nodevalidator.nfcname;
 
-import java.text.Normalizer;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import me.myklebust.xpdoctor.validator.RepairResult;
-import me.myklebust.xpdoctor.validator.RepairStatus;
 import me.myklebust.xpdoctor.validator.StorageSpyService;
 import me.myklebust.xpdoctor.validator.ValidatorResult;
 import me.myklebust.xpdoctor.validator.nodevalidator.Reporter;
@@ -25,10 +21,13 @@ public class NfcNodeNameExecutor
 
     private final StorageSpyService storageSpyService;
 
-    public NfcNodeNameExecutor( final NodeService nodeService, final StorageSpyService storageSpyService )
+    private final NfcNodeNameDoctor doctor;
+
+    public NfcNodeNameExecutor( final NodeService nodeService, final StorageSpyService storageSpyService, final NfcNodeNameDoctor doctor )
     {
         this.nodeService = nodeService;
         this.storageSpyService = storageSpyService;
+        this.doctor = doctor;
     }
 
     public void execute( final Reporter reporter )
@@ -56,7 +55,7 @@ public class NfcNodeNameExecutor
             }
             catch ( Exception e )
             {
-                LOG.error( "Cannot check name normalization for node with id: {}", nodeId, e );
+                LOG.error( "Cannot check name for node with id: {}", nodeId, e );
             }
         }
     }
@@ -64,13 +63,9 @@ public class NfcNodeNameExecutor
     private void doCheckNode( final Reporter results, final NodeId nodeId )
     {
         final Node node = this.nodeService.getById( nodeId );
-        if ( node == null || node.isRoot() )
-        {
-            return;
-        }
 
-        final String name = node.name().toString();
-        if ( Normalizer.isNormalized( name, Normalizer.Form.NFC ) )
+        // The root node has an empty name
+        if ( node.isRoot() || Xp8NodeNames.isValid( node.name().toString() ) )
         {
             return;
         }
@@ -80,12 +75,9 @@ public class NfcNodeNameExecutor
                                .nodePath( node.path() )
                                .nodeVersionId( node.getNodeVersionId() )
                                .timestamp( node.getTimestamp() )
-                               .type( "Not NFC name" )
+                               .type( "Invalid name in XP 8" )
                                .validatorName( results.validatorName )
-                               .message( "Node name is not Unicode NFC normalized" )
-                               .repairResult( RepairResult.create()
-                                                  .message( "Rename node to [" + Normalizer.normalize( name, Normalizer.Form.NFC ) + "]" )
-                                                  .repairStatus( RepairStatus.IS_REPAIRABLE )
-                                                  .build() ) );
+                               .message( "Node name is not Unicode NFC normalized or contains characters not allowed in XP 8" )
+                               .repairResult( this.doctor.repairNode( nodeId, true ) ) );
     }
 }

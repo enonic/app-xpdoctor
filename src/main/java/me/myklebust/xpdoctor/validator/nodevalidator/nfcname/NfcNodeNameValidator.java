@@ -10,6 +10,7 @@ import me.myklebust.xpdoctor.validator.Validator;
 import me.myklebust.xpdoctor.validator.ValidatorResults;
 import me.myklebust.xpdoctor.validator.nodevalidator.Reporter;
 
+import com.enonic.xp.content.ContentService;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeService;
 import com.enonic.xp.task.ProgressReporter;
@@ -22,6 +23,9 @@ public class NfcNodeNameValidator
     private NodeService nodeService;
 
     @Reference
+    private ContentService contentService;
+
+    @Reference
     private StorageSpyService storageSpyService;
 
     private NfcNodeNameDoctor doctor;
@@ -29,7 +33,7 @@ public class NfcNodeNameValidator
     @Activate
     public void activate()
     {
-        this.doctor = new NfcNodeNameDoctor( this.nodeService );
+        this.doctor = new NfcNodeNameDoctor( this.nodeService, this.contentService );
     }
 
     @Override
@@ -41,20 +45,20 @@ public class NfcNodeNameValidator
     @Override
     public String getDescription()
     {
-        return "Validates that node names are Unicode NFC normalized. Decomposed (NFD) names are not valid in XP 8";
+        return "Validates that node names are valid in XP 8: Unicode NFC normalized, with no characters XP 8 does not allow";
     }
 
     @Override
     public String getRepairStrategy()
     {
-        return "Rename node to the NFC normalized name";
+        return "Rename to the NFC normalized name. Content is renamed in draft, publish it to update master. Names still invalid after normalization must be renamed manually";
     }
 
     @Override
     public ValidatorResults validate( final ProgressReporter reporter )
     {
         final Reporter results = new Reporter( name(), reporter );
-        new NfcNodeNameExecutor( nodeService, storageSpyService ).execute( results );
+        new NfcNodeNameExecutor( nodeService, storageSpyService, doctor ).execute( results );
         return results.buildResults();
     }
 
