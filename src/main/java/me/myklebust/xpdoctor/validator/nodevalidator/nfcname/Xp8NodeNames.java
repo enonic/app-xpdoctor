@@ -38,8 +38,7 @@ final class Xp8NodeNames
         {
             return false;
         }
-        // XP 8 checks UTF-16 chars, not code points: characters outside the BMP are rejected as surrogates
-        return name.chars().noneMatch( Xp8NodeNames::isInvalidChar );
+        return name.codePoints().noneMatch( Xp8NodeNames::isInvalidChar );
     }
 
     private static boolean isInvalidChar( final int c )

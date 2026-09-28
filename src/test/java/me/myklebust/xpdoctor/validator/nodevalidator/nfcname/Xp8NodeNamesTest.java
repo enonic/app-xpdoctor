@@ -26,9 +26,10 @@ public class Xp8NodeNamesTest
     }
 
     @Test
-    public void emoji_is_invalid()
+    public void emoji_is_valid()
     {
-        assertFalse( Xp8NodeNames.isValid( "cat😀" ) );
+        assertTrue( Xp8NodeNames.isValid( "cat😀" ) );
+        assertFalse( Xp8NodeNames.isValid( "cat\uD83D" ) );
     }
 
     @Test
