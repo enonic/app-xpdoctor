@@ -35,7 +35,7 @@ public class NfcNodeNameValidator
     @Override
     public int order()
     {
-        return 7;
+        return 8;
     }
 
     @Override
