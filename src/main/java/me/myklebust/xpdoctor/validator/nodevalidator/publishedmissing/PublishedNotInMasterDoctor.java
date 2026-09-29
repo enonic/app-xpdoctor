@@ -12,16 +12,24 @@ import me.myklebust.xpdoctor.validator.nodevalidator.NodeDoctor;
 import com.enonic.xp.branch.Branch;
 import com.enonic.xp.branch.Branches;
 import com.enonic.xp.content.ContentConstants;
+import com.enonic.xp.context.Context;
 import com.enonic.xp.context.ContextAccessor;
 import com.enonic.xp.context.ContextBuilder;
 import com.enonic.xp.node.GetActiveNodeVersionsParams;
+import com.enonic.xp.node.Node;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeIds;
+import com.enonic.xp.node.NodePath;
 import com.enonic.xp.node.NodeService;
 import com.enonic.xp.node.NodeVersion;
 import com.enonic.xp.node.PushNodeParams;
+import com.enonic.xp.node.PushNodeResult;
 import com.enonic.xp.node.PushNodesResult;
 
+/**
+ * Imported content lands in draft only, so master usually lacks its parents too. The node is pushed together with every
+ * ancestor that is missing in master: push stores them sorted by path, so parents are in place before their children.
+ */
 public class PublishedNotInMasterDoctor
     implements NodeDoctor
 {
@@ -37,28 +45,34 @@ public class PublishedNotInMasterDoctor
     @Override
     public RepairResult repairNode( final NodeId nodeId, final boolean dryRun )
     {
-        if ( dryRun )
-        {
-            return result( RepairStatus.IS_REPAIRABLE, String.format( "Push the current draft version of node %s to master", nodeId ) );
-        }
-
         try
         {
-            // Plain push, without the publish processor: master gets the exact draft version, no new version is created
-            final PushNodesResult result = ContextBuilder.from( ContextAccessor.current() )
-                .branch( ContentConstants.BRANCH_DRAFT )
-                .build()
-                .callWith( () -> this.nodeService.push(
-                    PushNodeParams.create().ids( NodeIds.from( nodeId ) ).target( ContentConstants.BRANCH_MASTER ).build() ) );
+            final Context draftContext = ContextBuilder.from( ContextAccessor.current() ).branch( ContentConstants.BRANCH_DRAFT ).build();
 
-            if ( result.getSuccessful().isEmpty() )
+            final NodeIds missingAncestors = draftContext.callWith( () -> findAncestorsMissingInMaster( nodeId ) );
+
+            if ( dryRun )
             {
-                return result( RepairStatus.FAILED, String.format( "Node with id: %s could not be pushed to master. %s", nodeId,
-                                                                   result.getFailed()
-                                                                       .stream()
-                                                                       .findFirst()
-                                                                       .map( f -> f.getFailureReason().toString() )
-                                                                       .orElse( "No details available" ) ) );
+                return result( RepairStatus.IS_REPAIRABLE, missingAncestors.isEmpty()
+                    ? "Push the current draft version to master"
+                    : String.format( "Push the current draft version to master, with %s parent(s) missing in master", missingAncestors.getSize() ) );
+            }
+
+            // Plain push, without the publish processor: master gets the exact draft versions, no new versions are created
+            final PushNodesResult result = draftContext.callWith( () -> this.nodeService.push( PushNodeParams.create()
+                                                                                                    .ids( NodeIds.create()
+                                                                                                              .addAll( missingAncestors )
+                                                                                                              .add( nodeId )
+                                                                                                              .build() )
+                                                                                                    .target( ContentConstants.BRANCH_MASTER )
+                                                                                                    .build() ) );
+
+            final PushNodeResult failed =
+                result.getFailed().stream().filter( f -> nodeId.equals( f.getNodeId() ) ).findFirst().orElse( null );
+            if ( failed != null )
+            {
+                return result( RepairStatus.FAILED,
+                               String.format( "Node with id: %s could not be pushed to master: %s", nodeId, failed.getFailureReason() ) );
             }
 
             final Map<Branch, NodeVersion> versions = this.nodeService.getActiveVersions( GetActiveNodeVersionsParams.create()
@@ -76,7 +90,9 @@ public class PublishedNotInMasterDoctor
                                String.format( "Node with id: %s was pushed, but master does not have the draft version", nodeId ) );
             }
 
-            final String msg = String.format( "Node with id: %s pushed to master with version %s", nodeId, master.getNodeVersionId() );
+            final String msg =
+                String.format( "Node with id: %s pushed to master with version %s, together with %s missing parent(s)", nodeId,
+                               master.getNodeVersionId(), missingAncestors.getSize() );
             LOG.info( msg );
             return result( RepairStatus.REPAIRED, msg );
         }
@@ -85,6 +101,31 @@ public class PublishedNotInMasterDoctor
             LOG.error( "Failed to repair node", e );
             return result( RepairStatus.FAILED, "Cannot repair node, exception when trying to push: " + e.getMessage() );
         }
+    }
+
+    private NodeIds findAncestorsMissingInMaster( final NodeId nodeId )
+    {
+        final Context masterContext = ContextBuilder.from( ContextAccessor.current() ).branch( ContentConstants.BRANCH_MASTER ).build();
+
+        final NodeIds.Builder missing = NodeIds.create();
+        NodePath parentPath = this.nodeService.getById( nodeId ).path().getParentPath();
+        while ( !parentPath.isRoot() )
+        {
+            final NodePath path = parentPath;
+            if ( masterContext.callWith( () -> this.nodeService.nodeExists( path ) ) )
+            {
+                break;
+            }
+            final Node parent = this.nodeService.getByPath( path );
+            if ( parent == null )
+            {
+                // Missing in draft as well: push will fail with PARENT_NOT_FOUND and report it
+                break;
+            }
+            missing.add( parent.id() );
+            parentPath = path.getParentPath();
+        }
+        return missing.build();
     }
 
     private static RepairResult result( final RepairStatus status, final String message )
