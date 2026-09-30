@@ -3,6 +3,7 @@ package me.myklebust.xpdoctor.validator.nodevalidator.branchEntry;
 import com.enonic.xp.branch.Branch;
 import com.enonic.xp.branch.Branches;
 import com.enonic.xp.content.ContentConstants;
+import com.enonic.xp.context.ContextAccessor;
 import com.enonic.xp.node.*;
 
 import me.myklebust.xpdoctor.validator.RepairResult;
@@ -33,6 +34,12 @@ public class ExactBranchEntriesExecutor
 
     public void execute( final Reporter reporter )
     {
+        // Draft and master are compared explicitly: the master scan would only repeat the draft findings
+        if ( !isContentDraft() )
+        {
+            return;
+        }
+
         LOG.info( "Running ExactBranchEntriesExecutor..." );
         reporter.reportStart();
 
@@ -95,6 +102,12 @@ public class ExactBranchEntriesExecutor
                                                           .build() ) );
             }
         }
+    }
+
+    private static boolean isContentDraft()
+    {
+        return ContentConstants.BRANCH_DRAFT.equals( ContextAccessor.current().getBranch() ) &&
+            ContextAccessor.current().getRepositoryId().toString().startsWith( ContentConstants.CONTENT_REPO_ID_PREFIX );
     }
 
     private boolean areEntriesExact( NodeVersion draft, NodeVersion master )
