@@ -1,51 +1,49 @@
 var model = {
-    selectors: {
-        repoSelector: "#repoSelector"
-    },
     buttons: {
-        runValidator: "#btnRunValidator",
+        newAnalysis: "#btnNewAnalysis",
+        analyse: "#btnAnalyse",
+        closeSetup: "#btnCloseSetup",
         repairAll: "#btnRepairAll",
         repairLink: '.repairLink',
         cancel: "#btnCancel",
         closeOverlay: "#btnCloseOverlay"
     },
     div: {
-        results: "#results",
-        resultTab: "#resultTab",
-        resultMessage: "#resultMessage",
-        mainTab: "#mainTab",
-        executor: "#executor",
+        resultWrapper: "#resultWrapper",
         overlay: "#analysisOverlay",
+        overlaySetup: "#overlaySetup",
         overlayProgress: "#overlayProgress",
         overlaySummary: "#overlaySummary",
         overlayRepo: "#overlayRepo",
         overlayValidator: "#overlayValidator",
-        progressBarFill: "#progressBarFill"
+        progressBarFill: "#progressBarFill",
+        repoTree: "#repoTree",
+        validatorList: "#validatorList",
+        selectionSummary: "#selectionSummary"
     },
-    item: {
-        validatorItemClass: ".validatorItem"
+    input: {
+        selectAllValidators: "#selectAllValidators",
+        validatorCheckbox: ".validatorCheckbox",
+        treeCheckbox: ".treeCheckbox",
+        branchCheckbox: ".branchCheckbox"
     },
     table: {
         issuesTable: "#resultTable",
-        issuesTableData: "#issuesTableData",
         summaryTableBody: "#summaryTableBody"
     }
 };
 
-
-var ws = {
-    connected: false,
-    connection: null,
-    keepAliveIntervalId: null
-};
+var repoGroups = [
+    {key: "cms", title: "CMS", expanded: true, matches: function (repo) { return repo.indexOf("com.enonic.cms.") === 0; }},
+    {key: "system", title: "System", expanded: false, matches: function (repo) { return repo.indexOf("system.") === 0 || repo === "system-repo"; }},
+    {key: "custom", title: "Custom", expanded: false, matches: function () { return true; }}
+];
 
 var state = {
     taskId: null,
-    taskState: null,
     resultTimestamp: 0,
     dataTable: null,
     analyzeResult: null,
-    repoSelected: false,
     overlay: null,
     cancelling: false,
     lastResultChecked: false
@@ -57,6 +55,7 @@ $(function () {
     getProgress();
     getLastResult();
     initializeButtons();
+    showSetupOverlay();
 
     setInterval(getProgress, 1000);
     setInterval(getTaskState, 1000);
@@ -67,11 +66,16 @@ $(function () {
 
 var initializeButtons = function () {
 
-    disableButton($(model.buttons.runValidator));
-    disableButton($(model.buttons.repairAll));
+    $(model.buttons.newAnalysis).click(function () {
+        showSetupOverlay();
+    });
 
-    $(model.buttons.runValidator).click(function () {
+    $(model.buttons.analyse).click(function () {
         handleRunValidator();
+    });
+
+    $(model.buttons.closeSetup).click(function () {
+        hideOverlay();
     });
 
     $(model.buttons.repairAll).click(function () {
@@ -86,38 +90,31 @@ var initializeButtons = function () {
         hideOverlay();
     });
 
-    $(model.selectors.repoSelector).change(function () {
-        updateButton($(model.buttons.runValidator), false, "play_arrow", "Analyse");
-        state.repoSelected = true;
-    })
+    $(model.input.selectAllValidators).change(function () {
+        $(model.input.validatorCheckbox).prop("checked", this.checked);
+        updateSetupState();
+    });
 
-    const checkUncheckAll = $('#toggleAll');
-    const checkboxes = $(model.item.validatorItemClass + ' input');
+    $(model.div.validatorList).on("change", model.input.validatorCheckbox, function () {
+        updateSetupState();
+    });
 
-    checkUncheckAll.on('click', function() {
-        const firstCheckbox = checkboxes.first();
-        const isChecked = !firstCheckbox.prop('checked');
-        checkboxes.prop('checked', isChecked);
+    $(model.div.repoTree).on("change", model.input.treeCheckbox, function () {
+        handleTreeCheckboxChange($(this));
+    });
+
+    $(model.div.repoTree).on("click", ".treeGroupHeader", function () {
+        var $group = $(this).closest(".treeGroup");
+        $group.toggleClass("collapsed");
+        $(this).find("i").text($group.hasClass("collapsed") ? "chevron_right" : "expand_more");
+    });
+
+    $(document).keydown(function (e) {
+        if (e.key === "Escape" && ((state.overlay === "setup" && hasIssues()) || state.overlay === "summary")) {
+            hideOverlay();
+        }
     });
 };
-
-var disableButton = function (button) {
-    button.prop("disabled", true);
-};
-
-
-var updateButton = function (button, disabled, icon, label) {
-    button.prop("disabled", disabled);
-
-    if (icon) {
-        button.children("i").html(icon);
-    }
-
-    if (label) {
-        button.children("p").html(label);
-    }
-};
-
 
 var loadRepoList = function () {
     jQuery.ajax({
@@ -125,31 +122,115 @@ var loadRepoList = function () {
         cache: false,
         type: 'GET',
         success: function (result) {
-            populateRepoSelector(result);
+            renderRepoTree(result.repoList);
         }
     });
 };
 
-var populateRepoSelector = function (result) {
+var renderRepoTree = function (repoList) {
 
-    console.log("LoadRepoList result:", result);
+    var grouped = {};
+    repoGroups.forEach(function (group) {
+        grouped[group.key] = {};
+    });
+
+    repoList.forEach(function (entry) {
+        var group = repoGroups.filter(function (g) { return g.matches(entry.repo); })[0];
+        var repos = grouped[group.key];
+        if (!repos[entry.repo]) {
+            repos[entry.repo] = [];
+        }
+        repos[entry.repo].push(entry);
+    });
 
     var html = "";
 
-    result.repoList.forEach(function (entry) {
-        html += "<option value='" + entry.repo + ":" + entry.branch + "'>";
-        html += entry.repo + " - " + entry.branch + " (" + entry.count + " nodes)";
-        html += "</option>";
+    repoGroups.forEach(function (group) {
+        var repoIds = Object.keys(grouped[group.key]).sort();
+        if (repoIds.length === 0) {
+            return;
+        }
+
+        html += "<div class='treeGroup" + (group.expanded ? "" : " collapsed") + "'>";
+        html += "<div class='treeRow level0 treeGroupHeader'>";
+        html += "<i class='material-icons'>" + (group.expanded ? "expand_more" : "chevron_right") + "</i>";
+        html += "<span class='treeLabel'>" + group.title + "</span>";
+        html += "<span class='treeCount'>" + repoIds.length + " repos</span></div>";
+        html += "<div class='treeChildren'>";
+
+        repoIds.forEach(function (repoId) {
+            var branches = grouped[group.key][repoId];
+            html += "<div class='treeRepo'>";
+            html += treeRow(1, "<input type='checkbox' class='treeCheckbox'>", repoId, "");
+            html += "<div class='treeChildren'>";
+            branches.forEach(function (branch) {
+                var checkbox = "<input type='checkbox' class='treeCheckbox branchCheckbox' value='" + repoId + ":" + branch.branch +
+                               "' data-count='" + branch.count + "'>";
+                html += treeRow(2, checkbox, branch.branch, branch.count + " nodes");
+            });
+            html += "</div></div>";
+        });
+
+        html += "</div></div>";
     });
 
-    $(model.selectors.repoSelector).html(html);
+    $(model.div.repoTree).html(html);
+    updateSetupState();
+};
 
+var treeRow = function (level, checkbox, label, count) {
+    return "<label class='treeRow level" + level + "'>" + checkbox +
+           "<span class='treeLabel'>" + label + "</span>" +
+           "<span class='treeCount'>" + count + "</span></label>";
+};
+
+var handleTreeCheckboxChange = function ($checkbox) {
+    var checked = $checkbox.prop("checked");
+
+    $checkbox.closest(".treeRow").next(".treeChildren").find("input").prop({checked: checked, indeterminate: false});
+
+    var $container = $checkbox.closest(".treeChildren");
+    while ($container.length) {
+        var $parentRow = $container.prev(".treeRow");
+        var branches = $container.find(model.input.branchCheckbox);
+        var checkedCount = branches.filter(":checked").length;
+        $parentRow.find("input").prop({
+            checked: checkedCount > 0 && checkedCount === branches.length,
+            indeterminate: checkedCount > 0 && checkedCount < branches.length
+        });
+        $container = $parentRow.closest(".treeChildren");
+    }
+
+    updateSetupState();
+};
+
+var updateSetupState = function () {
+    var branches = $(model.input.branchCheckbox + ":checked");
+    var nodes = 0;
+    branches.each(function () {
+        nodes += parseInt($(this).attr("data-count"), 10) || 0;
+    });
+
+    var validators = $(model.input.validatorCheckbox);
+    var checkedValidators = validators.filter(":checked").length;
+
+    $(model.input.selectAllValidators).prop({
+        checked: checkedValidators === validators.length,
+        indeterminate: checkedValidators > 0 && checkedValidators < validators.length
+    });
+
+    var summary = "";
+    if (branches.length > 0) {
+        summary = branches.length + (branches.length === 1 ? " branch, " : " branches, ") + nodes + " nodes, " +
+                  checkedValidators + (checkedValidators === 1 ? " validator" : " validators");
+    }
+    $(model.div.selectionSummary).text(summary);
+
+    $(model.buttons.analyse).prop("disabled", branches.length === 0 || checkedValidators === 0);
 };
 
 var handleRunValidator = function () {
     clearIssueTable();
-    disableButton($(model.buttons.runValidator));
-    disableButton($(model.buttons.repairAll));
     showProgressOverlay();
     doValidation();
     getProgress();
@@ -182,14 +263,11 @@ var getTaskState = function () {
 
 var handleTaskState = function (result) {
 
-    var analyzeButton = $(model.buttons.runValidator);
-    var repairAllButton = $(model.buttons.repairAll);
-
     if (result.state === "RUNNING") {
         state.taskId = result.taskId;
-        updateButton(analyzeButton, true, "update", "Analysing..");
-        updateButton(repairAllButton, true);
-        if (!state.overlay) {
+        $(model.buttons.newAnalysis).prop("disabled", true);
+        $(model.buttons.repairAll).prop("disabled", true);
+        if (state.overlay !== 'progress' && state.overlay !== 'summary') {
             showProgressOverlay();
         }
     } else {
@@ -200,9 +278,7 @@ var handleTaskState = function (result) {
             }
         }
 
-        if (state.repoSelected) {
-            updateButton(analyzeButton, false, "play_arrow", "Analyse");
-        }
+        $(model.buttons.newAnalysis).prop("disabled", false);
     }
 };
 
@@ -218,7 +294,7 @@ var getLastResult = function () {
                 state.resultTimestamp = serviceResult.result.timestamp;
                 if (state.lastResultChecked) {
                     state.analyzeResult = serviceResult.result;
-                    if (state.overlay) {
+                    if (state.overlay === 'progress' || state.overlay === 'summary') {
                         showSummaryOverlay(serviceResult.result);
                     } else {
                         updateIssueTable();
@@ -275,23 +351,25 @@ var renderRepairResult = function (result, issueKey) {
     updateIssueTable();
 };
 
+var hasIssues = function () {
+    return !!(state.analyzeResult && state.analyzeResult.totalIssues);
+};
+
 var updateIssueTable = function () {
 
-    if (!state.analyzeResult || !state.analyzeResult.totalIssues) {
+    if (!hasIssues()) {
 
         if (state.dataTable) {
             state.dataTable.clear();
             state.dataTable.draw();
         }
 
-        $(model.div.resultTab).addClass("hidden");
-        $(model.div.resultMessage).removeClass("hidden");
+        $(model.div.resultWrapper).addClass("hidden");
 
         return;
     }
 
-    $(model.div.resultMessage).addClass("hidden");
-    $(model.div.resultTab).removeClass("hidden");
+    $(model.div.resultWrapper).removeClass("hidden");
 
     var issuesArray = createAsIssuesArray();
     var dataTable = state.dataTable;
@@ -304,9 +382,10 @@ var updateIssueTable = function () {
         dataTable.draw();
     }
 
-    if (state.analyzeResult.totalIssues > 0) {
-        updateButton($(model.buttons.repairAll), false);
-    }
+    var repairable = issuesArray.filter(function (issue) {
+        return issue.repairStatus === "IS_REPAIRABLE";
+    }).length;
+    $(model.buttons.repairAll).prop("disabled", repairable === 0);
 
     $(model.buttons.repairLink).click(function () {
         var button = $(this);
@@ -383,9 +462,6 @@ var renderRepairOptions = function (issue) {
     if (issue.repairStatus === "IS_REPAIRABLE") {
         repairOptions += renderRepairLink(issue);
     }
-    if (issue.repairStatus === "FAILED") {
-        // repairOptions += renderDeleteLink(issue);
-    }
     return repairOptions;
 };
 
@@ -394,14 +470,6 @@ var renderRepairLink = function (issue) {
     var repairLink = "";
     repairLink += "<a class='repairLink' href='#' data-issueId='" + issue.issueId + "'>";
     repairLink += "<i class='material-icons'>build</i>";
-    repairLink += "</a>";
-    return repairLink;
-};
-
-var renderDeleteLink = function (issue) {
-    var repairLink = "";
-    repairLink += "<a class='deleteLink' href='#'>";
-    repairLink += "<i class='material-icons'>delete</i>";
     repairLink += "</a>";
     return repairLink;
 };
@@ -432,13 +500,13 @@ var clearIssueTable = function () {
 
 var doValidation = function () {
 
-    var repoSelector = $(model.selectors.repoSelector).val();
-
-    console.log("REPOSELECTOR: ", repoSelector);
+    var repoBranches = $(model.input.branchCheckbox + ":checked").map(function () {
+        return $(this).val();
+    }).get();
 
     var data = {
         enabledValidators: getEnabledValidators(),
-        repoBranches: repoSelector,
+        repoBranches: repoBranches,
     };
 
     jQuery.ajax({
@@ -448,7 +516,7 @@ var doValidation = function () {
         data: data,
         success: function (result) {
             if (result.error) {
-                $('#repoMessage').html("result.error");
+                $('#repoMessage').html(result.error);
             }
         }
     });
@@ -456,13 +524,9 @@ var doValidation = function () {
 };
 
 var getEnabledValidators = function () {
-    var validatorArray = [];
-
-    $(model.item.validatorItemClass + ' input:checked').each(function () {
-            validatorArray.push($(this).attr('data-validatorName'));
-        }
-    );
-    return validatorArray;
+    return $(model.input.validatorCheckbox + ":checked").map(function () {
+        return $(this).attr('data-validatorName');
+    }).get();
 };
 
 var getProgress = function () {
@@ -506,6 +570,19 @@ var displayProgressInfo = function (result) {
     $(model.div.progressBarFill).css("width", percent + "%");
 };
 
+var showOverlaySection = function (section) {
+    $(model.div.overlaySetup + ", " + model.div.overlayProgress + ", " + model.div.overlaySummary).addClass("hidden");
+    $(section).removeClass("hidden");
+    $(model.div.overlay).removeClass("hidden");
+};
+
+var showSetupOverlay = function () {
+    state.overlay = 'setup';
+    $(model.buttons.closeSetup).toggleClass("hidden", !hasIssues());
+    updateSetupState();
+    showOverlaySection(model.div.overlaySetup);
+};
+
 var showProgressOverlay = function () {
     state.overlay = 'progress';
     state.cancelling = false;
@@ -513,9 +590,7 @@ var showProgressOverlay = function () {
     $(model.div.overlayRepo).text("Analysing...");
     $(model.div.overlayValidator).text("Starting...");
     $(model.div.progressBarFill).css("width", "0%");
-    $(model.div.overlaySummary).addClass("hidden");
-    $(model.div.overlayProgress).removeClass("hidden");
-    $(model.div.overlay).removeClass("hidden");
+    showOverlaySection(model.div.overlayProgress);
 };
 
 var showSummaryOverlay = function (result) {
@@ -535,13 +610,14 @@ var showSummaryOverlay = function (result) {
 
     $(model.buttons.closeOverlay).html(result.totalIssues > 0 ? "Show details" : "Close");
 
-    $(model.div.overlayProgress).addClass("hidden");
-    $(model.div.overlaySummary).removeClass("hidden");
-    $(model.div.overlay).removeClass("hidden");
+    showOverlaySection(model.div.overlaySummary);
 };
 
 var hideOverlay = function () {
     state.overlay = null;
     $(model.div.overlay).addClass("hidden");
     updateIssueTable();
+    if (!hasIssues()) {
+        showSetupOverlay();
+    }
 };

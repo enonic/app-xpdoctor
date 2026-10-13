@@ -13,3 +13,5 @@ apis:
   - "repo-list"
   - "cancel"
   - "event-bus"
+  - "admin:extension"
+  - "admin:events"

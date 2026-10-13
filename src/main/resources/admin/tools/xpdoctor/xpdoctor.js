@@ -1,5 +1,6 @@
 var thymeleaf = require('/lib/thymeleaf');
 var portal = require('/lib/xp/portal');
+var admin = require('/lib/xp/admin');
 var assetLib = require('/lib/enonic/asset');
 var dataValidator = require('/lib/dataValidator.js');
 
@@ -27,7 +28,15 @@ exports.get = function (req) {
         repairApiUrl: getApiUrl('repair'),
         repoListApiUrl: getApiUrl('repo-list'),
         cancelApiUrl: getApiUrl('cancel'),
-        wsUrl: wsUrl
+        wsUrl: wsUrl,
+        menuLoaderUrl: admin.extensionUrl({
+            application: 'com.enonic.xp.app.main',
+            extension: 'menu-loader',
+            params: {
+                appName: app.name,
+                theme: 'light'
+            }
+        })
     };
 
     return {
@@ -38,7 +47,10 @@ exports.get = function (req) {
 };
 
 var createValidatorsModel = function () {
-    return dataValidator.validators().validators;
+    return dataValidator.validators().validators.map(function (validator) {
+        validator.title = validator.name.replace(/Validator$/, '').replace(/([a-z])([A-Z])/g, '$1 $2');
+        return validator;
+    });
 };
 
 var getApiUrl = function (name) {
