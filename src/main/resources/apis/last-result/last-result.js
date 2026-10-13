@@ -19,11 +19,13 @@ var createIssuesModel = function (result) {
     }
 
     var issues = {};
+    var summary = [];
 
     var issueNum = 0;
 
     result.repositories.forEach(function (repo) {
         repo.branches.forEach(function (branch) {
+            summary.push(createSummary(repo, branch));
             branch.results.forEach(function (entry) {
                 var issueId = 'issue-' + ++issueNum;
                 issues[issueId] = createIssue(repo, branch, entry, issueId);
@@ -34,7 +36,18 @@ var createIssuesModel = function (result) {
     return {
         totalIssues: result.totalIssues,
         timestamp: result.timestamp,
+        summary: summary,
         issues: issues
+    }
+};
+
+var createSummary = function (repo, branch) {
+    return {
+        repo: repo.id,
+        branch: branch.branch,
+        analysed: branch.analysed,
+        invalid: branch.invalidNodes,
+        repairable: branch.repairableNodes
     }
 };
 

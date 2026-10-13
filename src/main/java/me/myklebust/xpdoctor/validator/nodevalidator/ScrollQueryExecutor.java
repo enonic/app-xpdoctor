@@ -22,7 +22,6 @@ import com.enonic.xp.context.ContextAccessor;
 import com.enonic.xp.node.NodeId;
 import com.enonic.xp.node.NodeIds;
 import com.enonic.xp.repository.RepositoryId;
-import com.enonic.xp.task.ProgressReporter;
 
 public class ScrollQueryExecutor
 {
@@ -37,7 +36,7 @@ public class ScrollQueryExecutor
 
     private final Client client;
 
-    private final ProgressReporter progressReporter;
+    private final Reporter reporter;
 
     private final String indexName;
 
@@ -53,7 +52,7 @@ public class ScrollQueryExecutor
     {
         this.batchSize = 1_000;
         this.client = builder.storageSpyService.getClient();
-        this.progressReporter = builder.progressReporter;
+        this.reporter = builder.reporter;
 
         RepositoryId repositoryId = ContextAccessor.current().getRepositoryId();
         Branch branch = ContextAccessor.current().getBranch();
@@ -89,7 +88,7 @@ public class ScrollQueryExecutor
                 else
                 {
                     LOG.info( "Checking nodes {}-{} of {}", currentFrom, Math.min( currentFrom - 1 + batchSize, totalHits ), totalHits );
-                    progressReporter.progress( currentFrom, totalHits );
+                    reporter.startBatch( currentFrom, totalHits );
                     currentFrom += nodeIds.getSize();
 
                     consumer.accept( nodeIds );
@@ -154,7 +153,7 @@ public class ScrollQueryExecutor
     {
         private StorageSpyService storageSpyService;
 
-        private ProgressReporter progressReporter;
+        private Reporter reporter;
 
         private IndexType indexType = IndexType.SEARCH;
 
@@ -174,9 +173,9 @@ public class ScrollQueryExecutor
             return this;
         }
 
-        public Builder progressReporter( final ProgressReporter val )
+        public Builder reporter( final Reporter val )
         {
-            progressReporter = val;
+            reporter = val;
             return this;
         }
 

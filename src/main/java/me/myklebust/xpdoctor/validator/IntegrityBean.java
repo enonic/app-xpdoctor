@@ -1,5 +1,10 @@
 package me.myklebust.xpdoctor.validator;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import me.myklebust.xpdoctor.json.JsonMapGenerator;
 import me.myklebust.xpdoctor.validator.mapper.RepairResultMapper;
 import me.myklebust.xpdoctor.validator.mapper.RepoResultsMapper;
@@ -21,6 +26,8 @@ import com.enonic.xp.task.TaskService;
 public class IntegrityBean
     implements ScriptBean
 {
+    private static final Logger LOG = LoggerFactory.getLogger( IntegrityBean.class );
+
     private ValidatorService validatorService;
 
     private TaskService taskService;
@@ -28,6 +35,8 @@ public class IntegrityBean
     private EventPublisher eventPublisher;
 
     private RepoValidationResults lastResult;
+
+    private AtomicBoolean cancelRequested = new AtomicBoolean();
 
     @Override
     public void initialize( final BeanContext context )
@@ -52,11 +61,19 @@ public class IntegrityBean
     {
         this.lastResult = null;
 
-        final RunnableTask task = ( id, progressReporter ) -> validatorTask( progressReporter, params );
+        final AtomicBoolean cancelled = new AtomicBoolean();
+        this.cancelRequested = cancelled;
+
+        final RunnableTask task = ( id, progressReporter ) -> validatorTask( progressReporter, params, cancelled );
 
         final TaskId taskId = taskService.submitLocalTask( SubmitLocalTaskParams.create().runnableTask( task ).description( "com.enonic.app.xpdoctor" ).build() );
 
         return taskId.toString();
+    }
+
+    public void cancel()
+    {
+        this.cancelRequested.set( true );
     }
 
     public Object repairAll()
@@ -93,13 +110,23 @@ public class IntegrityBean
         return new ValidatorsMapper( this.validatorService.getValidators() );
     }
 
-    private void validatorTask( final ProgressReporter progressReporter, final ValidateParams params )
+    private void validatorTask( final ProgressReporter progressReporter, final ValidateParams params, final AtomicBoolean cancelled )
     {
-        final RepoValidationResults result = this.validatorService.analyze( AnalyzeParams.create()
-                                                                                .progressReporter( progressReporter )
-                                                                                .enabledValidators( params.getEnabledValidators() )
-                                                                                .repoBranches( params.getRepoBranches() )
-                                                                                .build() );
+        final RepoValidationResults result;
+        try
+        {
+            result = this.validatorService.analyze( AnalyzeParams.create()
+                                                        .progressReporter( progressReporter )
+                                                        .enabledValidators( params.getEnabledValidators() )
+                                                        .repoBranches( params.getRepoBranches() )
+                                                        .cancelled( cancelled::get )
+                                                        .build() );
+        }
+        catch ( AnalysisCancelledException e )
+        {
+            LOG.info( "Analysis cancelled" );
+            return;
+        }
 
         this.lastResult = result;
 

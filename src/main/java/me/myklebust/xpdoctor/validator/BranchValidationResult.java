@@ -9,10 +9,13 @@ public class BranchValidationResult
 
     private final ValidatorResults results;
 
+    private final int nodeCount;
+
     private BranchValidationResult( final Builder builder )
     {
         results = builder.results;
         branch = builder.branch;
+        nodeCount = builder.nodeCount;
     }
 
     public Branch getBranch()
@@ -23,6 +26,11 @@ public class BranchValidationResult
     public ValidatorResults getResults()
     {
         return results;
+    }
+
+    public int getNodeCount()
+    {
+        return nodeCount;
     }
 
     public static Builder create( final Branch branch )
@@ -36,6 +44,8 @@ public class BranchValidationResult
 
         private final Branch branch;
 
+        private int nodeCount;
+
         private Builder( final Branch branch )
         {
             this.branch = branch;
@@ -44,6 +54,12 @@ public class BranchValidationResult
         public Builder results( final ValidatorResults val )
         {
             results = val;
+            return this;
+        }
+
+        public Builder nodeCount( final int val )
+        {
+            nodeCount = val;
             return this;
         }
 

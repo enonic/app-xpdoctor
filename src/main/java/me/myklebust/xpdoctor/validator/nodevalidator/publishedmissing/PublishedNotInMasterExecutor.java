@@ -50,10 +50,9 @@ public class PublishedNotInMasterExecutor
         }
 
         LOG.info( "Running PublishedNotInMasterExecutor..." );
-        reporter.reportStart();
 
         ScrollQueryExecutor.create()
-            .progressReporter( reporter.getProgressReporter() )
+            .reporter( reporter )
             .indexType( ScrollQueryExecutor.IndexType.STORAGE )
             .spyStorageService( this.storageSpyService )
             .build()
@@ -74,6 +73,7 @@ public class PublishedNotInMasterExecutor
             {
                 LOG.error( "Cannot check publish state of node with id: {}", nodeId, e );
             }
+            results.nodeChecked();
         }
     }
 

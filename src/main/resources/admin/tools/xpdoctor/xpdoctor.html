@@ -31,13 +31,14 @@
 
     <script data-th-inline="javascript">
         /*<![CDATA[*/
-        var validatorServiceUrl = [[${validatorServiceUrl}]];
-        var progressServiceUrl = [[${progressServiceUrl}]];
-        var stateServiceUrl = [[${stateServiceUrl}]];
-        var lastResultServiceUrl = [[${lastResultServiceUrl}]];
+        var validatorApiUrl = [[${validatorApiUrl}]];
+        var progressApiUrl = [[${progressApiUrl}]];
+        var stateApiUrl = [[${stateApiUrl}]];
+        var lastResultApiUrl = [[${lastResultApiUrl}]];
         var wsUrl = [[${wsUrl}]];
-        var repairServiceUrl = [[${repairServiceUrl}]];
-        var repoListServiceUrl = [[${repoListServiceUrl}]];
+        var repairApiUrl = [[${repairApiUrl}]];
+        var repoListApiUrl = [[${repoListApiUrl}]];
+        var cancelApiUrl = [[${cancelApiUrl}]];
         /*]]>*/
     </script>
 
@@ -47,7 +48,6 @@
 <main>
     <nav class="navbar">
 
-        <span class="progress" id="progressState"></span>
         <a class="navbar-brand" href="#"><img data-th-src="${logoUrl}"/></a>
     </nav>
 
@@ -62,7 +62,7 @@
                 <div class="actions">
                     <button id="btnRunValidator" type="button" class="big-action-button analyze" disabled>
                         <i class="material-icons">play_arrow</i>
-                        <p class="buttonDescr">Analyze</p>
+                        <p class="buttonDescr">Analyse</p>
                     </button>
                     <button id="btnRepairAll" type="button" class="big-action-button repair" disabled>
                         <i class="material-icons">build</i>
@@ -91,13 +91,7 @@
                                 <!-- This makes the label clickable -->
                                 <span data-th-text="${item.name}"></span>
                             </label>
-                            <span class="itemProgress"></span>
                         </div>
-                    </div>
-                </div>
-
-                <div class="progress">
-                    <div class="progressReporter" id="progressReporter">
                     </div>
                 </div>
             </div>
@@ -110,7 +104,8 @@
     <!-- RESULT -->
 
     <div class="resultWrapper" id="resultWrapper">
-        <div class="resultTab" id="resultTab">
+        <div class="resultMessage" id="resultMessage">Select repositories and click the "Analyse" button</div>
+        <div class="resultTab hidden" id="resultTab">
             <table id='resultTable' class='table'>
                 <!--       <thead>
                        <th>repo</th>
@@ -134,6 +129,38 @@
 
 <div id="messageBox" class="row messageBox">
     <span id="repoMessage"></span>
+</div>
+
+<div id="analysisOverlay" class="overlay hidden">
+    <div class="overlayDialog">
+        <div id="overlayProgress">
+            <p class="overlayRepo" id="overlayRepo"></p>
+            <p class="overlayValidator" id="overlayValidator"></p>
+            <div class="progressBar">
+                <div class="progressBarFill" id="progressBarFill"></div>
+            </div>
+            <div class="overlayActions">
+                <button id="btnCancel" type="button" class="overlayButton">Cancel</button>
+            </div>
+        </div>
+        <div id="overlaySummary" class="hidden">
+            <table class="summaryTable">
+                <thead>
+                <tr>
+                    <th>Repository</th>
+                    <th>Analysed</th>
+                    <th>Invalid</th>
+                    <th>Repairable</th>
+                </tr>
+                </thead>
+                <tbody id="summaryTableBody">
+                </tbody>
+            </table>
+            <div class="overlayActions">
+                <button id="btnCloseOverlay" type="button" class="overlayButton">Close</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 </body>

@@ -3,17 +3,25 @@ package me.myklebust.xpdoctor.validator.nodevalidator;
 import me.myklebust.xpdoctor.validator.ValidatorResult;
 import me.myklebust.xpdoctor.validator.ValidatorResults;
 
-import com.enonic.xp.context.Context;
-import com.enonic.xp.context.ContextAccessor;
 import com.enonic.xp.task.ProgressReporter;
 
 public class Reporter
 {
+    private static final long REPORT_INTERVAL_MS = 200;
+
     final ProgressReporter progressReporter;
 
     public final String validatorName;
 
     final ValidatorResults.Builder results = ValidatorResults.create();
+
+    private int batchFrom;
+
+    private int total;
+
+    private int checkedInBatch;
+
+    private long lastReport;
 
     public Reporter( final String validatorName, ProgressReporter progressReporter )
     {
@@ -31,33 +39,24 @@ public class Reporter
         return this.results.build();
     }
 
-    public void reportStart()
+    public void startBatch( final int from, final int total )
     {
-        final Context context = ContextAccessor.current();
-
-        final ProgressDescription description = ProgressDescription.create().
-            branch( context.getBranch() ).
-            repositoryId( context.getRepositoryId() ).
-            validator( validatorName ).
-            build();
-
-        progressReporter.info( toJson( description ) );
+        this.batchFrom = from;
+        this.total = total;
+        this.checkedInBatch = 0;
+        this.lastReport = System.currentTimeMillis();
+        progressReporter.progress( from, total );
     }
 
-    private static String toJson( final ProgressDescription description )
+    public void nodeChecked()
     {
-        return "{\"repositoryId\":\"" + escapeJson( description.getRepositoryId() ) + "\"" +
-            ",\"branch\":\"" + escapeJson( description.getBranch() ) + "\"" +
-            ",\"validator\":\"" + escapeJson( description.getValidator() ) + "\"}";
-    }
-
-    private static String escapeJson( final String value )
-    {
-        if ( value == null )
+        this.checkedInBatch++;
+        final long now = System.currentTimeMillis();
+        if ( now - this.lastReport >= REPORT_INTERVAL_MS )
         {
-            return "";
+            this.lastReport = now;
+            progressReporter.progress( this.batchFrom + this.checkedInBatch, this.total );
         }
-        return value.replace( "\\", "\\\\" ).replace( "\"", "\\\"" ).replace( "\n", "\\n" ).replace( "\r", "\\r" ).replace( "\t", "\\t" );
     }
 
     public ProgressReporter getProgressReporter()

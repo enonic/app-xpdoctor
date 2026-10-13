@@ -132,11 +132,6 @@ button {
     border-radius: 10px;
 }
 
-.toolbar .validators .validatorItem.active {
-    background-color: #f0a37d;
-    color: #333;
-}
-
 .actions {
     align-self: center;
     width: 300px;
@@ -295,4 +290,107 @@ table.dataTable td.repairOption a, a:visited, a:hover {
     padding: 3px 5px;
     border-radius: 4px;
     cursor: pointer;
+}
+
+.resultMessage {
+    padding: 20px;
+    font-size: 1.2em;
+    color: #333;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20000;
+}
+
+.overlay.hidden {
+    display: none;
+}
+
+.overlayDialog {
+    background-color: #fff;
+    border-radius: 4px;
+    padding: 30px 40px;
+    min-width: 480px;
+    max-width: 90%;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    color: #333;
+}
+
+.overlayRepo {
+    font-size: 1.2em;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.overlayValidator {
+    margin-bottom: 16px;
+}
+
+.progressBar {
+    width: 100%;
+    height: 20px;
+    background-color: #eee;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progressBarFill {
+    height: 100%;
+    width: 0;
+    background-color: #68b86a;
+    transition: width 0.5s ease;
+}
+
+.overlayActions {
+    margin-top: 24px;
+    text-align: center;
+}
+
+.overlayButton {
+    background-color: #343a40;
+    color: #fff;
+    padding: 10px 24px;
+    border-radius: 4px;
+    font-size: 1em;
+    cursor: pointer;
+    letter-spacing: 1px;
+}
+
+.overlayButton:hover:enabled {
+    background-color: #555;
+}
+
+.overlayButton:disabled {
+    background-color: #eee;
+    color: #aaa;
+    cursor: default;
+}
+
+.summaryTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.summaryTable th {
+    background-color: #aaa;
+    text-align: left;
+    padding: 8px 12px;
+}
+
+.summaryTable td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #ddd;
+}
+
+.summaryTable td.number {
+    text-align: right;
 }

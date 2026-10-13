@@ -42,10 +42,8 @@ public class InheritFieldExecutor
     {
         LOG.info( "Running InheritFieldExecutor..." );
 
-        reporter.reportStart();
-
         ScrollQueryExecutor.create()
-            .progressReporter( reporter.getProgressReporter() )
+            .reporter( reporter )
             .indexType( ScrollQueryExecutor.IndexType.STORAGE )
             .spyStorageService( this.storageSpyService )
             .build()
@@ -66,6 +64,7 @@ public class InheritFieldExecutor
             {
                 LOG.error( "Cannot check 'inherit' field for node with id: {}", nodeId, e );
             }
+            reporter.nodeChecked();
         }
     }
 

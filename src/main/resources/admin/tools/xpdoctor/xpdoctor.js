@@ -7,8 +7,7 @@ exports.get = function (req) {
 
     var view = resolve('xpdoctor.html');
 
-    var wsUrl = portal.serviceUrl({service: 'event-bus', type: 'absolute'})
-    wsUrl = 'ws' + wsUrl.substring(wsUrl.indexOf(':'));
+    var wsUrl = portal.apiUrl({api: 'event-bus', type: 'websocket'});
 
     var model = {
         validators: createValidatorsModel(),
@@ -21,12 +20,13 @@ exports.get = function (req) {
         dataTablesJsUrl: assetLib.assetUrl({path: 'js/jquery.dataTables.min.js'}),
         dataTablesCssUrl: assetLib.assetUrl({path: 'css/jquery.dataTables.min.css'}),
         logoUrl: assetLib.assetUrl({path: 'images/xpDoc.png'}),
-        validatorServiceUrl: getServiceUrl('validator-service'),
-        progressServiceUrl: getServiceUrl('progress-service'),
-        stateServiceUrl: getServiceUrl('state-service'),
-        lastResultServiceUrl: getServiceUrl('last-result-service'),
-        repairServiceUrl: getServiceUrl('repair-service'),
-        repoListServiceUrl: getServiceUrl('repo-list-service'),
+        validatorApiUrl: getApiUrl('validator'),
+        progressApiUrl: getApiUrl('progress'),
+        stateApiUrl: getApiUrl('state'),
+        lastResultApiUrl: getApiUrl('last-result'),
+        repairApiUrl: getApiUrl('repair'),
+        repoListApiUrl: getApiUrl('repo-list'),
+        cancelApiUrl: getApiUrl('cancel'),
         wsUrl: wsUrl
     };
 
@@ -41,9 +41,9 @@ var createValidatorsModel = function () {
     return dataValidator.validators().validators;
 };
 
-var getServiceUrl = function (name) {
+var getApiUrl = function (name) {
 
-    return portal.serviceUrl({
-        service: name
+    return portal.apiUrl({
+        api: name
     })
 };
