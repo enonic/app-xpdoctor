@@ -30,11 +30,7 @@ var createModel = function (task) {
     try {
         info = JSON.parse(task.progress.info);
     } catch (e) {
-        info = {
-            validator: "?",
-            repositoryId: "?",
-            branch: "?"
-        };
+        info = null;
     }
 
     return {

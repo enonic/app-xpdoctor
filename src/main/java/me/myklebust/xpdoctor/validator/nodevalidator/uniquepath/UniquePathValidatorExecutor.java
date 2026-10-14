@@ -63,10 +63,9 @@ public class UniquePathValidatorExecutor
     public void execute( final Reporter reporter)
     {
         LOG.info( "Running UniquePathValidatorExecutor..." );
-        reporter.reportStart();
 
         ScrollQueryExecutor.create()
-            .progressReporter( reporter.getProgressReporter() )
+            .reporter( reporter )
             .indexType( ScrollQueryExecutor.IndexType.STORAGE )
             .spyStorageService( this.storageSpyService )
             .build()
@@ -89,6 +88,7 @@ public class UniquePathValidatorExecutor
             {
                 LOG.error( "Cannot check unique path for node with id: {}", nodeId, e );
             }
+            reporter.nodeChecked();
         }
 
         for ( ValidatorResult.Builder tmpResult : tmpResults )

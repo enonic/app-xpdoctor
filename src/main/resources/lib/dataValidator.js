@@ -46,3 +46,7 @@ exports.repair = function (params) {
     return __.toNativeObject(bean.repair(paramsObject));
 };
 
+
+exports.cancel = function () {
+    bean.cancel();
+};

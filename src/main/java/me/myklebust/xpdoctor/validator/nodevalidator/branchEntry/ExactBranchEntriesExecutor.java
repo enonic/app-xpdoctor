@@ -41,10 +41,9 @@ public class ExactBranchEntriesExecutor
         }
 
         LOG.info( "Running ExactBranchEntriesExecutor..." );
-        reporter.reportStart();
 
         ScrollQueryExecutor.create()
-            .progressReporter( reporter.getProgressReporter() )
+            .reporter( reporter )
             .indexType( ScrollQueryExecutor.IndexType.STORAGE )
             .spyStorageService( this.storageSpyService )
 
@@ -66,6 +65,7 @@ public class ExactBranchEntriesExecutor
             {
                 LOG.error( "Cannot check versions node with id: " + nodeId, e );
             }
+            results.nodeChecked();
         }
     }
 

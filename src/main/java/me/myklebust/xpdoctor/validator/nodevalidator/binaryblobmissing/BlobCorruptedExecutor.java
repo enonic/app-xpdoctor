@@ -37,10 +37,8 @@ public class BlobCorruptedExecutor
     {
         LOG.info( "Running BlobMissingExecutor..." );
 
-        reporter.reportStart();
-
         ScrollQueryExecutor.create()
-            .progressReporter( reporter.getProgressReporter() )
+            .reporter( reporter )
             .indexType( ScrollQueryExecutor.IndexType.STORAGE )
             .spyStorageService( this.storageSpyService )
             .build()
@@ -55,6 +53,7 @@ public class BlobCorruptedExecutor
         for ( final NodeId nodeId : nodeIds )
         {
             doCheckNode( results, nodeId );
+            results.nodeChecked();
         }
     }
 

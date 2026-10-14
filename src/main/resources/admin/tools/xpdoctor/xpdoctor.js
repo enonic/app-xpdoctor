@@ -1,5 +1,6 @@
 var thymeleaf = require('/lib/thymeleaf');
 var portal = require('/lib/xp/portal');
+var admin = require('/lib/xp/admin');
 var assetLib = require('/lib/enonic/asset');
 var dataValidator = require('/lib/dataValidator.js');
 
@@ -7,8 +8,7 @@ exports.get = function (req) {
 
     var view = resolve('xpdoctor.html');
 
-    var wsUrl = portal.serviceUrl({service: 'event-bus', type: 'absolute'})
-    wsUrl = 'ws' + wsUrl.substring(wsUrl.indexOf(':'));
+    var wsUrl = portal.apiUrl({api: 'event-bus', type: 'websocket'});
 
     var model = {
         validators: createValidatorsModel(),
@@ -21,13 +21,22 @@ exports.get = function (req) {
         dataTablesJsUrl: assetLib.assetUrl({path: 'js/jquery.dataTables.min.js'}),
         dataTablesCssUrl: assetLib.assetUrl({path: 'css/jquery.dataTables.min.css'}),
         logoUrl: assetLib.assetUrl({path: 'images/xpDoc.png'}),
-        validatorServiceUrl: getServiceUrl('validator-service'),
-        progressServiceUrl: getServiceUrl('progress-service'),
-        stateServiceUrl: getServiceUrl('state-service'),
-        lastResultServiceUrl: getServiceUrl('last-result-service'),
-        repairServiceUrl: getServiceUrl('repair-service'),
-        repoListServiceUrl: getServiceUrl('repo-list-service'),
-        wsUrl: wsUrl
+        validatorApiUrl: getApiUrl('validator'),
+        progressApiUrl: getApiUrl('progress'),
+        stateApiUrl: getApiUrl('state'),
+        lastResultApiUrl: getApiUrl('last-result'),
+        repairApiUrl: getApiUrl('repair'),
+        repoListApiUrl: getApiUrl('repo-list'),
+        cancelApiUrl: getApiUrl('cancel'),
+        wsUrl: wsUrl,
+        menuLoaderUrl: admin.extensionUrl({
+            application: 'com.enonic.xp.app.main',
+            extension: 'menu-loader',
+            params: {
+                appName: app.name,
+                theme: 'light'
+            }
+        })
     };
 
     return {
@@ -38,12 +47,15 @@ exports.get = function (req) {
 };
 
 var createValidatorsModel = function () {
-    return dataValidator.validators().validators;
+    return dataValidator.validators().validators.map(function (validator) {
+        validator.title = validator.name.replace(/Validator$/, '').replace(/([a-z])([A-Z])/g, '$1 $2');
+        return validator;
+    });
 };
 
-var getServiceUrl = function (name) {
+var getApiUrl = function (name) {
 
-    return portal.serviceUrl({
-        service: name
+    return portal.apiUrl({
+        api: name
     })
 };

@@ -35,10 +35,9 @@ public class LoadableNodeExecutor
     public void execute( final Reporter reporter )
     {
         LOG.info( "Running LoadableNodeExecutor..." );
-        reporter.reportStart();
 
         ScrollQueryExecutor.create()
-            .progressReporter( reporter.getProgressReporter() )
+            .reporter( reporter )
             .indexType( ScrollQueryExecutor.IndexType.SEARCH )
             .spyStorageService( storageSpyService )
             .build()
@@ -52,6 +51,7 @@ public class LoadableNodeExecutor
         for ( final NodeId nodeId : nodeIds )
         {
             doCheckNode( results, nodeId );
+            results.nodeChecked();
         }
     }
 
