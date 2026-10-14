@@ -1,12 +1,16 @@
 package me.myklebust.xpdoctor.validator;
 
-import java.time.Instant;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
-import me.myklebust.xpdoctor.validator.mapper.RepairResultMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import me.myklebust.xpdoctor.validator.mapper.RepoResultsMapper;
 import me.myklebust.xpdoctor.validator.mapper.ValidatorsMapper;
 
+import com.enonic.xp.context.Context;
 import com.enonic.xp.context.ContextAccessor;
 import com.enonic.xp.context.ContextBuilder;
 import com.enonic.xp.event.Event;
@@ -14,6 +18,11 @@ import com.enonic.xp.event.EventPublisher;
 import com.enonic.xp.script.bean.BeanContext;
 import com.enonic.xp.script.bean.ScriptBean;
 import com.enonic.xp.script.serializer.JsonMapGenerator;
+import com.enonic.xp.security.IdProviderKey;
+import com.enonic.xp.security.PrincipalKey;
+import com.enonic.xp.security.RoleKeys;
+import com.enonic.xp.security.User;
+import com.enonic.xp.security.auth.AuthenticationInfo;
 import com.enonic.xp.task.ProgressReporter;
 import com.enonic.xp.task.RunnableTask;
 import com.enonic.xp.task.TaskId;
@@ -23,6 +32,10 @@ import com.enonic.xp.task.TaskService;
 public class IntegrityBean
     implements ScriptBean
 {
+    private static final Logger LOG = LoggerFactory.getLogger( IntegrityBean.class );
+
+    public static final String REPAIR_TASK_DESCRIPTION = "com.enonic.app.xpdoctor.repair";
+
     private ValidatorService validatorService;
 
     private TaskService taskService;
@@ -61,33 +74,102 @@ public class IntegrityBean
         return taskId.toString();
     }
 
-    public Object repairAll()
+    public Object repairAll( final RepairAllParams params )
     {
-        return null;
+        final RepoValidationResults result = this.lastResult;
+
+        if ( result == null )
+        {
+            throw new IllegalStateException( "No analysis result to repair" );
+        }
+
+        final List<RepoValidationResults.Issue> issues = selectIssues( result, params );
+
+        final RunnableTask task = ( id, progressReporter ) -> repairTask( progressReporter, result, issues );
+
+        final TaskId taskId = taskService.submitTask( task, REPAIR_TASK_DESCRIPTION );
+
+        return taskId.toString();
     }
 
-    public Object repair( final RepairParams params )
+    private List<RepoValidationResults.Issue> selectIssues( final RepoValidationResults result, final RepairAllParams params )
     {
-        this.lastResult = null;
+        if ( params.isAll() )
+        {
+            return result.getIssues()
+                .values()
+                .stream()
+                .filter( issue -> issue.getResult().repairResult().status() == RepairStatus.IS_REPAIRABLE )
+                .collect( Collectors.toList() );
+        }
 
-        return ContextBuilder.from( ContextAccessor.current() ).
-            branch( params.getBranch() ).
-            repositoryId( params.getRepoId() ).
-            build().callWith( () -> doRepair( params ) );
+        final List<RepoValidationResults.Issue> issues = new ArrayList<>();
+        for ( final String issueId : params.getIssueIds() )
+        {
+            final RepoValidationResults.Issue issue = result.getIssues().get( issueId );
+            if ( issue != null )
+            {
+                issues.add( issue );
+            }
+        }
+        return issues;
     }
 
-    private Object doRepair( final RepairParams params )
+    private void repairTask( final ProgressReporter progressReporter, final RepoValidationResults result,
+                             final List<RepoValidationResults.Issue> issues )
     {
-        final Validator validator = this.validatorService.getValidator( params.getValidatorName() );
+        final int total = issues.size();
+        int current = 0;
+
+        for ( final RepoValidationResults.Issue issue : issues )
+        {
+            progressReporter.info( "{\"nodeId\":\"" + issue.getResult().nodeId() + "\"}" );
+            progressReporter.progress( current++, total );
+
+            final RepairResult repairResult = createContext( issue ).callWith( () -> doRepair( issue ) );
+            issue.getResult().updateRepairResult( repairResult );
+            result.bumpRepairVersion();
+        }
+
+        progressReporter.info( "{\"nodeId\":\"\"}" );
+        progressReporter.progress( total, total );
+    }
+
+    private RepairResult doRepair( final RepoValidationResults.Issue issue )
+    {
+        final ValidatorResult validatorResult = issue.getResult();
+        final Validator validator = this.validatorService.getValidator( validatorResult.validatorName() );
 
         if ( validator == null )
         {
-            throw new IllegalArgumentException( "Validator with name [" + params.getValidatorName() + "] not found" );
+            return RepairResult.create()
+                .repairStatus( RepairStatus.FAILED )
+                .message( "Validator with name [" + validatorResult.validatorName() + "] not found" )
+                .build();
         }
 
-        final RepairResult repairResult = validator.repair( params.getNodeId() );
+        try
+        {
+            return validator.repair( validatorResult.nodeId() );
+        }
+        catch ( Exception e )
+        {
+            LOG.error( "Repair of node [{}] failed", validatorResult.nodeId(), e );
+            return RepairResult.create().repairStatus( RepairStatus.FAILED ).message( e.getMessage() ).build();
+        }
+    }
 
-        return new RepairResultMapper( repairResult );
+    private Context createContext( final RepoValidationResults.Issue issue )
+    {
+        final PrincipalKey superUser = PrincipalKey.ofUser( IdProviderKey.system(), "su" );
+        final User admin = User.create().key( superUser ).login( "su" ).build();
+        final AuthenticationInfo authInfo = AuthenticationInfo.create().principals( RoleKeys.ADMIN ).user( admin ).build();
+
+        return ContextBuilder.from( ContextAccessor.current() )
+            .authInfo( authInfo )
+            .repositoryId( issue.getRepositoryId() )
+            .branch( issue.getBranch() )
+            .build();
     }
 
     public Object validators()

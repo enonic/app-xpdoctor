@@ -40,19 +40,21 @@ var state = {
     dataTable: null,
     analyzeResult: null,
     repoSelected: false,
-    repairQueue: [],
-    repairing: false
+    repairVersion: 0,
+    repairing: false,
+    lastResultChecked: false,
+    running: false,
+    pollTimer: null,
+    pollTick: 0
 };
+
+var ACTIVE_POLL_MS = 1000;
 
 $(function () {
 
+    getLastResult();
     getTaskState();
-    getProgress();
     initializeButtons();
-
-    setInterval(getProgress, 1000);
-    setInterval(getTaskState, 1000);
-    setInterval(getLastResult, 2000);
 
     loadRepoList();
 });
@@ -71,7 +73,7 @@ var initializeButtons = function () {
     });
 
     $(model.table.issuesTable).on("click", model.buttons.repairLink, function () {
-        enqueueRepair([$(this).attr("data-issueId")]);
+        startRepair({issueIds: [$(this).attr("data-issueId")]});
         return false;
     });
 
@@ -140,8 +142,6 @@ var handleRunValidator = function () {
     disableButton($(model.buttons.runValidator));
     disableButton($(model.buttons.repairAll));
     doValidation();
-    getProgress();
-    getTaskState();
 };
 
 var getTaskState = function () {
@@ -152,8 +152,16 @@ var getTaskState = function () {
         type: 'GET',
         success: function (result) {
             handleTaskState(result);
-        }
+        },
+        complete: schedulePoll
     });
+};
+
+var schedulePoll = function () {
+    clearTimeout(state.pollTimer);
+    if (state.running) {
+        state.pollTimer = setTimeout(getTaskState, ACTIVE_POLL_MS);
+    }
 };
 
 var handleTaskState = function (result) {
@@ -162,12 +170,34 @@ var handleTaskState = function (result) {
     var analyzeButton = $(model.buttons.runValidator);
     var repairAllButton = $(model.buttons.repairAll);
 
+    var wasRunning = state.running;
+    state.running = result.state === "RUNNING";
+
     if (result.state === "RUNNING") {
         state.taskId = result.taskId;
-        updateButton(analyzeButton, true, "update", "Analyzing..");
+        getProgress();
+        if (result.type === "repair" && state.pollTick++ % 2 === 0) {
+            getLastResult();
+        }
+        if (result.type === "repair") {
+            state.repairing = true;
+            disableButton(analyzeButton);
+        } else {
+            updateButton(analyzeButton, true, "update", "Analyzing..");
+        }
         updateButton(repairAllButton, true);
         statusDiv.show();
     } else {
+        if (wasRunning) {
+            getProgress();
+            getLastResult();
+        }
+
+        if (state.repairing) {
+            state.repairing = false;
+            updateRepairAllButton();
+        }
+
         if (result.state === "FAILED") {
             statusDiv.show();
         } else if (result.state === "FINISHED") {
@@ -190,97 +220,90 @@ var getLastResult = function () {
         cache: false,
         type: 'GET',
         success: function (serviceResult) {
-            if (serviceResult.result && serviceResult.result.timestamp > state.resultTimestamp) {
-                state.resultTimestamp = serviceResult.result.timestamp;
-                state.analyzeResult = serviceResult.result;
-                updateIssueTable();
+            var result = serviceResult.result;
+            if (!result || !result.timestamp) {
+                state.lastResultChecked = true;
+                return;
             }
+
+            if (result.timestamp > state.resultTimestamp) {
+                state.resultTimestamp = result.timestamp;
+                state.repairVersion = result.repairVersion || 0;
+                if (state.lastResultChecked) {
+                    state.analyzeResult = result;
+                    updateIssueTable();
+                }
+            } else if (result.timestamp === state.resultTimestamp && result.repairVersion > state.repairVersion) {
+                state.repairVersion = result.repairVersion;
+                if (state.analyzeResult) {
+                    applyRepairUpdates(result);
+                }
+            }
+            state.lastResultChecked = true;
         }
     });
 
 };
 
 var handleRepairAll = function () {
+    startRepair({all: true});
+};
+
+var startRepair = function (params) {
 
     if (!state.analyzeResult || !state.analyzeResult.issues) {
         console.log("ERROR: NO RESULTS IN STATE");
         return;
     }
 
-    var issueKeys = [];
-    for (var issueKey in state.analyzeResult.issues) {
-        if (state.analyzeResult.issues[issueKey].repairStatus === "IS_REPAIRABLE") {
-            issueKeys.push(issueKey);
-        }
-    }
-
-    enqueueRepair(issueKeys);
-};
-
-var enqueueRepair = function (issueKeys) {
-    issueKeys.forEach(function (issueKey) {
-        if (state.repairQueue.indexOf(issueKey) === -1) {
-            state.repairQueue.push(issueKey);
-        }
-    });
-
-    if (!state.repairing) {
-        processRepairQueue();
-    }
-};
-
-var processRepairQueue = function () {
-
-    if (state.repairQueue.length === 0) {
-        state.repairing = false;
-        updateRepairAllButton();
-        return;
-    }
-
-    state.repairing = true;
     disableButton($(model.buttons.repairAll));
-
-    repair(state.repairQueue.shift(), processRepairQueue);
-};
-
-var repair = function (issueKey, callback) {
-
-    var issue = state.analyzeResult.issues[issueKey];
-
-    var data = {
-        nodeId: issue.nodeId,
-        validatorName: issue.validatorName,
-        branch: issue.branch,
-        repoId: issue.repo
-    };
 
     jQuery.ajax({
         url: repairServiceUrl,
-        data: data,
+        data: params,
         cache: false,
-        type: 'GET',
+        type: 'POST',
         success: function (result) {
-            renderRepairResult(result, issueKey);
-        },
-        error: function () {
-            renderRepairResult({repairStatus: {status: "FAILED", message: "Repair request failed"}}, issueKey);
-        },
-        complete: callback
+            if (result.error) {
+                $('#repoMessage').html(result.error);
+                updateRepairAllButton();
+                return;
+            }
+            state.repairing = true;
+            state.running = true;
+            state.taskId = result.taskId;
+            getTaskState();
+        }
     });
 };
 
-var renderRepairResult = function (result, issueKey) {
+var applyRepairUpdates = function (result) {
 
-    var item = state.analyzeResult.issues[issueKey];
-    item.repairStatus = result.repairStatus.status;
-    item.repairMessage = result.repairStatus.message;
+    var changed = false;
 
-    if (state.dataTable) {
-        var row = state.dataTable.row("#" + issueKey);
-        if (row.any()) {
-            row.invalidate().draw(false);
+    for (var issueKey in result.issues) {
+        var fresh = result.issues[issueKey];
+        var item = state.analyzeResult.issues[issueKey];
+
+        if (item && (item.repairStatus !== fresh.repairStatus || item.repairMessage !== fresh.repairMessage)) {
+            item.repairStatus = fresh.repairStatus;
+            item.repairMessage = fresh.repairMessage;
+            changed = true;
+
+            if (state.dataTable) {
+                var row = state.dataTable.row("#" + issueKey);
+                if (row.any()) {
+                    row.invalidate();
+                }
+            }
         }
     }
+
+    if (changed && state.dataTable) {
+        state.dataTable.draw(false);
+    }
+
+    updateRepairAllButton();
 };
 
 var countRepairableIssues = function () {
@@ -461,8 +484,12 @@ var doValidation = function () {
         data: data,
         success: function (result) {
             if (result.error) {
-                $('#repoMessage').html("result.error");
+                $('#repoMessage').html(result.error);
+                return;
             }
+            state.running = true;
+            state.taskId = result.taskId;
+            getTaskState();
         }
     });
 
@@ -498,7 +525,9 @@ var getProgress = function () {
 var renderProgress = function (result) {
     if (result.state === "RUNNING") {
         displayProgressInfo(result);
-        markCurrentValidator(result);
+        if (!isRepairTask(result)) {
+            markCurrentValidator(result);
+        }
     } else {
         resetProgress();
     }
@@ -513,7 +542,16 @@ var resetProgress = function () {
     });
 };
 
+var isRepairTask = function (result) {
+    return !!result.description && /\.repair$/.test(result.description);
+};
+
 var displayProgressInfo = function (result) {
+
+    if (isRepairTask(result)) {
+        $(model.item.progress).html("Repairing " + result.progress.current + " of " + result.progress.total + "...");
+        return;
+    }
 
     var progressMessage = result.state;
     progressMessage += " [ ";

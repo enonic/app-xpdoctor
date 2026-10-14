@@ -18,7 +18,7 @@ public class ValidatorResult
 
     private final String type;
 
-    private final RepairResult repairResult;
+    private volatile RepairResult repairResult;
 
     private final String message;
 
@@ -39,6 +39,11 @@ public class ValidatorResult
     public RepairResult repairResult()
     {
         return this.repairResult;
+    }
+
+    public void updateRepairResult( final RepairResult repairResult )
+    {
+        this.repairResult = repairResult;
     }
 
     public NodeId nodeId()

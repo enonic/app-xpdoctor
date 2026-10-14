@@ -20,6 +20,8 @@ public class RepoResultsMapper
 {
     private final RepoValidationResults results;
 
+    private int issueNum = 0;
+
     public RepoResultsMapper( final RepoValidationResults results )
     {
         this.results = results;
@@ -29,6 +31,7 @@ public class RepoResultsMapper
     public void serialize( final MapGenerator gen )
     {
         gen.value( "timestamp", results.getTimestamp() );
+        gen.value( "repairVersion", results.getRepairVersion() );
         gen.value( "totalIssues", results.getTotalIssues() );
         gen.array( "repositories" );
         results.getRepositories().forEach( repo -> serialize( gen, repo ) );
@@ -84,6 +87,7 @@ public class RepoResultsMapper
     private void serialize( final MapGenerator gen, final ValidatorResult result )
     {
         gen.map();
+        gen.value( "issueId", "issue-" + ++issueNum );
         gen.value( "type", result.type() );
         gen.value( "validatorName", result.validatorName() );
         gen.value( "id", result.nodeId() );
