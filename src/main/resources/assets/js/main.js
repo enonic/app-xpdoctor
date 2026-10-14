@@ -242,10 +242,14 @@ var getLastResult = function () {
                     state.analyzeResult = result;
                     updateIssueTable();
                 }
-            } else if (result.timestamp === state.resultTimestamp && result.repairVersion > state.repairVersion) {
-                state.repairVersion = result.repairVersion;
-                if (state.analyzeResult) {
-                    applyRepairUpdates(result);
+            } else if (result.timestamp === state.resultTimestamp) {
+                if (!state.analyzeResult && state.repairing) {
+                    adoptResultUnderRepair(result);
+                } else if (result.repairVersion > state.repairVersion) {
+                    state.repairVersion = result.repairVersion;
+                    if (state.analyzeResult) {
+                        applyRepairUpdates(result);
+                    }
                 }
             }
             state.lastResultChecked = true;
@@ -293,6 +297,12 @@ var expectTask = function (taskId) {
     state.taskId = taskId;
     state.expectTaskUntil = Date.now() + TASK_DISCOVERY_MS;
     getTaskState();
+};
+
+var adoptResultUnderRepair = function (result) {
+    state.analyzeResult = result;
+    state.repairVersion = result.repairVersion || 0;
+    updateIssueTable();
 };
 
 var applyRepairUpdates = function (result) {
@@ -577,7 +587,10 @@ var isRepairTask = function (result) {
 var displayProgressInfo = function (result) {
 
     if (isRepairTask(result)) {
-        $(model.item.progress).html("Repairing " + result.progress.current + " of " + result.progress.total + "...");
+        var info = result.progress.info;
+        if (info && info.total !== undefined) {
+            $(model.item.progress).html("Repairing " + info.current + " of " + info.total + "...");
+        }
         return;
     }
 
