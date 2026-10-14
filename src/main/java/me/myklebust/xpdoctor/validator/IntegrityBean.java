@@ -158,7 +158,8 @@ public class IntegrityBean
 
         for ( final RepoValidationResults.Issue issue : issues )
         {
-            progressReporter.info( "{\"nodeId\":\"" + issue.getResult().nodeId() + "\"}" );
+            progressReporter.info(
+                "{\"nodeId\":\"" + issue.getResult().nodeId() + "\",\"current\":" + ( current + 1 ) + ",\"total\":" + total + "}" );
             progressReporter.progress( current++, total );
 
             if ( onlyRepairable && issue.getResult().repairResult().status() != RepairStatus.IS_REPAIRABLE )
