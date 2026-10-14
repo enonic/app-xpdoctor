@@ -58,8 +58,38 @@ button {
 .resultToolbar {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     gap: 12px;
-    padding: 16px 20px 0 20px;
+    padding: 12px 20px 0 20px;
+}
+
+.resultToolbar .pageLength {
+    color: #555;
+    font-size: 0.9em;
+}
+
+.resultToolbar .pageLength select {
+    margin: 0 4px;
+    padding: 4px 6px;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    background-color: #fff;
+    font-family: 'Roboto', sans-serif;
+}
+
+.resultToolbar .toolbarButtons {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.resultToolbar .repairProgress {
+    color: #777;
+    margin-right: 8px;
+}
+
+.resultToolbar .repairProgress.hidden {
+    display: none;
 }
 
 .toolbarButton {
@@ -95,16 +125,16 @@ button {
 }
 
 .resultWrapper {
-    margin-top: 10px;
+    margin-top: 0;
 }
 
 .resultTab {
-    padding: 20px;
+    padding: 12px 20px 20px 20px;
     overflow: auto;
 }
 
-.dataTables_wrapper {
-    margin-top: 15px;
+.dt-container .dt-layout-row.dt-layout-table {
+    margin-top: 0;
 }
 
 .dataTable {
@@ -146,10 +176,6 @@ table.dataTable td.repairOption {
 
 table.dataTable td.repairOption a, a:visited, a:hover {
     color: #333
-}
-
-.dataTables_wrapper .dataTables_length {
-    margin-bottom: 8px;
 }
 
 .hidden {

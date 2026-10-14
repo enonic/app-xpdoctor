@@ -11,6 +11,8 @@ var model = {
     },
     div: {
         resultWrapper: "#resultWrapper",
+        repairProgress: "#repairProgress",
+        pageLength: "#pageLength",
         overlay: "#analysisOverlay",
         overlaySetup: "#overlaySetup",
         overlayProgress: "#overlayProgress",
@@ -35,6 +37,9 @@ var model = {
     }
 };
 
+var REPAIRED_ROW_DELAY_MS = 2500;
+var REPAIR_REQUEST_TIMEOUT_MS = 120000;
+
 var repoGroups = [
     {key: "cms", title: "CMS", expanded: true, matches: function (repo) { return repo.indexOf("com.enonic.cms.") === 0; }},
     {key: "system", title: "System", expanded: false, matches: function (repo) { return repo.indexOf("system.") === 0 || repo === "system-repo"; }},
@@ -50,7 +55,12 @@ var state = {
     cancelling: false,
     lastResultChecked: false,
     running: false,
-    pollTimer: null
+    pollTimer: null,
+    repairQueue: [],
+    repairTotal: 0,
+    repairing: false,
+    repairActive: null,
+    repairTimedOut: false
 };
 
 var ACTIVE_POLL_MS = 1000;
@@ -81,6 +91,17 @@ var initializeButtons = function () {
 
     $(model.buttons.repairAll).click(function () {
         handleRepairAll();
+    });
+
+    $(model.table.issuesTable).on("click", model.buttons.repairLink, function () {
+        enqueueRepair([$(this).attr("data-issueId")]);
+        return false;
+    });
+
+    $(model.div.pageLength).change(function () {
+        if (state.dataTable) {
+            state.dataTable.page.len(parseInt($(this).val(), 10)).draw();
+        }
     });
 
     $(model.buttons.cancel).click(function () {
@@ -332,18 +353,84 @@ var handleRepairAll = function () {
 
     if (!state.analyzeResult || !state.analyzeResult.issues) {
         console.log("ERROR: NO RESULTS IN STATE");
+        return;
     }
 
+    var issueKeys = [];
     for (var issueKey in state.analyzeResult.issues) {
         if (state.analyzeResult.issues[issueKey].repairStatus === "IS_REPAIRABLE") {
-            repair(issueKey);
+            issueKeys.push(issueKey);
         }
+    }
+
+    enqueueRepair(issueKeys);
+};
+
+var enqueueRepair = function (issueKeys) {
+    var result = state.analyzeResult;
+
+    issueKeys.forEach(function (issueKey) {
+        if (!isRepairPending(result, issueKey)) {
+            state.repairQueue.push({result: result, issueKey: issueKey});
+            state.repairTotal++;
+        }
+    });
+
+    if (!state.repairing) {
+        processRepairQueue();
     }
 };
 
-var repair = function (issueKey) {
+var isRepairPending = function (result, issueKey) {
+    var active = state.repairActive;
+    if (active && active.result === result && active.issueKey === issueKey) {
+        return true;
+    }
+    return state.repairQueue.some(function (entry) {
+        return entry.result === result && entry.issueKey === issueKey;
+    });
+};
 
-    var issue = state.analyzeResult.issues[issueKey];
+var processRepairQueue = function () {
+
+    if (state.repairTimedOut) {
+        state.repairTimedOut = false;
+        state.repairQueue = [];
+        $('#repoMessage').html("A repair request timed out. The server may still be repairing that node; remaining repairs were skipped.");
+    }
+
+    if (state.repairQueue.length === 0) {
+        state.repairing = false;
+        state.repairTotal = 0;
+        $(model.div.repairProgress).addClass("hidden");
+        $(model.buttons.newAnalysis).prop("disabled", false);
+        updateRepairAllButton();
+        return;
+    }
+
+    state.repairing = true;
+    $(model.buttons.repairAll).prop("disabled", true);
+    $(model.buttons.newAnalysis).prop("disabled", true);
+
+    var entry = state.repairQueue.shift();
+    var done = state.repairTotal - state.repairQueue.length;
+    $(model.div.repairProgress).removeClass("hidden").text("Repairing " + done + " of " + state.repairTotal + "...");
+
+    state.repairActive = entry;
+    repair(entry, function () {
+        state.repairActive = null;
+        processRepairQueue();
+    });
+};
+
+var repair = function (entry, callback) {
+
+    var issue = entry.result === state.analyzeResult ? entry.result.issues[entry.issueKey] : null;
+
+    if (!issue) {
+        callback();
+        return;
+    }
 
     var data = {
         nodeId: issue.nodeId,
@@ -357,19 +444,81 @@ var repair = function (issueKey) {
         data: data,
         cache: false,
         type: 'GET',
+        timeout: REPAIR_REQUEST_TIMEOUT_MS,
         success: function (result) {
-            renderRepairResult(result, issueKey);
-        }
+            renderRepairResult(result, entry);
+        },
+        error: function (xhr, textStatus) {
+            if (textStatus === "timeout") {
+                state.repairTimedOut = true;
+                renderRepairResult({repairStatus: {status: "FAILED", message: "Repair request timed out"}}, entry);
+                return;
+            }
+            renderRepairResult({repairStatus: {status: "FAILED", message: "Repair request failed"}}, entry);
+        },
+        complete: callback
     });
 };
 
-var renderRepairResult = function (result, issueKey) {
+var renderRepairResult = function (result, entry) {
 
-    var item = state.analyzeResult.issues[issueKey];
+    var item = entry.result.issues[entry.issueKey];
+    if (!item) {
+        return;
+    }
+
     item.repairStatus = result.repairStatus.status;
     item.repairMessage = result.repairStatus.message;
 
-    updateIssueTable();
+    if (entry.result !== state.analyzeResult) {
+        return;
+    }
+
+    if (state.dataTable) {
+        var row = state.dataTable.row("#" + entry.issueKey);
+        if (row.any()) {
+            row.invalidate().draw(false);
+        }
+    }
+
+    if (item.repairStatus === "REPAIRED") {
+        setTimeout(function () {
+            removeRepairedIssue(entry.result, entry.issueKey);
+        }, REPAIRED_ROW_DELAY_MS);
+    }
+};
+
+var removeRepairedIssue = function (result, issueKey) {
+
+    if (state.analyzeResult !== result || !result.issues[issueKey]) {
+        return;
+    }
+
+    delete result.issues[issueKey];
+    result.totalIssues = Object.keys(result.issues).length;
+
+    if (state.dataTable) {
+        var row = state.dataTable.row("#" + issueKey);
+        if (row.any()) {
+            row.remove().draw(false);
+        }
+    }
+};
+
+var countRepairableIssues = function () {
+    var count = 0;
+    if (state.analyzeResult && state.analyzeResult.issues) {
+        for (var key in state.analyzeResult.issues) {
+            if (state.analyzeResult.issues[key].repairStatus === "IS_REPAIRABLE") {
+                count++;
+            }
+        }
+    }
+    return count;
+};
+
+var updateRepairAllButton = function () {
+    $(model.buttons.repairAll).prop("disabled", state.repairing || countRepairableIssues() === 0);
 };
 
 var hasIssues = function () {
@@ -403,17 +552,7 @@ var updateIssueTable = function () {
         dataTable.draw();
     }
 
-    var repairable = issuesArray.filter(function (issue) {
-        return issue.repairStatus === "IS_REPAIRABLE";
-    }).length;
-    $(model.buttons.repairAll).prop("disabled", repairable === 0);
-
-    $(model.buttons.repairLink).click(function () {
-        var button = $(this);
-        var issueId = button.attr("data-issueId");
-        repair(issueId);
-        return false;
-    });
+    updateRepairAllButton();
 
 };
 
@@ -464,14 +603,23 @@ var initializeDataTable = function (issuesArray) {
                 "defaultContent": '',
                 "title": "repairOptions",
                 "orderable": false,
-                "createdCell": function (td, cellData, rowData, row, col) {
-                    $(td).addClass("repairOption");
-                    $(td).html(renderRepairOptions(rowData));
+                "className": "repairOption",
+                "render": function (data, type, rowData) {
+                    return renderRepairOptions(rowData);
                 }
             }
         ],
+        rowId: "issueId",
         searching: false,
-        paging: false,
+        paging: true,
+        pageLength: parseInt($(model.div.pageLength).val(), 10),
+        deferRender: true,
+        layout: {
+            topStart: null,
+            topEnd: null,
+            bottomStart: 'info',
+            bottomEnd: 'paging'
+        },
         "rowCallback": function (row, data, index) {
             postProcessRow(row, data, index);
         }
@@ -639,19 +787,9 @@ var showSummaryOverlay = function (result) {
     $(model.table.summaryTableBody).html(html);
 
     $(model.buttons.closeOverlay).html(result.totalIssues > 0 ? "Show issues" : "Close");
-    $(model.buttons.repairSummary).toggleClass("hidden", countRepairable(result) === 0);
+    $(model.buttons.repairSummary).toggleClass("hidden", countRepairableIssues() === 0);
 
     showOverlaySection(model.div.overlaySummary);
-};
-
-var countRepairable = function (result) {
-    var count = 0;
-    for (var key in result.issues) {
-        if (result.issues[key].repairStatus === "IS_REPAIRABLE") {
-            count++;
-        }
-    }
-    return count;
 };
 
 var hideOverlay = function () {
