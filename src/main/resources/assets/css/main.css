@@ -83,15 +83,6 @@ button {
     gap: 12px;
 }
 
-.resultToolbar .repairProgress {
-    color: #777;
-    margin-right: 8px;
-}
-
-.resultToolbar .repairProgress.hidden {
-    display: none;
-}
-
 .toolbarButton {
     display: flex;
     align-items: center;

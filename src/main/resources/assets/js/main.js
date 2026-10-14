@@ -11,7 +11,6 @@ var model = {
     },
     div: {
         resultWrapper: "#resultWrapper",
-        repairProgress: "#repairProgress",
         pageLength: "#pageLength",
         overlay: "#analysisOverlay",
         overlaySetup: "#overlaySetup",
@@ -38,7 +37,6 @@ var model = {
 };
 
 var REPAIRED_ROW_DELAY_MS = 2500;
-var REPAIR_REQUEST_TIMEOUT_MS = 120000;
 
 var repoGroups = [
     {key: "cms", title: "CMS", expanded: true, matches: function (repo) { return repo.indexOf("com.enonic.cms.") === 0; }},
@@ -56,14 +54,14 @@ var state = {
     lastResultChecked: false,
     running: false,
     pollTimer: null,
-    repairQueue: [],
-    repairTotal: 0,
-    repairing: false,
-    repairActive: null,
-    repairTimedOut: false
+    pollTick: 0,
+    expectTaskUntil: null,
+    repairVersion: 0,
+    repairing: false
 };
 
 var ACTIVE_POLL_MS = 1000;
+var TASK_DISCOVERY_MS = 5000;
 
 $(function () {
 
@@ -94,7 +92,7 @@ var initializeButtons = function () {
     });
 
     $(model.table.issuesTable).on("click", model.buttons.repairLink, function () {
-        enqueueRepair([$(this).attr("data-issueId")]);
+        startRepair({issueIds: [$(this).attr("data-issueId")]});
         return false;
     });
 
@@ -113,7 +111,6 @@ var initializeButtons = function () {
     });
 
     $(model.buttons.repairSummary).click(function () {
-        hideOverlay();
         handleRepairAll();
     });
 
@@ -265,7 +262,7 @@ var handleRunValidator = function () {
 var handleCancel = function () {
     state.cancelling = true;
     $(model.buttons.cancel).prop("disabled", true).html("Cancelling...");
-    $(model.div.overlayValidator).html("Waiting for the current validator to finish...");
+    $(model.div.overlayValidator).html(state.repairing ? "Waiting for the current repair to finish..." : "Waiting for the current validator to finish...");
 
     jQuery.ajax({
         url: cancelApiUrl,
@@ -296,15 +293,26 @@ var schedulePoll = function () {
 
 var handleTaskState = function (result) {
 
-    var wasRunning = state.running;
-    state.running = result.state === "RUNNING";
+    var active = result.state === "RUNNING" || result.state === "WAITING";
 
-    if (result.state === "RUNNING") {
+    if (!active && state.expectTaskUntil && Date.now() < state.expectTaskUntil) {
+        return;
+    }
+    state.expectTaskUntil = null;
+
+    var wasRunning = state.running;
+    state.running = active;
+
+    if (active) {
         state.taskId = result.taskId;
+        state.repairing = result.type === "repair";
         getProgress();
+        if (state.repairing && state.pollTick++ % 2 === 0) {
+            getLastResult();
+        }
         $(model.buttons.newAnalysis).prop("disabled", true);
         $(model.buttons.repairAll).prop("disabled", true);
-        if (state.overlay !== 'progress' && state.overlay !== 'summary') {
+        if (state.overlay !== 'progress' && (state.repairing || state.overlay !== 'summary')) {
             showProgressOverlay();
         }
     } else {
@@ -315,13 +323,33 @@ var handleTaskState = function (result) {
 
         if (state.cancelling) {
             state.cancelling = false;
+            if (state.overlay === 'progress' && !state.repairing) {
+                hideOverlay();
+            }
+        }
+
+        if (state.repairing) {
+            state.repairing = false;
             if (state.overlay === 'progress') {
                 hideOverlay();
             }
         }
 
         $(model.buttons.newAnalysis).prop("disabled", false);
+        updateRepairAllButton();
     }
+};
+
+var expectTask = function (taskId) {
+    state.running = true;
+    state.taskId = taskId;
+    state.expectTaskUntil = Date.now() + TASK_DISCOVERY_MS;
+    getTaskState();
+};
+
+var handleSubmitError = function (message) {
+    $('#repoMessage').html(message);
+    hideOverlay();
 };
 
 
@@ -332,15 +360,27 @@ var getLastResult = function () {
         cache: false,
         type: 'GET',
         success: function (serviceResult) {
-            if (serviceResult.result && serviceResult.result.timestamp > state.resultTimestamp) {
-                state.resultTimestamp = serviceResult.result.timestamp;
+            var result = serviceResult.result;
+            if (!result || !result.timestamp) {
+                state.lastResultChecked = true;
+                return;
+            }
+
+            if (result.timestamp > state.resultTimestamp) {
+                state.resultTimestamp = result.timestamp;
+                state.repairVersion = result.repairVersion || 0;
                 if (state.lastResultChecked) {
-                    state.analyzeResult = serviceResult.result;
+                    state.analyzeResult = result;
                     if (state.overlay === 'progress' || state.overlay === 'summary') {
-                        showSummaryOverlay(serviceResult.result);
+                        showSummaryOverlay(result);
                     } else {
                         updateIssueTable();
                     }
+                }
+            } else if (result.timestamp === state.resultTimestamp && result.repairVersion > state.repairVersion) {
+                state.repairVersion = result.repairVersion;
+                if (state.analyzeResult) {
+                    applyRepairUpdates(result);
                 }
             }
             state.lastResultChecked = true;
@@ -350,142 +390,78 @@ var getLastResult = function () {
 };
 
 var handleRepairAll = function () {
+    startRepair({all: true});
+};
+
+var startRepair = function (params) {
 
     if (!state.analyzeResult || !state.analyzeResult.issues) {
         console.log("ERROR: NO RESULTS IN STATE");
         return;
     }
 
-    var issueKeys = [];
-    for (var issueKey in state.analyzeResult.issues) {
-        if (state.analyzeResult.issues[issueKey].repairStatus === "IS_REPAIRABLE") {
-            issueKeys.push(issueKey);
-        }
-    }
-
-    enqueueRepair(issueKeys);
-};
-
-var enqueueRepair = function (issueKeys) {
-    var result = state.analyzeResult;
-
-    issueKeys.forEach(function (issueKey) {
-        if (!isRepairPending(result, issueKey)) {
-            state.repairQueue.push({result: result, issueKey: issueKey});
-            state.repairTotal++;
-        }
-    });
-
-    if (!state.repairing) {
-        processRepairQueue();
-    }
-};
-
-var isRepairPending = function (result, issueKey) {
-    var active = state.repairActive;
-    if (active && active.result === result && active.issueKey === issueKey) {
-        return true;
-    }
-    return state.repairQueue.some(function (entry) {
-        return entry.result === result && entry.issueKey === issueKey;
-    });
-};
-
-var processRepairQueue = function () {
-
-    if (state.repairTimedOut) {
-        state.repairTimedOut = false;
-        state.repairQueue = [];
-        $('#repoMessage').html("A repair request timed out. The server may still be repairing that node; remaining repairs were skipped.");
-    }
-
-    if (state.repairQueue.length === 0) {
-        state.repairing = false;
-        state.repairTotal = 0;
-        $(model.div.repairProgress).addClass("hidden");
-        $(model.buttons.newAnalysis).prop("disabled", false);
-        updateRepairAllButton();
-        return;
-    }
-
-    state.repairing = true;
     $(model.buttons.repairAll).prop("disabled", true);
-    $(model.buttons.newAnalysis).prop("disabled", true);
-
-    var entry = state.repairQueue.shift();
-    var done = state.repairTotal - state.repairQueue.length;
-    $(model.div.repairProgress).removeClass("hidden").text("Repairing " + done + " of " + state.repairTotal + "...");
-
-    state.repairActive = entry;
-    repair(entry, function () {
-        state.repairActive = null;
-        processRepairQueue();
-    });
-};
-
-var repair = function (entry, callback) {
-
-    var issue = entry.result === state.analyzeResult ? entry.result.issues[entry.issueKey] : null;
-
-    if (!issue) {
-        callback();
-        return;
-    }
-
-    var data = {
-        nodeId: issue.nodeId,
-        validatorName: issue.validatorName,
-        branch: issue.branch,
-        repoId: issue.repo
-    };
+    state.repairing = true;
+    showProgressOverlay();
 
     jQuery.ajax({
         url: repairApiUrl,
-        data: data,
+        data: params,
         cache: false,
-        type: 'GET',
-        timeout: REPAIR_REQUEST_TIMEOUT_MS,
+        type: 'POST',
         success: function (result) {
-            renderRepairResult(result, entry);
-        },
-        error: function (xhr, textStatus) {
-            if (textStatus === "timeout") {
-                state.repairTimedOut = true;
-                renderRepairResult({repairStatus: {status: "FAILED", message: "Repair request timed out"}}, entry);
+            if (result.error) {
+                state.repairing = false;
+                handleSubmitError(result.error);
                 return;
             }
-            renderRepairResult({repairStatus: {status: "FAILED", message: "Repair request failed"}}, entry);
+            expectTask(result.taskId);
         },
-        complete: callback
+        error: function () {
+            state.repairing = false;
+            handleSubmitError("Repair request failed");
+        }
     });
 };
 
-var renderRepairResult = function (result, entry) {
+var applyRepairUpdates = function (result) {
 
-    var item = entry.result.issues[entry.issueKey];
-    if (!item) {
-        return;
-    }
+    var current = state.analyzeResult;
+    var changed = false;
 
-    item.repairStatus = result.repairStatus.status;
-    item.repairMessage = result.repairStatus.message;
+    for (var issueKey in result.issues) {
+        var fresh = result.issues[issueKey];
+        var item = current.issues[issueKey];
 
-    if (entry.result !== state.analyzeResult) {
-        return;
-    }
+        if (item && (item.repairStatus !== fresh.repairStatus || item.repairMessage !== fresh.repairMessage)) {
+            item.repairStatus = fresh.repairStatus;
+            item.repairMessage = fresh.repairMessage;
+            changed = true;
 
-    if (state.dataTable) {
-        var row = state.dataTable.row("#" + entry.issueKey);
-        if (row.any()) {
-            row.invalidate().draw(false);
+            if (state.dataTable) {
+                var row = state.dataTable.row("#" + issueKey);
+                if (row.any()) {
+                    row.invalidate();
+                }
+            }
+
+            if (item.repairStatus === "REPAIRED") {
+                scheduleRepairedRowRemoval(current, issueKey);
+            }
         }
     }
 
-    if (item.repairStatus === "REPAIRED") {
-        setTimeout(function () {
-            removeRepairedIssue(entry.result, entry.issueKey);
-        }, REPAIRED_ROW_DELAY_MS);
+    if (changed && state.dataTable) {
+        state.dataTable.draw(false);
     }
+
+    updateRepairAllButton();
+};
+
+var scheduleRepairedRowRemoval = function (result, issueKey) {
+    setTimeout(function () {
+        removeRepairedIssue(result, issueKey);
+    }, REPAIRED_ROW_DELAY_MS);
 };
 
 var removeRepairedIssue = function (result, issueKey) {
@@ -685,12 +661,13 @@ var doValidation = function () {
         data: data,
         success: function (result) {
             if (result.error) {
-                $('#repoMessage').html(result.error);
+                handleSubmitError(result.error);
                 return;
             }
-            state.running = true;
-            state.taskId = result.taskId;
-            getTaskState();
+            expectTask(result.taskId);
+        },
+        error: function () {
+            handleSubmitError("Analysis request failed");
         }
     });
 
@@ -724,8 +701,12 @@ var renderProgress = function (result) {
         displayProgressInfo(result);
     } else if (result.state === "FAILED" && state.overlay === 'progress') {
         hideOverlay();
-        $('#repoMessage').html("Analysis failed, see server log for details");
+        $('#repoMessage').html((isRepairTask(result) ? "Repair" : "Analysis") + " failed, see server log for details");
     }
+};
+
+var isRepairTask = function (result) {
+    return !!result.description && /\.repair$/.test(result.description);
 };
 
 var displayProgressInfo = function (result) {
@@ -736,7 +717,12 @@ var displayProgressInfo = function (result) {
 
     var info = result.progress.info;
 
-    if (info && info.validator) {
+    if (isRepairTask(result)) {
+        $(model.div.overlayRepo).text("Repairing nodes");
+        if (info && info.total !== undefined) {
+            $(model.div.overlayValidator).text("Repairing " + info.current + " of " + info.total + "...");
+        }
+    } else if (info && info.validator) {
         $(model.div.overlayRepo).text("Analysing " + info.repositoryId + " - " + info.branch);
         $(model.div.overlayValidator).text("Executing " + info.validator + " (" + info.current + " out of " + info.total + ")...");
     }
@@ -764,7 +750,7 @@ var showProgressOverlay = function () {
     state.overlay = 'progress';
     state.cancelling = false;
     $(model.buttons.cancel).prop("disabled", false).html("Cancel");
-    $(model.div.overlayRepo).text("Analysing...");
+    $(model.div.overlayRepo).text(state.repairing ? "Repairing nodes" : "Analysing...");
     $(model.div.overlayValidator).text("Starting...");
     $(model.div.progressBarFill).css("width", "0%");
     $(model.div.progressBar).attr("aria-valuenow", 0);
