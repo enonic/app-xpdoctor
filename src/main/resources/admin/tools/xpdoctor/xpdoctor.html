@@ -22,7 +22,6 @@
     <!-- Roboto -->
     <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
 
-    <script type="text/javascript" data-th-src="${renderJsonUrl}"></script>
     <script data-th-src="${mainJsUrl}"></script>
 
     <!-- DataTables -->
@@ -56,14 +55,27 @@
 
         <div class="resultWrapper hidden" id="resultWrapper">
             <div class="resultToolbar">
-                <button id="btnNewAnalysis" type="button" class="toolbarButton">
-                    <i class="material-icons">play_arrow</i>
-                    <span>New analysis</span>
-                </button>
-                <button id="btnRepairAll" type="button" class="toolbarButton repair" disabled>
-                    <i class="material-icons">build</i>
-                    <span>Repair all</span>
-                </button>
+                <label class="pageLength">
+                    Show
+                    <select id="pageLength">
+                        <option value="25">25</option>
+                        <option value="50" selected>50</option>
+                        <option value="100">100</option>
+                        <option value="250">250</option>
+                    </select>
+                    entries per page
+                </label>
+                <div class="toolbarButtons">
+                    <span class="repairProgress hidden" id="repairProgress" role="status" aria-live="polite"></span>
+                    <button id="btnNewAnalysis" type="button" class="toolbarButton">
+                        <i class="material-icons">play_arrow</i>
+                        <span>New analysis</span>
+                    </button>
+                    <button id="btnRepairAll" type="button" class="toolbarButton repair" disabled>
+                        <i class="material-icons">build</i>
+                        <span>Repair all</span>
+                    </button>
+                </div>
             </div>
             <div class="resultTab" id="resultTab">
                 <table id='resultTable' class='table'>
