@@ -39,7 +39,9 @@ var state = {
     resultTimestamp: 0,
     dataTable: null,
     analyzeResult: null,
-    repoSelected: false
+    repoSelected: false,
+    repairQueue: [],
+    repairing: false
 };
 
 $(function () {
@@ -66,6 +68,11 @@ var initializeButtons = function () {
 
     $(model.buttons.repairAll).click(function () {
         handleRepairAll();
+    });
+
+    $(model.table.issuesTable).on("click", model.buttons.repairLink, function () {
+        enqueueRepair([$(this).attr("data-issueId")]);
+        return false;
     });
 
     $(model.selectors.repoSelector).change(function () {
@@ -197,16 +204,46 @@ var handleRepairAll = function () {
 
     if (!state.analyzeResult || !state.analyzeResult.issues) {
         console.log("ERROR: NO RESULTS IN STATE");
+        return;
     }
 
+    var issueKeys = [];
     for (var issueKey in state.analyzeResult.issues) {
         if (state.analyzeResult.issues[issueKey].repairStatus === "IS_REPAIRABLE") {
-            repair(issueKey);
+            issueKeys.push(issueKey);
         }
+    }
+
+    enqueueRepair(issueKeys);
+};
+
+var enqueueRepair = function (issueKeys) {
+    issueKeys.forEach(function (issueKey) {
+        if (state.repairQueue.indexOf(issueKey) === -1) {
+            state.repairQueue.push(issueKey);
+        }
+    });
+
+    if (!state.repairing) {
+        processRepairQueue();
     }
 };
 
-var repair = function (issueKey) {
+var processRepairQueue = function () {
+
+    if (state.repairQueue.length === 0) {
+        state.repairing = false;
+        updateRepairAllButton();
+        return;
+    }
+
+    state.repairing = true;
+    disableButton($(model.buttons.repairAll));
+
+    repair(state.repairQueue.shift(), processRepairQueue);
+};
+
+var repair = function (issueKey, callback) {
 
     var issue = state.analyzeResult.issues[issueKey];
 
@@ -224,7 +261,11 @@ var repair = function (issueKey) {
         type: 'GET',
         success: function (result) {
             renderRepairResult(result, issueKey);
-        }
+        },
+        error: function () {
+            renderRepairResult({repairStatus: {status: "FAILED", message: "Repair request failed"}}, issueKey);
+        },
+        complete: callback
     });
 };
 
@@ -234,7 +275,28 @@ var renderRepairResult = function (result, issueKey) {
     item.repairStatus = result.repairStatus.status;
     item.repairMessage = result.repairStatus.message;
 
-    updateIssueTable();
+    if (state.dataTable) {
+        var row = state.dataTable.row("#" + issueKey);
+        if (row.any()) {
+            row.invalidate().draw(false);
+        }
+    }
+};
+
+var countRepairableIssues = function () {
+    var count = 0;
+    if (state.analyzeResult && state.analyzeResult.issues) {
+        for (var key in state.analyzeResult.issues) {
+            if (state.analyzeResult.issues[key].repairStatus === "IS_REPAIRABLE") {
+                count++;
+            }
+        }
+    }
+    return count;
+};
+
+var updateRepairAllButton = function () {
+    $(model.buttons.repairAll).prop("disabled", state.repairing || countRepairableIssues() === 0);
 };
 
 var updateIssueTable = function () {
@@ -260,16 +322,7 @@ var updateIssueTable = function () {
         dataTable.draw();
     }
 
-    if (state.analyzeResult.totalIssues > 0) {
-        updateButton($(model.buttons.repairAll), false);
-    }
-
-    $(model.buttons.repairLink).click(function () {
-        var button = $(this);
-        var issueId = button.attr("data-issueId");
-        repair(issueId);
-        return false;
-    });
+    updateRepairAllButton();
 
 };
 
@@ -320,14 +373,18 @@ var initializeDataTable = function (issuesArray) {
                 "defaultContent": '',
                 "title": "repairOptions",
                 "orderable": false,
-                "createdCell": function (td, cellData, rowData, row, col) {
-                    $(td).addClass("repairOption");
-                    $(td).html(renderRepairOptions(rowData));
+                "className": "repairOption",
+                "render": function (data, type, rowData) {
+                    return renderRepairOptions(rowData);
                 }
             }
         ],
+        rowId: "issueId",
         searching: false,
-        paging: false,
+        paging: true,
+        pageLength: 50,
+        lengthMenu: [25, 50, 100, 250],
+        deferRender: true,
         "rowCallback": function (row, data, index) {
             postProcessRow(row, data, index);
         }
