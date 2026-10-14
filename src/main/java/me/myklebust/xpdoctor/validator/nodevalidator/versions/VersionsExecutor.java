@@ -34,10 +34,9 @@ public class VersionsExecutor
     public void execute( final Reporter reporter )
     {
         LOG.info( "Running VersionsExecutor..." );
-        reporter.reportStart();
 
         ScrollQueryExecutor.create()
-            .progressReporter( reporter.getProgressReporter() )
+            .reporter( reporter )
             .indexType( ScrollQueryExecutor.IndexType.STORAGE )
             .spyStorageService( this.storageSpyService )
             .build()
@@ -58,6 +57,7 @@ public class VersionsExecutor
             {
                 LOG.error( "Cannot check versions node with id: " + nodeId, e );
             }
+            results.nodeChecked();
         }
     }
 

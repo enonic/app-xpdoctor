@@ -7,6 +7,7 @@ import com.google.common.collect.Maps;
 
 import me.myklebust.xpdoctor.validator.BranchValidationResult;
 import me.myklebust.xpdoctor.validator.RepairResult;
+import me.myklebust.xpdoctor.validator.RepairStatus;
 import me.myklebust.xpdoctor.validator.RepoValidationResult;
 import me.myklebust.xpdoctor.validator.RepoValidationResults;
 import me.myklebust.xpdoctor.validator.ValidatorResult;
@@ -49,6 +50,8 @@ public class RepoResultsMapper
     {
         gen.map();
         gen.value( "branch", result.getBranch().toString() );
+        gen.value( "analysed", result.getNodeCount() );
+        serializeNodeCounts( gen, result.getResults().getResults() );
         serialize( gen, result.getResults() );
         gen.end();
 
@@ -67,6 +70,16 @@ public class RepoResultsMapper
         }
 
         gen.end();
+    }
+
+    private void serializeNodeCounts( final MapGenerator gen, final List<ValidatorResult> allResults )
+    {
+        gen.value( "invalidNodes", allResults.stream().map( ValidatorResult::nodeId ).distinct().count() );
+        gen.value( "repairableNodes", allResults.stream()
+            .filter( entry -> entry.repairResult() != null && entry.repairResult().status() == RepairStatus.IS_REPAIRABLE )
+            .map( ValidatorResult::nodeId )
+            .distinct()
+            .count() );
     }
 
     private void serializeTypes( final MapGenerator gen, final List<ValidatorResult> allResults )

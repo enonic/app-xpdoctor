@@ -45,7 +45,9 @@ public class ValidatorServiceImpl
     {
         return ValidatorExecutor.create()
             .repoService( this.repoService )
+            .nodeService( this.nodeService )
             .progressReporter( params.getProgressReporter() )
+            .cancelled( params.getCancelled() )
             .repoBranches( params.getRepoBranches() )
             .validators( this.validators.stream().filter( validator -> params.getEnabledValidators().contains( validator.name() ) )
                              .sorted( Comparator.comparingInt( Validator::order ) )

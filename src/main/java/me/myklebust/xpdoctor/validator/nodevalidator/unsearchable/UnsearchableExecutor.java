@@ -29,10 +29,9 @@ public class UnsearchableExecutor
     public void execute( final Reporter reporter )
     {
         LOG.info( "Running UnsearchableExecutor..." );
-        reporter.reportStart();
 
         ScrollQueryExecutor.create()
-            .progressReporter( reporter.getProgressReporter() )
+            .reporter( reporter )
             .indexType( ScrollQueryExecutor.IndexType.STORAGE )
             .spyStorageService( this.storageSpyService )
             .build()
@@ -53,6 +52,7 @@ public class UnsearchableExecutor
             {
                 LOG.error( "Cannot check node with id: " + nodeId, e );
             }
+            results.nodeChecked();
         }
     }
 

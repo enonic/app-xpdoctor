@@ -5,3 +5,13 @@ allow:
   - "role:system.admin"
 apis:
   - "asset"
+  - "validator"
+  - "progress"
+  - "state"
+  - "last-result"
+  - "repair"
+  - "repo-list"
+  - "cancel"
+  - "event-bus"
+  - "admin:extension"
+  - "admin:events"

@@ -31,109 +31,120 @@
 
     <script data-th-inline="javascript">
         /*<![CDATA[*/
-        var validatorServiceUrl = [[${validatorServiceUrl}]];
-        var progressServiceUrl = [[${progressServiceUrl}]];
-        var stateServiceUrl = [[${stateServiceUrl}]];
-        var lastResultServiceUrl = [[${lastResultServiceUrl}]];
+        var validatorApiUrl = [[${validatorApiUrl}]];
+        var progressApiUrl = [[${progressApiUrl}]];
+        var stateApiUrl = [[${stateApiUrl}]];
+        var lastResultApiUrl = [[${lastResultApiUrl}]];
         var wsUrl = [[${wsUrl}]];
-        var repairServiceUrl = [[${repairServiceUrl}]];
-        var repoListServiceUrl = [[${repoListServiceUrl}]];
+        var repairApiUrl = [[${repairApiUrl}]];
+        var repoListApiUrl = [[${repoListApiUrl}]];
+        var cancelApiUrl = [[${cancelApiUrl}]];
         /*]]>*/
     </script>
 
 </head>
 <body>
 
+<script type="module" data-th-src="${menuLoaderUrl}"></script>
+
 <main>
     <nav class="navbar">
-
-        <span class="progress" id="progressState"></span>
         <a class="navbar-brand" href="#"><img data-th-src="${logoUrl}"/></a>
     </nav>
 
-    <div class="mainContainer">
+    <div class="content">
 
-        <div class="toolbar">
-            <div class="toolbar-items">
-                <div class="repos">
-                    <select class="repoSelector" id="repoSelector" multiple>
-                    </select>
-                </div>
-                <div class="actions">
-                    <button id="btnRunValidator" type="button" class="big-action-button analyze" disabled>
-                        <i class="material-icons">play_arrow</i>
-                        <p class="buttonDescr">Analyze</p>
-                    </button>
-                    <button id="btnRepairAll" type="button" class="big-action-button repair" disabled>
-                        <i class="material-icons">build</i>
-                        <p class="buttonDescr">Repair all</p>
-                    </button>
-                </div>
-
-                <div class="validators">
-                    <div class="toggleAll">
-                        <button id="toggleAll" class="toggleAllButton">
-                            Toggle All
-                        </button>
-                    </div>
-                    <div data-th-each="item,iterStat : ${validators}" class="validatorItems">
-                        <div class="validatorItem" data-th-id="${'validator_' + item.name}">
-                            <input
-                                    class="form-check-input"
-                                    type="checkbox"
-                                    data-th-id="${'checkbox_' + item.name}"
-                                    data-th-attr="data-validatorName=${item.name}"
-                                    value=""
-                                    checked>
-                            <label
-                                    class="form-check-label"
-                                    data-th-attr="for=${'checkbox_' + item.name}">
-                                <!-- This makes the label clickable -->
-                                <span data-th-text="${item.name}"></span>
-                            </label>
-                            <span class="itemProgress"></span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="progress">
-                    <div class="progressReporter" id="progressReporter">
-                    </div>
-                </div>
+        <div class="resultWrapper hidden" id="resultWrapper">
+            <div class="resultToolbar">
+                <button id="btnNewAnalysis" type="button" class="toolbarButton">
+                    <i class="material-icons">play_arrow</i>
+                    <span>New analysis</span>
+                </button>
+                <button id="btnRepairAll" type="button" class="toolbarButton repair" disabled>
+                    <i class="material-icons">build</i>
+                    <span>Repair all</span>
+                </button>
+            </div>
+            <div class="resultTab" id="resultTab">
+                <table id='resultTable' class='table'>
+                </table>
             </div>
         </div>
 
-
-    </div>
-
-
-    <!-- RESULT -->
-
-    <div class="resultWrapper" id="resultWrapper">
-        <div class="resultTab" id="resultTab">
-            <table id='resultTable' class='table'>
-                <!--       <thead>
-                       <th>repo</th>
-                       <th>branch</th>
-                       <th>type</th>
-                       <th>id</th>
-                       <th>nodeVersionId</th>
-                       <th>path</th>
-                       <th>message</th>
-                       <th>repairStatus</th>
-                       <th>repairMessage</th>
-                       <th>Operations</th>
-                       </thead>
-                       <tbody id="issuesTableData">
-                       </tbody>-->
-            </table>
-        </div>
     </div>
 
 </main>
 
 <div id="messageBox" class="row messageBox">
     <span id="repoMessage"></span>
+</div>
+
+<div id="analysisOverlay" class="overlay hidden">
+    <div class="overlayDialog">
+        <div id="overlaySetup" class="hidden">
+            <div class="setupColumns">
+                <div class="setupColumn">
+                    <h3>Repositories</h3>
+                    <div class="treeList" id="repoTree"></div>
+                </div>
+                <div class="setupColumn">
+                    <h3>Validators</h3>
+                    <div class="validatorList" id="validatorList">
+                        <label class="validatorItem selectAll">
+                            <input type="checkbox" id="selectAllValidators" checked>
+                            <span class="validatorTitle">Select all</span>
+                        </label>
+                        <label data-th-each="item : ${validators}" class="validatorItem">
+                            <input type="checkbox" class="validatorCheckbox" data-th-attr="data-validatorName=${item.name}" checked>
+                            <span class="validatorText">
+                                <span class="validatorTitle" data-th-text="${item.title}"></span>
+                                <span class="validatorDescription" data-th-text="${item.description}"></span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="overlayActions">
+                <span class="selectionSummary" id="selectionSummary"></span>
+                <button id="btnCloseSetup" type="button" class="overlayButton secondary">Cancel</button>
+                <button id="btnAnalyse" type="button" class="overlayButton primary" disabled>
+                    <i class="material-icons">play_arrow</i>
+                    <span>Analyse</span>
+                </button>
+            </div>
+        </div>
+        <div id="overlayProgress" class="hidden">
+            <p class="overlayRepo" id="overlayRepo"></p>
+            <p class="overlayValidator" id="overlayValidator"></p>
+            <div class="progressBar" id="progressBar" role="progressbar" aria-label="Analysis progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                <div class="progressBarFill" id="progressBarFill"></div>
+            </div>
+            <div class="overlayActions">
+                <button id="btnCancel" type="button" class="overlayButton">Cancel</button>
+            </div>
+        </div>
+        <div id="overlaySummary" class="hidden">
+            <table class="summaryTable">
+                <thead>
+                <tr>
+                    <th>Repository</th>
+                    <th>Analysed</th>
+                    <th>Issues</th>
+                    <th>Repairable</th>
+                </tr>
+                </thead>
+                <tbody id="summaryTableBody">
+                </tbody>
+            </table>
+            <div class="overlayActions">
+                <button id="btnRepairSummary" type="button" class="overlayButton repair hidden">
+                    <i class="material-icons">build</i>
+                    <span>Repair</span>
+                </button>
+                <button id="btnCloseOverlay" type="button" class="overlayButton">Close</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 </body>

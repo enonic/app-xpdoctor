@@ -2,6 +2,7 @@ package me.myklebust.xpdoctor.validator;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.BooleanSupplier;
 
 import com.enonic.xp.branch.Branch;
 import com.enonic.xp.branch.Branches;
@@ -16,11 +17,14 @@ public class AnalyzeParams
 
     private final Map<RepositoryId, Branches> repoBranches;
 
+    private final BooleanSupplier cancelled;
+
     private AnalyzeParams( final Builder builder )
     {
         progressReporter = builder.progressReporter;
         enabledValidators = builder.enabledValidators;
         repoBranches = builder.repoBranches;
+        cancelled = builder.cancelled;
     }
 
     public static Builder create()
@@ -44,6 +48,11 @@ public class AnalyzeParams
         return enabledValidators;
     }
 
+    public BooleanSupplier getCancelled()
+    {
+        return cancelled;
+    }
+
     public static final class Builder
     {
         private ProgressReporter progressReporter;
@@ -51,6 +60,8 @@ public class AnalyzeParams
         private List<String> enabledValidators;
 
         private Map<RepositoryId, Branches> repoBranches;
+
+        private BooleanSupplier cancelled = () -> false;
 
         private Builder()
         {
@@ -71,6 +82,12 @@ public class AnalyzeParams
         public Builder repoBranches( final Map<RepositoryId, Branches> val )
         {
             repoBranches = val;
+            return this;
+        }
+
+        public Builder cancelled( final BooleanSupplier val )
+        {
+            cancelled = val;
             return this;
         }
 

@@ -33,10 +33,9 @@ public class ParentExistsExecutor
     public void execute( final Reporter reporter )
     {
         LOG.info( "Running LoadableNodeExecutor..." );
-        reporter.reportStart();
 
         ScrollQueryExecutor.create()
-            .progressReporter( reporter.getProgressReporter() )
+            .reporter( reporter )
             .indexType( ScrollQueryExecutor.IndexType.STORAGE )
             .spyStorageService( this.storageSpyService )
             .build()
@@ -59,6 +58,7 @@ public class ParentExistsExecutor
             {
                 LOG.error( "Cannot check parent exists for node with id: {}", nodeId, e );
             }
+            results.nodeChecked();
         }
 
     }

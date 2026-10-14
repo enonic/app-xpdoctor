@@ -1,177 +1,305 @@
 var model = {
-    selectors: {
-        repoSelector: "#repoSelector"
-    },
     buttons: {
-        runValidator: "#btnRunValidator",
+        newAnalysis: "#btnNewAnalysis",
+        analyse: "#btnAnalyse",
+        closeSetup: "#btnCloseSetup",
         repairAll: "#btnRepairAll",
-        repairLink: '.repairLink'
+        repairLink: '.repairLink',
+        cancel: "#btnCancel",
+        repairSummary: "#btnRepairSummary",
+        closeOverlay: "#btnCloseOverlay"
     },
     div: {
-        status: "#progressReporter",
-        results: "#results",
-        resultTab: "#resultTab",
-        mainTab: "#mainTab",
-        executor: "#executor"
+        resultWrapper: "#resultWrapper",
+        overlay: "#analysisOverlay",
+        overlaySetup: "#overlaySetup",
+        overlayProgress: "#overlayProgress",
+        overlaySummary: "#overlaySummary",
+        overlayRepo: "#overlayRepo",
+        overlayValidator: "#overlayValidator",
+        progressBar: "#progressBar",
+        progressBarFill: "#progressBarFill",
+        repoTree: "#repoTree",
+        validatorList: "#validatorList",
+        selectionSummary: "#selectionSummary"
     },
-    item: {
-        progress: "#progressState",
-        validatorItem: "#validator_",
-        validatorItemClass: ".validatorItem",
-        validatorProgressClass: ".itemProgress"
+    input: {
+        selectAllValidators: "#selectAllValidators",
+        validatorCheckbox: ".validatorCheckbox",
+        treeCheckbox: ".treeCheckbox",
+        branchCheckbox: ".branchCheckbox"
     },
     table: {
         issuesTable: "#resultTable",
-        issuesTableData: "#issuesTableData"
+        summaryTableBody: "#summaryTableBody"
     }
 };
 
-
-var ws = {
-    connected: false,
-    connection: null,
-    keepAliveIntervalId: null
-};
+var repoGroups = [
+    {key: "cms", title: "CMS", expanded: true, matches: function (repo) { return repo.indexOf("com.enonic.cms.") === 0; }},
+    {key: "system", title: "System", expanded: false, matches: function (repo) { return repo.indexOf("system.") === 0 || repo === "system-repo"; }},
+    {key: "custom", title: "Custom", expanded: false, matches: function () { return true; }}
+];
 
 var state = {
     taskId: null,
-    taskState: null,
     resultTimestamp: 0,
     dataTable: null,
     analyzeResult: null,
-    repoSelected: false
+    overlay: null,
+    cancelling: false,
+    lastResultChecked: false,
+    running: false,
+    pollTimer: null
 };
+
+var ACTIVE_POLL_MS = 1000;
 
 $(function () {
 
+    getLastResult();
     getTaskState();
-    getProgress();
     initializeButtons();
-
-    setInterval(getProgress, 1000);
-    setInterval(getTaskState, 1000);
-    setInterval(getLastResult, 2000);
+    showSetupOverlay();
 
     loadRepoList();
 });
 
 var initializeButtons = function () {
 
-    disableButton($(model.buttons.runValidator));
-    disableButton($(model.buttons.repairAll));
+    $(model.buttons.newAnalysis).click(function () {
+        showSetupOverlay();
+    });
 
-    $(model.buttons.runValidator).click(function () {
+    $(model.buttons.analyse).click(function () {
         handleRunValidator();
+    });
+
+    $(model.buttons.closeSetup).click(function () {
+        hideOverlay();
     });
 
     $(model.buttons.repairAll).click(function () {
         handleRepairAll();
     });
 
-    $(model.selectors.repoSelector).change(function () {
-        updateButton($(model.buttons.runValidator), false, "play_arrow", "Analyze");
-        state.repoSelected = true;
-    })
-
-    const checkUncheckAll = $('#toggleAll');
-    const checkboxes = $(model.item.validatorItemClass + ' input');
-
-    checkUncheckAll.on('click', function() {
-        const firstCheckbox = checkboxes.first();
-        const isChecked = !firstCheckbox.prop('checked');
-        checkboxes.prop('checked', isChecked);
+    $(model.buttons.cancel).click(function () {
+        handleCancel();
     });
-};
 
-var disableButton = function (button) {
-    button.prop("disabled", true);
-};
+    $(model.buttons.closeOverlay).click(function () {
+        hideOverlay();
+    });
 
+    $(model.buttons.repairSummary).click(function () {
+        hideOverlay();
+        handleRepairAll();
+    });
 
-var updateButton = function (button, disabled, icon, label) {
-    button.prop("disabled", disabled);
+    $(model.input.selectAllValidators).change(function () {
+        $(model.input.validatorCheckbox).prop("checked", this.checked);
+        updateSetupState();
+    });
 
-    if (icon) {
-        button.children("i").html(icon);
-    }
+    $(model.div.validatorList).on("change", model.input.validatorCheckbox, function () {
+        updateSetupState();
+    });
 
-    if (label) {
-        button.children("p").html(label);
-    }
-};
+    $(model.div.repoTree).on("change", model.input.treeCheckbox, function () {
+        handleTreeCheckboxChange($(this));
+    });
 
+    $(model.div.repoTree).on("click", ".treeGroupHeader", function () {
+        var $group = $(this).closest(".treeGroup");
+        $group.toggleClass("collapsed");
+        $(this).find("i").text($group.hasClass("collapsed") ? "chevron_right" : "expand_more");
+    });
 
-var loadRepoList = function () {
-    jQuery.ajax({
-        url: repoListServiceUrl,
-        cache: false,
-        type: 'GET',
-        success: function (result) {
-            populateRepoSelector(result);
+    $(document).keydown(function (e) {
+        if (e.key === "Escape" && ((state.overlay === "setup" && hasIssues()) || state.overlay === "summary")) {
+            hideOverlay();
         }
     });
 };
 
-var populateRepoSelector = function (result) {
+var loadRepoList = function () {
+    jQuery.ajax({
+        url: repoListApiUrl,
+        cache: false,
+        type: 'GET',
+        success: function (result) {
+            renderRepoTree(result.repoList);
+        }
+    });
+};
 
-    console.log("LoadRepoList result:", result);
+var renderRepoTree = function (repoList) {
+
+    var grouped = {};
+    repoGroups.forEach(function (group) {
+        grouped[group.key] = {};
+    });
+
+    repoList.forEach(function (entry) {
+        var group = repoGroups.filter(function (g) { return g.matches(entry.repo); })[0];
+        var repos = grouped[group.key];
+        if (!repos[entry.repo]) {
+            repos[entry.repo] = [];
+        }
+        repos[entry.repo].push(entry);
+    });
 
     var html = "";
 
-    result.repoList.forEach(function (entry) {
-        html += "<option value='" + entry.repo + ":" + entry.branch + "'>";
-        html += entry.repo + " - " + entry.branch + " (" + entry.count + " nodes)";
-        html += "</option>";
+    repoGroups.forEach(function (group) {
+        var repoIds = Object.keys(grouped[group.key]).sort();
+        if (repoIds.length === 0) {
+            return;
+        }
+
+        html += "<div class='treeGroup" + (group.expanded ? "" : " collapsed") + "'>";
+        html += "<div class='treeRow level0 treeGroupHeader'>";
+        html += "<i class='material-icons'>" + (group.expanded ? "expand_more" : "chevron_right") + "</i>";
+        html += "<span class='treeLabel'>" + group.title + "</span>";
+        html += "<span class='treeCount'>" + repoIds.length + " repos</span></div>";
+        html += "<div class='treeChildren'>";
+
+        repoIds.forEach(function (repoId) {
+            var branches = grouped[group.key][repoId];
+            html += "<div class='treeRepo'>";
+            html += treeRow(1, "<input type='checkbox' class='treeCheckbox'>", repoId, "");
+            html += "<div class='treeChildren'>";
+            branches.forEach(function (branch) {
+                var checkbox = "<input type='checkbox' class='treeCheckbox branchCheckbox' value='" + repoId + ":" + branch.branch +
+                               "' data-count='" + branch.count + "'>";
+                html += treeRow(2, checkbox, branch.branch, branch.count + " nodes");
+            });
+            html += "</div></div>";
+        });
+
+        html += "</div></div>";
     });
 
-    $(model.selectors.repoSelector).html(html);
+    $(model.div.repoTree).html(html);
+    updateSetupState();
+};
 
+var treeRow = function (level, checkbox, label, count) {
+    return "<label class='treeRow level" + level + "'>" + checkbox +
+           "<span class='treeLabel'>" + label + "</span>" +
+           "<span class='treeCount'>" + count + "</span></label>";
+};
+
+var handleTreeCheckboxChange = function ($checkbox) {
+    var checked = $checkbox.prop("checked");
+
+    $checkbox.closest(".treeRow").next(".treeChildren").find("input").prop({checked: checked, indeterminate: false});
+
+    var $container = $checkbox.closest(".treeChildren");
+    while ($container.length) {
+        var $parentRow = $container.prev(".treeRow");
+        var branches = $container.find(model.input.branchCheckbox);
+        var checkedCount = branches.filter(":checked").length;
+        $parentRow.find("input").prop({
+            checked: checkedCount > 0 && checkedCount === branches.length,
+            indeterminate: checkedCount > 0 && checkedCount < branches.length
+        });
+        $container = $parentRow.closest(".treeChildren");
+    }
+
+    updateSetupState();
+};
+
+var updateSetupState = function () {
+    var branches = $(model.input.branchCheckbox + ":checked");
+    var nodes = 0;
+    branches.each(function () {
+        nodes += parseInt($(this).attr("data-count"), 10) || 0;
+    });
+
+    var validators = $(model.input.validatorCheckbox);
+    var checkedValidators = validators.filter(":checked").length;
+
+    $(model.input.selectAllValidators).prop({
+        checked: checkedValidators === validators.length,
+        indeterminate: checkedValidators > 0 && checkedValidators < validators.length
+    });
+
+    var summary = "";
+    if (branches.length > 0) {
+        summary = branches.length + (branches.length === 1 ? " branch, " : " branches, ") + nodes + " nodes, " +
+                  checkedValidators + (checkedValidators === 1 ? " validator" : " validators");
+    }
+    $(model.div.selectionSummary).text(summary);
+
+    $(model.buttons.analyse).prop("disabled", branches.length === 0 || checkedValidators === 0);
 };
 
 var handleRunValidator = function () {
     clearIssueTable();
-    disableButton($(model.buttons.runValidator));
-    disableButton($(model.buttons.repairAll));
+    showProgressOverlay();
     doValidation();
-    getProgress();
-    getTaskState();
+};
+
+var handleCancel = function () {
+    state.cancelling = true;
+    $(model.buttons.cancel).prop("disabled", true).html("Cancelling...");
+    $(model.div.overlayValidator).html("Waiting for the current validator to finish...");
+
+    jQuery.ajax({
+        url: cancelApiUrl,
+        cache: false,
+        type: 'POST'
+    });
 };
 
 var getTaskState = function () {
 
     jQuery.ajax({
-        url: stateServiceUrl,
+        url: stateApiUrl,
         cache: false,
         type: 'GET',
         success: function (result) {
             handleTaskState(result);
-        }
+        },
+        complete: schedulePoll
     });
+};
+
+var schedulePoll = function () {
+    clearTimeout(state.pollTimer);
+    if (state.running) {
+        state.pollTimer = setTimeout(getTaskState, ACTIVE_POLL_MS);
+    }
 };
 
 var handleTaskState = function (result) {
 
-    var statusDiv = $(model.div.status);
-    var analyzeButton = $(model.buttons.runValidator);
-    var repairAllButton = $(model.buttons.repairAll);
+    var wasRunning = state.running;
+    state.running = result.state === "RUNNING";
 
     if (result.state === "RUNNING") {
         state.taskId = result.taskId;
-        updateButton(analyzeButton, true, "update", "Analyzing..");
-        updateButton(repairAllButton, true);
-        statusDiv.show();
+        getProgress();
+        $(model.buttons.newAnalysis).prop("disabled", true);
+        $(model.buttons.repairAll).prop("disabled", true);
+        if (state.overlay !== 'progress' && state.overlay !== 'summary') {
+            showProgressOverlay();
+        }
     } else {
-        if (result.state === "FAILED") {
-            statusDiv.show();
-        } else if (result.state === "FINISHED") {
-            statusDiv.show();
-        } else {
-            statusDiv.hide();
+        if (wasRunning) {
+            getProgress();
+            getLastResult();
         }
 
-        if (state.repoSelected) {
-            updateButton(analyzeButton, false, "play_arrow", "Analyze");
+        if (state.cancelling) {
+            state.cancelling = false;
+            if (state.overlay === 'progress') {
+                hideOverlay();
+            }
         }
+
+        $(model.buttons.newAnalysis).prop("disabled", false);
     }
 };
 
@@ -179,15 +307,22 @@ var handleTaskState = function (result) {
 var getLastResult = function () {
 
     jQuery.ajax({
-        url: lastResultServiceUrl,
+        url: lastResultApiUrl,
         cache: false,
         type: 'GET',
         success: function (serviceResult) {
             if (serviceResult.result && serviceResult.result.timestamp > state.resultTimestamp) {
                 state.resultTimestamp = serviceResult.result.timestamp;
-                state.analyzeResult = serviceResult.result;
-                updateIssueTable();
+                if (state.lastResultChecked) {
+                    state.analyzeResult = serviceResult.result;
+                    if (state.overlay === 'progress' || state.overlay === 'summary') {
+                        showSummaryOverlay(serviceResult.result);
+                    } else {
+                        updateIssueTable();
+                    }
+                }
             }
+            state.lastResultChecked = true;
         }
     });
 
@@ -218,7 +353,7 @@ var repair = function (issueKey) {
     };
 
     jQuery.ajax({
-        url: repairServiceUrl,
+        url: repairApiUrl,
         data: data,
         cache: false,
         type: 'GET',
@@ -237,17 +372,25 @@ var renderRepairResult = function (result, issueKey) {
     updateIssueTable();
 };
 
+var hasIssues = function () {
+    return !!(state.analyzeResult && state.analyzeResult.totalIssues);
+};
+
 var updateIssueTable = function () {
 
-    if (!state.analyzeResult) {
+    if (!hasIssues()) {
 
         if (state.dataTable) {
             state.dataTable.clear();
             state.dataTable.draw();
         }
 
+        $(model.div.resultWrapper).addClass("hidden");
+
         return;
     }
+
+    $(model.div.resultWrapper).removeClass("hidden");
 
     var issuesArray = createAsIssuesArray();
     var dataTable = state.dataTable;
@@ -260,9 +403,10 @@ var updateIssueTable = function () {
         dataTable.draw();
     }
 
-    if (state.analyzeResult.totalIssues > 0) {
-        updateButton($(model.buttons.repairAll), false);
-    }
+    var repairable = issuesArray.filter(function (issue) {
+        return issue.repairStatus === "IS_REPAIRABLE";
+    }).length;
+    $(model.buttons.repairAll).prop("disabled", repairable === 0);
 
     $(model.buttons.repairLink).click(function () {
         var button = $(this);
@@ -339,9 +483,6 @@ var renderRepairOptions = function (issue) {
     if (issue.repairStatus === "IS_REPAIRABLE") {
         repairOptions += renderRepairLink(issue);
     }
-    if (issue.repairStatus === "FAILED") {
-        // repairOptions += renderDeleteLink(issue);
-    }
     return repairOptions;
 };
 
@@ -350,14 +491,6 @@ var renderRepairLink = function (issue) {
     var repairLink = "";
     repairLink += "<a class='repairLink' href='#' data-issueId='" + issue.issueId + "'>";
     repairLink += "<i class='material-icons'>build</i>";
-    repairLink += "</a>";
-    return repairLink;
-};
-
-var renderDeleteLink = function (issue) {
-    var repairLink = "";
-    repairLink += "<a class='deleteLink' href='#'>";
-    repairLink += "<i class='material-icons'>delete</i>";
     repairLink += "</a>";
     return repairLink;
 };
@@ -388,37 +521,37 @@ var clearIssueTable = function () {
 
 var doValidation = function () {
 
-    var repoSelector = $(model.selectors.repoSelector).val();
-
-    console.log("REPOSELECTOR: ", repoSelector);
+    var repoBranches = $(model.input.branchCheckbox + ":checked").map(function () {
+        return $(this).val();
+    }).get();
 
     var data = {
         enabledValidators: getEnabledValidators(),
-        repoBranches: repoSelector,
+        repoBranches: repoBranches,
     };
 
     jQuery.ajax({
-        url: validatorServiceUrl,
+        url: validatorApiUrl,
         cache: false,
         type: 'POST',
         data: data,
         success: function (result) {
             if (result.error) {
-                $('#repoMessage').html("result.error");
+                $('#repoMessage').html(result.error);
+                return;
             }
+            state.running = true;
+            state.taskId = result.taskId;
+            getTaskState();
         }
     });
 
 };
 
 var getEnabledValidators = function () {
-    var validatorArray = [];
-
-    $(model.item.validatorItemClass + ' input:checked').each(function () {
-            validatorArray.push($(this).attr('data-validatorName'));
-        }
-    );
-    return validatorArray;
+    return $(model.input.validatorCheckbox + ":checked").map(function () {
+        return $(this).attr('data-validatorName');
+    }).get();
 };
 
 var getProgress = function () {
@@ -428,7 +561,7 @@ var getProgress = function () {
     };
 
     jQuery.ajax({
-        url: progressServiceUrl,
+        url: progressApiUrl,
         data: data,
         cache: false,
         type: 'GET',
@@ -441,71 +574,92 @@ var getProgress = function () {
 var renderProgress = function (result) {
     if (result.state === "RUNNING") {
         displayProgressInfo(result);
-        markCurrentValidator(result);
-    } else {
-        resetProgress();
+    } else if (result.state === "FAILED" && state.overlay === 'progress') {
+        hideOverlay();
+        $('#repoMessage').html("Analysis failed, see server log for details");
     }
-};
-
-var resetProgress = function () {
-
-    $(model.item.progress).html("");
-    $(model.item.validatorItemClass).each(function () {
-        $(this).removeClass("active");
-        $(this).find(model.item.validatorProgressClass).html("");
-    });
 };
 
 var displayProgressInfo = function (result) {
 
-    var progressMessage = result.state;
-    progressMessage += " [ ";
-    progressMessage += result.progress.info.repositoryId;
-    progressMessage += "/";
-    progressMessage += result.progress.info.branch;
-    progressMessage += " ] ";
-    $(model.item.progress).html(progressMessage);
-};
-
-var markCurrentValidator = function (result) {
-
-    var infoElement = result.progress.info;
-    var currentRunning = getRunningValidator(infoElement.validator);
-
-    if (!currentRunning) {
-        console.log("Current running not found", infoElement.validator);
+    if (state.cancelling) {
         return;
     }
 
-    $(model.item.validatorItemClass).each(function () {
-        var validatorItem = $(this);
+    var info = result.progress.info;
 
-        if (currentRunning.is(validatorItem)) {
-            markAsRunning(validatorItem, result.progress.current, result.progress.total);
-        } else {
-            removeActiveMark(validatorItem);
-        }
+    if (info && info.validator) {
+        $(model.div.overlayRepo).text("Analysing " + info.repositoryId + " - " + info.branch);
+        $(model.div.overlayValidator).text("Executing " + info.validator + " (" + info.current + " out of " + info.total + ")...");
+    }
+
+    var percent = result.progress.total > 0 ? Math.round(100 * result.progress.current / result.progress.total) : 0;
+    $(model.div.progressBarFill).css("width", percent + "%");
+    $(model.div.progressBar).attr("aria-valuenow", percent);
+};
+
+var showOverlaySection = function (section) {
+    $(model.div.overlaySetup + ", " + model.div.overlayProgress + ", " + model.div.overlaySummary).addClass("hidden");
+    $(section).removeClass("hidden");
+    $(model.div.overlay).removeClass("hidden");
+    $("body").addClass("overlayOpen");
+};
+
+var showSetupOverlay = function () {
+    state.overlay = 'setup';
+    $(model.buttons.closeSetup).toggleClass("hidden", !hasIssues());
+    updateSetupState();
+    showOverlaySection(model.div.overlaySetup);
+};
+
+var showProgressOverlay = function () {
+    state.overlay = 'progress';
+    state.cancelling = false;
+    $(model.buttons.cancel).prop("disabled", false).html("Cancel");
+    $(model.div.overlayRepo).text("Analysing...");
+    $(model.div.overlayValidator).text("Starting...");
+    $(model.div.progressBarFill).css("width", "0%");
+    $(model.div.progressBar).attr("aria-valuenow", 0);
+    showOverlaySection(model.div.overlayProgress);
+};
+
+var showSummaryOverlay = function (result) {
+    state.overlay = 'summary';
+    state.cancelling = false;
+
+    var html = "";
+    (result.summary || []).forEach(function (entry) {
+        html += "<tr>";
+        html += "<td>" + entry.repo + " - " + entry.branch + "</td>";
+        html += "<td class='number'>" + entry.analysed + "</td>";
+        html += "<td class='number'>" + entry.invalid + "</td>";
+        html += "<td class='number'>" + (entry.invalid > 0 ? entry.repairable : "-") + "</td>";
+        html += "</tr>";
     });
+    $(model.table.summaryTableBody).html(html);
+
+    $(model.buttons.closeOverlay).html(result.totalIssues > 0 ? "Show issues" : "Close");
+    $(model.buttons.repairSummary).toggleClass("hidden", countRepairable(result) === 0);
+
+    showOverlaySection(model.div.overlaySummary);
 };
 
-var getRunningValidator = function (validator) {
-    return $(model.item.validatorItem + validator);
+var countRepairable = function (result) {
+    var count = 0;
+    for (var key in result.issues) {
+        if (result.issues[key].repairStatus === "IS_REPAIRABLE") {
+            count++;
+        }
+    }
+    return count;
 };
 
-var markAsRunning = function (element, current, total) {
-    element.addClass("active");
-    var progressInfoMessage = " (" + current + "/" + total + ") ";
-    getProgressInfoElement(element).html(progressInfoMessage);
+var hideOverlay = function () {
+    state.overlay = null;
+    $(model.div.overlay).addClass("hidden");
+    $("body").removeClass("overlayOpen");
+    updateIssueTable();
+    if (!hasIssues()) {
+        showSetupOverlay();
+    }
 };
-
-var removeActiveMark = function (element) {
-    element.removeClass("active");
-    getProgressInfoElement(element).html("");
-};
-
-var getProgressInfoElement = function (element) {
-    return element.find(model.item.validatorProgressClass);
-};
-
-
-
