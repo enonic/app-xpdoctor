@@ -377,10 +377,14 @@ var getLastResult = function () {
                         updateIssueTable();
                     }
                 }
-            } else if (result.timestamp === state.resultTimestamp && result.repairVersion > state.repairVersion) {
-                state.repairVersion = result.repairVersion;
-                if (state.analyzeResult) {
-                    applyRepairUpdates(result);
+            } else if (result.timestamp === state.resultTimestamp) {
+                if (!state.analyzeResult && state.repairing) {
+                    adoptResultUnderRepair(result);
+                } else if (result.repairVersion > state.repairVersion) {
+                    state.repairVersion = result.repairVersion;
+                    if (state.analyzeResult) {
+                        applyRepairUpdates(result);
+                    }
                 }
             }
             state.lastResultChecked = true;
@@ -422,6 +426,18 @@ var startRepair = function (params) {
             handleSubmitError("Repair request failed");
         }
     });
+};
+
+var adoptResultUnderRepair = function (result) {
+    state.analyzeResult = result;
+    state.repairVersion = result.repairVersion || 0;
+    updateIssueTable();
+
+    for (var issueKey in result.issues) {
+        if (result.issues[issueKey].repairStatus === "REPAIRED") {
+            scheduleRepairedRowRemoval(result, issueKey);
+        }
+    }
 };
 
 var applyRepairUpdates = function (result) {
@@ -699,9 +715,11 @@ var getProgress = function () {
 var renderProgress = function (result) {
     if (result.state === "RUNNING") {
         displayProgressInfo(result);
-    } else if (result.state === "FAILED" && state.overlay === 'progress') {
-        hideOverlay();
+    } else if (result.state === "FAILED") {
         $('#repoMessage').html((isRepairTask(result) ? "Repair" : "Analysis") + " failed, see server log for details");
+        if (state.overlay === 'progress') {
+            hideOverlay();
+        }
     }
 };
 
