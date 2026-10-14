@@ -68,18 +68,23 @@ button {
     gap: 6px;
     padding: 10px 18px;
     border-radius: 4px;
-    background-color: #68b86a;
+    background-color: #589c5a;
     color: #fff;
     font-weight: 700;
     letter-spacing: 1px;
     cursor: pointer;
 }
 
+.toolbarButton:hover:enabled {
+    background-color: #68b86a;
+}
+
 .toolbarButton.repair {
     background-color: #e55812;
 }
 
-.toolbarButton:hover:enabled {
+.toolbarButton.repair:hover:enabled {
+    background-color: #e55812;
     filter: brightness(1.1);
 }
 
@@ -189,6 +194,10 @@ table.dataTable td.repairOption a, a:visited, a:hover {
     display: none;
 }
 
+body.overlayOpen {
+    overflow: hidden;
+}
+
 .overlayDialog {
     background-color: #fff;
     border-radius: 4px;
@@ -196,6 +205,8 @@ table.dataTable td.repairOption a, a:visited, a:hover {
     min-width: 480px;
     max-width: 90%;
     max-height: 95vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     color: #333;
 }
@@ -224,6 +235,7 @@ table.dataTable td.repairOption a, a:visited, a:hover {
 
 .treeList, .validatorList {
     overflow: auto;
+    overscroll-behavior: contain;
     max-height: calc(100vh - 240px);
 }
 
@@ -368,6 +380,45 @@ table.dataTable td.repairOption a, a:visited, a:hover {
 
 .overlayButton:hover:enabled {
     background-color: #555;
+}
+
+.overlayButton.primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: #589c5a;
+}
+
+.overlayButton.primary:hover:enabled {
+    background-color: #68b86a;
+}
+
+.overlayButton.primary:disabled {
+    background-color: #eee;
+}
+
+.overlayButton.primary i.material-icons {
+    font-size: 1.2em;
+}
+
+.overlayButton.repair {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: #e55812;
+}
+
+.overlayButton.repair:hover:enabled {
+    filter: brightness(1.1);
+    background-color: #e55812;
+}
+
+.overlayButton.repair i.material-icons {
+    font-size: 1.2em;
+}
+
+.overlayButton.hidden {
+    display: none;
 }
 
 .overlayButton.secondary {

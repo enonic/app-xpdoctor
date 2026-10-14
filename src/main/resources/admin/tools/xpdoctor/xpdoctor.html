@@ -107,13 +107,16 @@
             <div class="overlayActions">
                 <span class="selectionSummary" id="selectionSummary"></span>
                 <button id="btnCloseSetup" type="button" class="overlayButton secondary">Cancel</button>
-                <button id="btnAnalyse" type="button" class="overlayButton" disabled>Analyse</button>
+                <button id="btnAnalyse" type="button" class="overlayButton primary" disabled>
+                    <i class="material-icons">play_arrow</i>
+                    <span>Analyse</span>
+                </button>
             </div>
         </div>
         <div id="overlayProgress" class="hidden">
             <p class="overlayRepo" id="overlayRepo"></p>
             <p class="overlayValidator" id="overlayValidator"></p>
-            <div class="progressBar">
+            <div class="progressBar" id="progressBar" role="progressbar" aria-label="Analysis progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
                 <div class="progressBarFill" id="progressBarFill"></div>
             </div>
             <div class="overlayActions">
@@ -126,7 +129,7 @@
                 <tr>
                     <th>Repository</th>
                     <th>Analysed</th>
-                    <th>Invalid</th>
+                    <th>Issues</th>
                     <th>Repairable</th>
                 </tr>
                 </thead>
@@ -134,6 +137,10 @@
                 </tbody>
             </table>
             <div class="overlayActions">
+                <button id="btnRepairSummary" type="button" class="overlayButton repair hidden">
+                    <i class="material-icons">build</i>
+                    <span>Repair</span>
+                </button>
                 <button id="btnCloseOverlay" type="button" class="overlayButton">Close</button>
             </div>
         </div>

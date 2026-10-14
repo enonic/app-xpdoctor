@@ -41,8 +41,8 @@ public class AnalysisProgressReporter
 
     public void validatorDone()
     {
-        this.completed += this.validatorTotal;
         report( this.validatorTotal, this.validatorTotal );
+        this.completed += this.validatorTotal;
     }
 
     public void done()

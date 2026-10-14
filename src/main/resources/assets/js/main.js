@@ -6,6 +6,7 @@ var model = {
         repairAll: "#btnRepairAll",
         repairLink: '.repairLink',
         cancel: "#btnCancel",
+        repairSummary: "#btnRepairSummary",
         closeOverlay: "#btnCloseOverlay"
     },
     div: {
@@ -16,6 +17,7 @@ var model = {
         overlaySummary: "#overlaySummary",
         overlayRepo: "#overlayRepo",
         overlayValidator: "#overlayValidator",
+        progressBar: "#progressBar",
         progressBarFill: "#progressBarFill",
         repoTree: "#repoTree",
         validatorList: "#validatorList",
@@ -88,6 +90,11 @@ var initializeButtons = function () {
 
     $(model.buttons.closeOverlay).click(function () {
         hideOverlay();
+    });
+
+    $(model.buttons.repairSummary).click(function () {
+        hideOverlay();
+        handleRepairAll();
     });
 
     $(model.input.selectAllValidators).change(function () {
@@ -568,12 +575,14 @@ var displayProgressInfo = function (result) {
 
     var percent = result.progress.total > 0 ? Math.round(100 * result.progress.current / result.progress.total) : 0;
     $(model.div.progressBarFill).css("width", percent + "%");
+    $(model.div.progressBar).attr("aria-valuenow", percent);
 };
 
 var showOverlaySection = function (section) {
     $(model.div.overlaySetup + ", " + model.div.overlayProgress + ", " + model.div.overlaySummary).addClass("hidden");
     $(section).removeClass("hidden");
     $(model.div.overlay).removeClass("hidden");
+    $("body").addClass("overlayOpen");
 };
 
 var showSetupOverlay = function () {
@@ -590,6 +599,7 @@ var showProgressOverlay = function () {
     $(model.div.overlayRepo).text("Analysing...");
     $(model.div.overlayValidator).text("Starting...");
     $(model.div.progressBarFill).css("width", "0%");
+    $(model.div.progressBar).attr("aria-valuenow", 0);
     showOverlaySection(model.div.overlayProgress);
 };
 
@@ -608,14 +618,26 @@ var showSummaryOverlay = function (result) {
     });
     $(model.table.summaryTableBody).html(html);
 
-    $(model.buttons.closeOverlay).html(result.totalIssues > 0 ? "Show details" : "Close");
+    $(model.buttons.closeOverlay).html(result.totalIssues > 0 ? "Show issues" : "Close");
+    $(model.buttons.repairSummary).toggleClass("hidden", countRepairable(result) === 0);
 
     showOverlaySection(model.div.overlaySummary);
+};
+
+var countRepairable = function (result) {
+    var count = 0;
+    for (var key in result.issues) {
+        if (result.issues[key].repairStatus === "IS_REPAIRABLE") {
+            count++;
+        }
+    }
+    return count;
 };
 
 var hideOverlay = function () {
     state.overlay = null;
     $(model.div.overlay).addClass("hidden");
+    $("body").removeClass("overlayOpen");
     updateIssueTable();
     if (!hasIssues()) {
         showSetupOverlay();
