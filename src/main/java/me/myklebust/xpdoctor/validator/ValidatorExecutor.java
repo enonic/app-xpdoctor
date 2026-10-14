@@ -84,7 +84,6 @@ public class ValidatorExecutor
             results.add( repoBuilder.build() );
         } );
 
-        progress.info( "Done, all validators finished" );
         progress.done();
 
         return results.build();

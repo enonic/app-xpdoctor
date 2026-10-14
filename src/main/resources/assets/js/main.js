@@ -48,20 +48,19 @@ var state = {
     analyzeResult: null,
     overlay: null,
     cancelling: false,
-    lastResultChecked: false
+    lastResultChecked: false,
+    running: false,
+    pollTimer: null
 };
+
+var ACTIVE_POLL_MS = 1000;
 
 $(function () {
 
-    getTaskState();
-    getProgress();
     getLastResult();
+    getTaskState();
     initializeButtons();
     showSetupOverlay();
-
-    setInterval(getProgress, 1000);
-    setInterval(getTaskState, 1000);
-    setInterval(getLastResult, 2000);
 
     loadRepoList();
 });
@@ -240,8 +239,6 @@ var handleRunValidator = function () {
     clearIssueTable();
     showProgressOverlay();
     doValidation();
-    getProgress();
-    getTaskState();
 };
 
 var handleCancel = function () {
@@ -264,20 +261,37 @@ var getTaskState = function () {
         type: 'GET',
         success: function (result) {
             handleTaskState(result);
-        }
+        },
+        complete: schedulePoll
     });
+};
+
+var schedulePoll = function () {
+    clearTimeout(state.pollTimer);
+    if (state.running) {
+        state.pollTimer = setTimeout(getTaskState, ACTIVE_POLL_MS);
+    }
 };
 
 var handleTaskState = function (result) {
 
+    var wasRunning = state.running;
+    state.running = result.state === "RUNNING";
+
     if (result.state === "RUNNING") {
         state.taskId = result.taskId;
+        getProgress();
         $(model.buttons.newAnalysis).prop("disabled", true);
         $(model.buttons.repairAll).prop("disabled", true);
         if (state.overlay !== 'progress' && state.overlay !== 'summary') {
             showProgressOverlay();
         }
     } else {
+        if (wasRunning) {
+            getProgress();
+            getLastResult();
+        }
+
         if (state.cancelling) {
             state.cancelling = false;
             if (state.overlay === 'progress') {
@@ -524,7 +538,11 @@ var doValidation = function () {
         success: function (result) {
             if (result.error) {
                 $('#repoMessage').html(result.error);
+                return;
             }
+            state.running = true;
+            state.taskId = result.taskId;
+            getTaskState();
         }
     });
 
@@ -570,8 +588,10 @@ var displayProgressInfo = function (result) {
 
     var info = result.progress.info;
 
-    $(model.div.overlayRepo).text("Analysing " + info.repositoryId + " - " + info.branch);
-    $(model.div.overlayValidator).text("Executing " + info.validator + " (" + info.current + " out of " + info.total + ")...");
+    if (info && info.validator) {
+        $(model.div.overlayRepo).text("Analysing " + info.repositoryId + " - " + info.branch);
+        $(model.div.overlayValidator).text("Executing " + info.validator + " (" + info.current + " out of " + info.total + ")...");
+    }
 
     var percent = result.progress.total > 0 ? Math.round(100 * result.progress.current / result.progress.total) : 0;
     $(model.div.progressBarFill).css("width", percent + "%");
