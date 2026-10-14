@@ -36,16 +36,15 @@ exports.validators = function () {
     return __.toNativeObject(result);
 };
 
-exports.repair = function (params) {
-    var paramsObject = __.newBean('me.myklebust.xpdoctor.validator.RepairParams');
-    paramsObject.setNodeId(required(params, "nodeId"));
-    paramsObject.setValidatorName(required(params, "validatorName"));
-    paramsObject.setRepoId(required(params, "repoId"));
-    paramsObject.setBranch(required(params, "branch"));
+exports.repairAll = function (params) {
+    var paramsObject = __.newBean('me.myklebust.xpdoctor.validator.RepairAllParams');
+    paramsObject.setAll(!!params.all);
+    if (params.issueIds) {
+        paramsObject.setIssueIds([].concat(params.issueIds));
+    }
 
-    return __.toNativeObject(bean.repair(paramsObject));
+    return __.toNativeObject(bean.repairAll(paramsObject));
 };
-
 
 exports.cancel = function () {
     bean.cancel();

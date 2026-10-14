@@ -11,7 +11,17 @@ exports.post = function (req) {
         repoBranches: repoBranches,
     };
 
-    var taskId = dataValidator.execute(validatorParams);
+    var taskId;
+    try {
+        taskId = dataValidator.execute(validatorParams);
+    } catch (e) {
+        return {
+            contentType: 'application/json',
+            body: {
+                error: String(e)
+            }
+        }
+    }
 
     return {
         contentType: 'application/json',

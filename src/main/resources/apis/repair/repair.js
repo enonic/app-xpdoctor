@@ -1,22 +1,28 @@
 var dataValidator = require('/lib/dataValidator.js');
 
-exports.get = function (req) {
+exports.post = function (req) {
 
-    var requestParams = req.params;
+    var params = req.params;
 
-    var params = {
-        nodeId: requestParams.nodeId,
-        validatorName: requestParams.validatorName,
-        repoId: requestParams.repoId,
-        branch: requestParams.branch
-    };
-
-    var result = dataValidator.repair(params);
+    var taskId;
+    try {
+        taskId = dataValidator.repairAll({
+            all: params.all === 'true',
+            issueIds: params['issueIds[]'] || params.issueIds
+        });
+    } catch (e) {
+        return {
+            contentType: 'application/json',
+            body: {
+                error: String(e)
+            }
+        }
+    }
 
     return {
         contentType: 'application/json',
         body: {
-            repairStatus: result
+            taskId: taskId
         }
     }
 };

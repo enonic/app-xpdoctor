@@ -1,15 +1,18 @@
 package me.myklebust.xpdoctor.validator;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import me.myklebust.xpdoctor.json.JsonMapGenerator;
-import me.myklebust.xpdoctor.validator.mapper.RepairResultMapper;
 import me.myklebust.xpdoctor.validator.mapper.RepoResultsMapper;
 import me.myklebust.xpdoctor.validator.mapper.ValidatorsMapper;
 
+import com.enonic.xp.context.Context;
 import com.enonic.xp.context.ContextAccessor;
 import com.enonic.xp.context.ContextBuilder;
 import com.enonic.xp.event.Event;
@@ -28,6 +31,10 @@ public class IntegrityBean
 {
     private static final Logger LOG = LoggerFactory.getLogger( IntegrityBean.class );
 
+    public static final String ANALYSIS_TASK_DESCRIPTION = "com.enonic.app.xpdoctor";
+
+    public static final String REPAIR_TASK_DESCRIPTION = "com.enonic.app.xpdoctor.repair";
+
     private ValidatorService validatorService;
 
     private TaskService taskService;
@@ -37,6 +44,8 @@ public class IntegrityBean
     private RepoValidationResults lastResult;
 
     private AtomicBoolean cancelRequested = new AtomicBoolean();
+
+    private final AtomicBoolean operationInProgress = new AtomicBoolean( false );
 
     @Override
     public void initialize( final BeanContext context )
@@ -59,16 +68,28 @@ public class IntegrityBean
     @SuppressWarnings("unused")
     public Object validate( final ValidateParams params )
     {
+        if ( !operationInProgress.compareAndSet( false, true ) )
+        {
+            throw new IllegalStateException( "An analysis or repair is already running" );
+        }
+
         this.lastResult = null;
 
         final AtomicBoolean cancelled = new AtomicBoolean();
         this.cancelRequested = cancelled;
 
-        final RunnableTask task = ( id, progressReporter ) -> validatorTask( progressReporter, params, cancelled );
+        final RunnableTask task = ( id, progressReporter ) -> {
+            try
+            {
+                validatorTask( progressReporter, params, cancelled );
+            }
+            finally
+            {
+                operationInProgress.set( false );
+            }
+        };
 
-        final TaskId taskId = taskService.submitLocalTask( SubmitLocalTaskParams.create().runnableTask( task ).description( "com.enonic.app.xpdoctor" ).build() );
-
-        return taskId.toString();
+        return submit( task, ANALYSIS_TASK_DESCRIPTION );
     }
 
     public void cancel()
@@ -76,33 +97,137 @@ public class IntegrityBean
         this.cancelRequested.set( true );
     }
 
-    public Object repairAll()
+    public Object repairAll( final RepairAllParams params )
     {
-        return null;
+        final RepoValidationResults result = this.lastResult;
+
+        if ( result == null )
+        {
+            throw new IllegalStateException( "No analysis result to repair" );
+        }
+
+        final List<RepoValidationResults.Issue> issues = selectIssues( result, params );
+
+        if ( !operationInProgress.compareAndSet( false, true ) )
+        {
+            throw new IllegalStateException( "An analysis or repair is already running" );
+        }
+
+        final AtomicBoolean cancelled = new AtomicBoolean();
+        this.cancelRequested = cancelled;
+
+        final RunnableTask task = ( id, progressReporter ) -> {
+            try
+            {
+                repairTask( progressReporter, result, issues, params.isAll(), cancelled );
+            }
+            finally
+            {
+                operationInProgress.set( false );
+            }
+        };
+
+        return submit( task, REPAIR_TASK_DESCRIPTION );
     }
 
-    public Object repair( final RepairParams params )
+    private String submit( final RunnableTask task, final String description )
     {
-        this.lastResult = null;
-
-        return ContextBuilder.from( ContextAccessor.current() ).
-            branch( params.getBranch() ).
-            repositoryId( params.getRepoId() ).
-            build().callWith( () -> doRepair( params ) );
+        try
+        {
+            return taskService.submitLocalTask( SubmitLocalTaskParams.create().runnableTask( task ).description( description ).build() )
+                .toString();
+        }
+        catch ( RuntimeException e )
+        {
+            operationInProgress.set( false );
+            throw e;
+        }
     }
 
-    private Object doRepair( final RepairParams params )
+    private List<RepoValidationResults.Issue> selectIssues( final RepoValidationResults result, final RepairAllParams params )
     {
-        final Validator validator = this.validatorService.getValidator( params.getValidatorName() );
+        if ( params.isAll() )
+        {
+            return result.getIssues()
+                .values()
+                .stream()
+                .filter( issue -> issue.getResult().repairResult().status() == RepairStatus.IS_REPAIRABLE )
+                .collect( Collectors.toList() );
+        }
+
+        final List<RepoValidationResults.Issue> issues = new ArrayList<>();
+        for ( final String issueId : params.getIssueIds() )
+        {
+            final RepoValidationResults.Issue issue = result.getIssues().get( issueId );
+            if ( issue != null )
+            {
+                issues.add( issue );
+            }
+        }
+        return issues;
+    }
+
+    private void repairTask( final ProgressReporter progressReporter, final RepoValidationResults result,
+                             final List<RepoValidationResults.Issue> issues, final boolean onlyRepairable,
+                             final AtomicBoolean cancelled )
+    {
+        final int total = issues.size();
+        int current = 0;
+
+        for ( final RepoValidationResults.Issue issue : issues )
+        {
+            if ( cancelled.get() )
+            {
+                LOG.info( "Repair cancelled" );
+                break;
+            }
+
+            progressReporter.info( "{\"nodeId\":\"" + issue.getResult().nodeId() + "\",\"current\":" + current + ",\"total\":" + total + "}" );
+            progressReporter.progress( current++, total );
+
+            if ( onlyRepairable && issue.getResult().repairResult().status() != RepairStatus.IS_REPAIRABLE )
+            {
+                continue;
+            }
+
+            final RepairResult repairResult = createContext( issue ).callWith( () -> doRepair( issue ) );
+            issue.getResult().updateRepairResult( repairResult );
+            result.bumpRepairVersion();
+        }
+
+        progressReporter.progress( total, total );
+    }
+
+    private RepairResult doRepair( final RepoValidationResults.Issue issue )
+    {
+        final ValidatorResult validatorResult = issue.getResult();
+        final Validator validator = this.validatorService.getValidator( validatorResult.validatorName() );
 
         if ( validator == null )
         {
-            throw new IllegalArgumentException( "Validator with name [" + params.getValidatorName() + "] not found" );
+            return RepairResult.create()
+                .repairStatus( RepairStatus.FAILED )
+                .message( "Validator with name [" + validatorResult.validatorName() + "] not found" )
+                .build();
         }
 
-        final RepairResult repairResult = validator.repair( params.getNodeId() );
+        try
+        {
+            return validator.repair( validatorResult.nodeId() );
+        }
+        catch ( Exception e )
+        {
+            LOG.error( "Repair of node [{}] failed", validatorResult.nodeId(), e );
+            return RepairResult.create().repairStatus( RepairStatus.FAILED ).message( e.getMessage() ).build();
+        }
+    }
 
-        return new RepairResultMapper( repairResult );
+    private Context createContext( final RepoValidationResults.Issue issue )
+    {
+        return ContextBuilder.from( ContextAccessor.current() )
+            .repositoryId( issue.getRepositoryId() )
+            .branch( issue.getBranch() )
+            .build();
     }
 
     public Object validators()
