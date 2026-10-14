@@ -59,7 +59,8 @@ var state = {
     repairQueue: [],
     repairTotal: 0,
     repairing: false,
-    repairActive: null
+    repairActive: null,
+    repairTimedOut: false
 };
 
 var ACTIVE_POLL_MS = 1000;
@@ -392,6 +393,12 @@ var isRepairPending = function (result, issueKey) {
 
 var processRepairQueue = function () {
 
+    if (state.repairTimedOut) {
+        state.repairTimedOut = false;
+        state.repairQueue = [];
+        $('#repoMessage').html("A repair request timed out. The server may still be repairing that node; remaining repairs were skipped.");
+    }
+
     if (state.repairQueue.length === 0) {
         state.repairing = false;
         state.repairTotal = 0;
@@ -441,7 +448,12 @@ var repair = function (entry, callback) {
         success: function (result) {
             renderRepairResult(result, entry);
         },
-        error: function () {
+        error: function (xhr, textStatus) {
+            if (textStatus === "timeout") {
+                state.repairTimedOut = true;
+                renderRepairResult({repairStatus: {status: "FAILED", message: "Repair request timed out"}}, entry);
+                return;
+            }
             renderRepairResult({repairStatus: {status: "FAILED", message: "Repair request failed"}}, entry);
         },
         complete: callback
