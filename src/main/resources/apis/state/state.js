@@ -3,15 +3,16 @@ var taskLib = require('/lib/xp/task');
 
 exports.get = function (req) {
 
-    var taskId = getRunningTask();
+    var task = getRunningTask();
 
     var model = {};
 
-    if (!taskId) {
+    if (!task) {
         model.state = "NOTASK"
     } else {
-        model.state = "RUNNING";
-        model.taskId = taskId;
+        model.state = task.state;
+        model.taskId = task.id;
+        model.type = task.description === app.name ? "analysis" : "repair";
     }
 
     return {
@@ -26,8 +27,9 @@ var getRunningTask = function () {
 
     for (var i = 0; i < tasks.length; i++) {
 
-        if (tasks[i].description === app.name && tasks[i].state === "RUNNING") {
-            return tasks[i].id
+        if ((tasks[i].description === app.name || tasks[i].description === app.name + ".repair") &&
+            (tasks[i].state === "RUNNING" || tasks[i].state === "WAITING")) {
+            return tasks[i]
         }
     }
 
