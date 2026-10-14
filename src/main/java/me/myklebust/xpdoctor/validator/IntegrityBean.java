@@ -2,6 +2,7 @@ package me.myklebust.xpdoctor.validator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -44,6 +45,8 @@ public class IntegrityBean
 
     private RepoValidationResults lastResult;
 
+    private final AtomicBoolean repairInProgress = new AtomicBoolean( false );
+
     @Override
     public void initialize( final BeanContext context )
     {
@@ -85,11 +88,32 @@ public class IntegrityBean
 
         final List<RepoValidationResults.Issue> issues = selectIssues( result, params );
 
-        final RunnableTask task = ( id, progressReporter ) -> repairTask( progressReporter, result, issues );
+        if ( !repairInProgress.compareAndSet( false, true ) )
+        {
+            throw new IllegalStateException( "A repair is already running" );
+        }
 
-        final TaskId taskId = taskService.submitTask( task, REPAIR_TASK_DESCRIPTION );
+        final RunnableTask task = ( id, progressReporter ) -> {
+            try
+            {
+                repairTask( progressReporter, result, issues, params.isAll() );
+            }
+            finally
+            {
+                repairInProgress.set( false );
+            }
+        };
 
-        return taskId.toString();
+        try
+        {
+            final TaskId taskId = taskService.submitTask( task, REPAIR_TASK_DESCRIPTION );
+            return taskId.toString();
+        }
+        catch ( RuntimeException e )
+        {
+            repairInProgress.set( false );
+            throw e;
+        }
     }
 
     private List<RepoValidationResults.Issue> selectIssues( final RepoValidationResults result, final RepairAllParams params )
@@ -116,7 +140,7 @@ public class IntegrityBean
     }
 
     private void repairTask( final ProgressReporter progressReporter, final RepoValidationResults result,
-                             final List<RepoValidationResults.Issue> issues )
+                             final List<RepoValidationResults.Issue> issues, final boolean onlyRepairable )
     {
         final int total = issues.size();
         int current = 0;
@@ -125,6 +149,11 @@ public class IntegrityBean
         {
             progressReporter.info( "{\"nodeId\":\"" + issue.getResult().nodeId() + "\"}" );
             progressReporter.progress( current++, total );
+
+            if ( onlyRepairable && issue.getResult().repairResult().status() != RepairStatus.IS_REPAIRABLE )
+            {
+                continue;
+            }
 
             final RepairResult repairResult = createContext( issue ).callWith( () -> doRepair( issue ) );
             issue.getResult().updateRepairResult( repairResult );

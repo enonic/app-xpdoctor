@@ -45,10 +45,12 @@ var state = {
     lastResultChecked: false,
     running: false,
     pollTimer: null,
-    pollTick: 0
+    pollTick: 0,
+    expectTaskUntil: null
 };
 
 var ACTIVE_POLL_MS = 1000;
+var TASK_DISCOVERY_MS = 5000;
 
 $(function () {
 
@@ -170,10 +172,17 @@ var handleTaskState = function (result) {
     var analyzeButton = $(model.buttons.runValidator);
     var repairAllButton = $(model.buttons.repairAll);
 
-    var wasRunning = state.running;
-    state.running = result.state === "RUNNING";
+    var active = result.state === "RUNNING" || result.state === "WAITING";
 
-    if (result.state === "RUNNING") {
+    if (!active && state.expectTaskUntil && Date.now() < state.expectTaskUntil) {
+        return;
+    }
+    state.expectTaskUntil = null;
+
+    var wasRunning = state.running;
+    state.running = active;
+
+    if (active) {
         state.taskId = result.taskId;
         getProgress();
         if (result.type === "repair" && state.pollTick++ % 2 === 0) {
@@ -270,11 +279,20 @@ var startRepair = function (params) {
                 return;
             }
             state.repairing = true;
-            state.running = true;
-            state.taskId = result.taskId;
-            getTaskState();
+            expectTask(result.taskId);
+        },
+        error: function () {
+            $('#repoMessage').html("Repair request failed");
+            updateRepairAllButton();
         }
     });
+};
+
+var expectTask = function (taskId) {
+    state.running = true;
+    state.taskId = taskId;
+    state.expectTaskUntil = Date.now() + TASK_DISCOVERY_MS;
+    getTaskState();
 };
 
 var applyRepairUpdates = function (result) {
@@ -487,9 +505,7 @@ var doValidation = function () {
                 $('#repoMessage').html(result.error);
                 return;
             }
-            state.running = true;
-            state.taskId = result.taskId;
-            getTaskState();
+            expectTask(result.taskId);
         }
     });
 

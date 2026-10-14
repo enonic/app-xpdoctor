@@ -10,7 +10,7 @@ exports.get = function (req) {
     if (!task) {
         model.state = "NOTASK"
     } else {
-        model.state = "RUNNING";
+        model.state = task.state;
         model.taskId = task.id;
         model.type = task.description === app.name ? "analysis" : "repair";
     }
@@ -27,7 +27,8 @@ var getRunningTask = function () {
 
     for (var i = 0; i < tasks.length; i++) {
 
-        if ((tasks[i].description === app.name || tasks[i].description === app.name + ".repair") && tasks[i].state === "RUNNING") {
+        if ((tasks[i].description === app.name || tasks[i].description === app.name + ".repair") &&
+            (tasks[i].state === "RUNNING" || tasks[i].state === "WAITING")) {
             return tasks[i]
         }
     }
