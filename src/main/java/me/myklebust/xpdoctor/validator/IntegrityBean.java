@@ -19,11 +19,6 @@ import com.enonic.xp.event.EventPublisher;
 import com.enonic.xp.script.bean.BeanContext;
 import com.enonic.xp.script.bean.ScriptBean;
 import com.enonic.xp.script.serializer.JsonMapGenerator;
-import com.enonic.xp.security.IdProviderKey;
-import com.enonic.xp.security.PrincipalKey;
-import com.enonic.xp.security.RoleKeys;
-import com.enonic.xp.security.User;
-import com.enonic.xp.security.auth.AuthenticationInfo;
 import com.enonic.xp.task.ProgressReporter;
 import com.enonic.xp.task.RunnableTask;
 import com.enonic.xp.task.TaskId;
@@ -206,12 +201,7 @@ public class IntegrityBean
 
     private Context createContext( final RepoValidationResults.Issue issue )
     {
-        final PrincipalKey superUser = PrincipalKey.ofUser( IdProviderKey.system(), "su" );
-        final User admin = User.create().key( superUser ).login( "su" ).build();
-        final AuthenticationInfo authInfo = AuthenticationInfo.create().principals( RoleKeys.ADMIN ).user( admin ).build();
-
         return ContextBuilder.from( ContextAccessor.current() )
-            .authInfo( authInfo )
             .repositoryId( issue.getRepositoryId() )
             .branch( issue.getBranch() )
             .build();
