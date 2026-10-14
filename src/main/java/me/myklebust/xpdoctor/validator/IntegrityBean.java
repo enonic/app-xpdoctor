@@ -45,7 +45,7 @@ public class IntegrityBean
 
     private RepoValidationResults lastResult;
 
-    private final AtomicBoolean repairInProgress = new AtomicBoolean( false );
+    private final AtomicBoolean operationInProgress = new AtomicBoolean( false );
 
     @Override
     public void initialize( final BeanContext context )
@@ -68,13 +68,38 @@ public class IntegrityBean
     @SuppressWarnings("unused")
     public Object validate( final ValidateParams params )
     {
+        if ( !operationInProgress.compareAndSet( false, true ) )
+        {
+            throw new IllegalStateException( "An analysis or repair is already running" );
+        }
+
         this.lastResult = null;
 
-        final RunnableTask task = ( id, progressReporter ) -> validatorTask( progressReporter, params );
+        final RunnableTask task = ( id, progressReporter ) -> {
+            try
+            {
+                validatorTask( progressReporter, params );
+            }
+            finally
+            {
+                operationInProgress.set( false );
+            }
+        };
 
-        final TaskId taskId = taskService.submitTask( task, "com.enonic.app.xpdoctor" );
+        return submit( task, "com.enonic.app.xpdoctor" );
+    }
 
-        return taskId.toString();
+    private String submit( final RunnableTask task, final String description )
+    {
+        try
+        {
+            return taskService.submitTask( task, description ).toString();
+        }
+        catch ( RuntimeException e )
+        {
+            operationInProgress.set( false );
+            throw e;
+        }
     }
 
     public Object repairAll( final RepairAllParams params )
@@ -88,9 +113,9 @@ public class IntegrityBean
 
         final List<RepoValidationResults.Issue> issues = selectIssues( result, params );
 
-        if ( !repairInProgress.compareAndSet( false, true ) )
+        if ( !operationInProgress.compareAndSet( false, true ) )
         {
-            throw new IllegalStateException( "A repair is already running" );
+            throw new IllegalStateException( "An analysis or repair is already running" );
         }
 
         final RunnableTask task = ( id, progressReporter ) -> {
@@ -100,20 +125,11 @@ public class IntegrityBean
             }
             finally
             {
-                repairInProgress.set( false );
+                operationInProgress.set( false );
             }
         };
 
-        try
-        {
-            final TaskId taskId = taskService.submitTask( task, REPAIR_TASK_DESCRIPTION );
-            return taskId.toString();
-        }
-        catch ( RuntimeException e )
-        {
-            repairInProgress.set( false );
-            throw e;
-        }
+        return submit( task, REPAIR_TASK_DESCRIPTION );
     }
 
     private List<RepoValidationResults.Issue> selectIssues( final RepoValidationResults result, final RepairAllParams params )

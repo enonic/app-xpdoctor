@@ -275,7 +275,7 @@ var startRepair = function (params) {
         success: function (result) {
             if (result.error) {
                 $('#repoMessage').html(result.error);
-                updateRepairAllButton();
+                restoreButtons();
                 return;
             }
             state.repairing = true;
@@ -283,7 +283,7 @@ var startRepair = function (params) {
         },
         error: function () {
             $('#repoMessage').html("Repair request failed");
-            updateRepairAllButton();
+            restoreButtons();
         }
     });
 };
@@ -503,12 +503,24 @@ var doValidation = function () {
         success: function (result) {
             if (result.error) {
                 $('#repoMessage').html(result.error);
+                restoreButtons();
                 return;
             }
             expectTask(result.taskId);
+        },
+        error: function () {
+            $('#repoMessage').html("Analysis request failed");
+            restoreButtons();
         }
     });
 
+};
+
+var restoreButtons = function () {
+    if (state.repoSelected) {
+        updateButton($(model.buttons.runValidator), false, "play_arrow", "Analyze");
+    }
+    updateRepairAllButton();
 };
 
 var getEnabledValidators = function () {
