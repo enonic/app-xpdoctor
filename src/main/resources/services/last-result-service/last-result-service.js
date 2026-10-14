@@ -20,13 +20,10 @@ var createIssuesModel = function (result) {
 
     var issues = {};
 
-    var issueNum = 0;
-
     result.repositories.forEach(function (repo) {
         repo.branches.forEach(function (branch) {
             branch.results.forEach(function (entry) {
-                var issueId = 'issue-' + ++issueNum;
-                issues[issueId] = createIssue(repo, branch, entry, issueId);
+                issues[entry.issueId] = createIssue(repo, branch, entry, entry.issueId);
             });
         });
     });
@@ -34,6 +31,7 @@ var createIssuesModel = function (result) {
     return {
         totalIssues: result.totalIssues,
         timestamp: result.timestamp,
+        repairVersion: result.repairVersion,
         issues: issues
     }
 };
