@@ -38,6 +38,7 @@ var model = {
 };
 
 var REPAIRED_ROW_DELAY_MS = 2500;
+var REPAIR_REQUEST_TIMEOUT_MS = 120000;
 
 var repoGroups = [
     {key: "cms", title: "CMS", expanded: true, matches: function (repo) { return repo.indexOf("com.enonic.cms.") === 0; }},
@@ -436,6 +437,7 @@ var repair = function (entry, callback) {
         data: data,
         cache: false,
         type: 'GET',
+        timeout: REPAIR_REQUEST_TIMEOUT_MS,
         success: function (result) {
             renderRepairResult(result, entry);
         },
