@@ -1,6 +1,6 @@
 [versions]
 asset = "2.0.1"
-jackson = "2.22.3"
+jackson = "2.22.4"
 junit = "4.13.2"
 thymeleaf = "3.0.0"
 
