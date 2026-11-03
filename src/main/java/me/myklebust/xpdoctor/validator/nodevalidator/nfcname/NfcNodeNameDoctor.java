@@ -36,9 +36,11 @@ public class NfcNodeNameDoctor
             final String name = node.name().toString();
             final String normalized = Xp8NodeNames.normalize( name );
 
-            if ( !Xp8NodeNames.isValid( normalized ) )
+            final String invalidReason = Xp8NodeNames.invalidReason( normalized );
+            if ( invalidReason != null )
             {
-                return result( RepairStatus.MANUAL, "Name contains characters that are not allowed in XP 8, rename the node manually" );
+                return result( RepairStatus.MANUAL, "Name is still invalid after NFC normalization: " + invalidReason +
+                    ", rename the node manually" );
             }
 
             if ( normalized.equals( name ) )

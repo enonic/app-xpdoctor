@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class Xp8NodeNamesTest
@@ -98,5 +99,20 @@ public class Xp8NodeNamesTest
     {
         assertFalse( Xp8NodeNames.isValid( "a|b" ) );
         assertFalse( Xp8NodeNames.isValid( "a?b" ) );
+    }
+
+    @Test
+    public void invalid_reason()
+    {
+        assertNull( Xp8NodeNames.invalidReason( "my file.jpg" ) );
+        assertEquals( "name is empty", Xp8NodeNames.invalidReason( "" ) );
+        assertEquals( "name starts with a space", Xp8NodeNames.invalidReason( " file" ) );
+        assertEquals( "name ends with a space", Xp8NodeNames.invalidReason( "file " ) );
+        assertEquals( "name is not Unicode NFC normalized", Xp8NodeNames.invalidReason( "blåbær" ) );
+        assertEquals( "name contains more than 3 consecutive non-spacing marks",
+                      Xp8NodeNames.invalidReason( "q̀́̂̃" ) );
+        assertEquals( "name contains character '|' not allowed in XP 8", Xp8NodeNames.invalidReason( "a|b" ) );
+        assertEquals( "name contains character U+20DD not allowed in XP 8", Xp8NodeNames.invalidReason( "a⃝" ) );
+        assertEquals( "name contains character U+0009 not allowed in XP 8", Xp8NodeNames.invalidReason( "my\tfile" ) );
     }
 }

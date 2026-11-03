@@ -40,19 +40,48 @@ final class Xp8NodeNames
 
     static boolean isValid( final String name )
     {
-        if ( name.isEmpty() || name.startsWith( " " ) || name.endsWith( " " ) )
+        return invalidReason( name ) == null;
+    }
+
+    /**
+     * @return why the name is not valid in XP 8, or {@code null} if it is valid
+     */
+    static String invalidReason( final String name )
+    {
+        if ( name.isEmpty() )
         {
-            return false;
+            return "name is empty";
+        }
+        if ( name.startsWith( " " ) )
+        {
+            return "name starts with a space";
+        }
+        if ( name.endsWith( " " ) )
+        {
+            return "name ends with a space";
         }
         if ( containsMark( name ) && !Normalizer.isNormalized( name, Normalizer.Form.NFC ) )
         {
-            return false;
+            return "name is not Unicode NFC normalized";
         }
         if ( exceedsConsecutiveNonSpacingMarks( name ) )
         {
-            return false;
+            return "name contains more than " + MAX_CONSECUTIVE_NON_SPACING_MARKS + " consecutive non-spacing marks";
         }
-        return name.codePoints().noneMatch( Xp8NodeNames::isInvalidChar );
+        return name.codePoints()
+            .filter( Xp8NodeNames::isInvalidChar )
+            .mapToObj( cp -> "name contains character " + toUCode( cp ) + " not allowed in XP 8" )
+            .findFirst()
+            .orElse( null );
+    }
+
+    private static String toUCode( final int cp )
+    {
+        if ( cp >= 0x20 && cp <= 0x7E )
+        {
+            return "'" + (char) cp + "'";
+        }
+        return String.format( "U+%04X", cp );
     }
 
     private static boolean containsMark( final String name )
