@@ -28,6 +28,18 @@ public class Xp8NodeNamesTest
     }
 
     @Test
+    public void letters_with_canonical_decomposition_are_invalid_until_normalized()
+    {
+        // Angstrom sign, Ohm sign, CJK compatibility ideograph, decomposed Hangul syllable
+        for ( final String name : List.of( "Å", "Ω", "豈", "가" ) )
+        {
+            assertEquals( name, "name is not Unicode NFC normalized", Xp8NodeNames.invalidReason( name ) );
+            assertTrue( name, Xp8NodeNames.isValid( Xp8NodeNames.normalize( name ) ) );
+        }
+        assertTrue( Xp8NodeNames.isValid( "가" ) );
+    }
+
+    @Test
     public void nfc_name_with_marks_is_valid()
     {
         // q + combining tilde has no composed form, so the NFC form still contains the mark
@@ -50,32 +62,61 @@ public class Xp8NodeNamesTest
     }
 
     @Test
+    public void mark_attached_to_letter_digit_or_mark_is_valid()
+    {
+        // digit + grave, Arabic tatweel + fatha, Devanagari letter + spacing mark + non-spacing mark, Thai letter + 2 marks
+        for ( final String name : List.of( "1̀", "ـَ", "कां", "ที่" ) )
+        {
+            assertTrue( name, Xp8NodeNames.isValid( name ) );
+        }
+    }
+
+    @Test
+    public void unattached_mark_is_invalid()
+    {
+        for ( final String name : List.of( "̀q", "q ̀", "q-̀", "q.̀", "€̀", "😀̀" ) )
+        {
+            assertEquals( name, "name contains unattached mark 'U+0300'", Xp8NodeNames.invalidReason( name ) );
+        }
+    }
+
+    @Test
+    public void invisible_mark_is_invalid()
+    {
+        assertEquals( "name contains invisible mark 'U+034F'", Xp8NodeNames.invalidReason( "q͏q" ) );
+        // red heart emoji with variation selector 16
+        assertEquals( "name contains invisible mark 'U+FE0F'", Xp8NodeNames.invalidReason( "❤️" ) );
+    }
+
+    @Test
     public void enclosing_mark_is_invalid()
     {
         final String enclosed = "a⃝";
 
-        assertFalse( Xp8NodeNames.isValid( enclosed ) );
+        assertEquals( "name contains character 'U+20DD' not allowed in XP 8", Xp8NodeNames.invalidReason( enclosed ) );
         assertFalse( Xp8NodeNames.isValid( Xp8NodeNames.normalize( enclosed ) ) );
     }
 
     @Test
-    public void consecutive_non_spacing_marks()
+    public void non_spacing_marks_per_base()
     {
-        assertTrue( Xp8NodeNames.isValid( "q̀́̂" ) );
+        final String fourMarks = "q̀́̂̃";
+        assertTrue( Xp8NodeNames.isValid( fourMarks ) );
+        assertTrue( Xp8NodeNames.isValid( fourMarks + fourMarks ) );
 
-        final String stacked = "q̀́̂̃";
-        assertFalse( Xp8NodeNames.isValid( stacked ) );
-        assertFalse( Xp8NodeNames.isValid( Xp8NodeNames.normalize( stacked ) ) );
+        final String fiveMarks = fourMarks + "̄";
+        assertEquals( "name contains more than 4 non-spacing marks per character", Xp8NodeNames.invalidReason( fiveMarks ) );
+        assertFalse( Xp8NodeNames.isValid( Xp8NodeNames.normalize( fiveMarks ) ) );
+
+        // A spacing mark does not reset the count
+        assertEquals( "name contains more than 4 non-spacing marks per character",
+                      Xp8NodeNames.invalidReason( fourMarks + "ा̀" ) );
     }
 
     @Test
-    public void letters_with_canonical_decomposition_but_no_marks_are_valid()
+    public void invalid_char_is_reported_before_mark_after_it()
     {
-        // Not NFC, but contain no marks, so they are accepted as is
-        for ( final String name : List.of( "Å", "Ω", "豈", "가" ) )
-        {
-            assertTrue( name, Xp8NodeNames.isValid( name ) );
-        }
+        assertEquals( "name contains character 'U+200D' not allowed in XP 8", Xp8NodeNames.invalidReason( "a‍́" ) );
     }
 
     @Test
@@ -109,10 +150,7 @@ public class Xp8NodeNamesTest
         assertEquals( "name starts with a space", Xp8NodeNames.invalidReason( " file" ) );
         assertEquals( "name ends with a space", Xp8NodeNames.invalidReason( "file " ) );
         assertEquals( "name is not Unicode NFC normalized", Xp8NodeNames.invalidReason( "blåbær" ) );
-        assertEquals( "name contains more than 3 consecutive non-spacing marks",
-                      Xp8NodeNames.invalidReason( "q̀́̂̃" ) );
         assertEquals( "name contains character '|' not allowed in XP 8", Xp8NodeNames.invalidReason( "a|b" ) );
-        assertEquals( "name contains character U+20DD not allowed in XP 8", Xp8NodeNames.invalidReason( "a⃝" ) );
-        assertEquals( "name contains character U+0009 not allowed in XP 8", Xp8NodeNames.invalidReason( "my\tfile" ) );
+        assertEquals( "name contains character 'U+0009' not allowed in XP 8", Xp8NodeNames.invalidReason( "my\tfile" ) );
     }
 }

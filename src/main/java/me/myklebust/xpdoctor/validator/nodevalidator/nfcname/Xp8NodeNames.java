@@ -6,15 +6,20 @@ import java.util.Arrays;
 /**
  * Node name rules of XP 8, which are stricter than XP 7. Mirrors {@code NameValidator.NAME} in XP 8 core-internal.
  * <p>
- * Non-spacing and combining spacing marks are allowed, but a name that contains marks must be in Unicode NFC form,
- * and may not contain more than {@value #MAX_CONSECUTIVE_NON_SPACING_MARKS} consecutive non-spacing marks.
- * Enclosing marks are not allowed. Names without marks are not NFC checked.
+ * Names must be in Unicode NFC form. Non-spacing (Mn) and combining spacing (Mc) marks are allowed when attached to
+ * a letter or a decimal digit, with at most {@value #MAX_NON_SPACING_MARKS_PER_BASE} non-spacing marks per base
+ * character. Invisible marks (Default_Ignorable_Code_Point, e.g. variation selectors) and enclosing marks (Me) are not
+ * allowed.
  */
 final class Xp8NodeNames
 {
     private static final String ILLEGAL_CHARACTERS = "/\\|?*";
 
-    private static final int MAX_CONSECUTIVE_NON_SPACING_MARKS = 3;
+    /**
+     * Maximum number of non-spacing marks (Mn) attached to a single base character.
+     * Spacing marks (Mc) in the same mark sequence do not reset the count.
+     */
+    private static final int MAX_NON_SPACING_MARKS_PER_BASE = 4;
 
     // Sorted for binary search
     private static final int[] VALID_CHAR_TYPES =
@@ -60,19 +65,74 @@ final class Xp8NodeNames
         {
             return "name ends with a space";
         }
-        if ( containsMark( name ) && !Normalizer.isNormalized( name, Normalizer.Form.NFC ) )
+        if ( !Normalizer.isNormalized( name, Normalizer.Form.NFC ) )
         {
             return "name is not Unicode NFC normalized";
         }
-        if ( exceedsConsecutiveNonSpacingMarks( name ) )
-        {
-            return "name contains more than " + MAX_CONSECUTIVE_NON_SPACING_MARKS + " consecutive non-spacing marks";
-        }
-        return name.codePoints()
+        final String invalidChar = name.codePoints()
             .filter( Xp8NodeNames::isInvalidChar )
             .mapToObj( cp -> "name contains character " + toUCode( cp ) + " not allowed in XP 8" )
             .findFirst()
             .orElse( null );
+        if ( invalidChar != null )
+        {
+            return invalidChar;
+        }
+        return invalidMarks( name );
+    }
+
+    /**
+     * Validates combining marks (Mn, Mc). Expects an NFC string.
+     * <p>
+     * A mark is attached if the nearest preceding non-mark code point is a letter (L*) or a decimal digit (Nd).
+     * A mark sequence inherits the attachment of its first mark.
+     */
+    private static String invalidMarks( final String name )
+    {
+        boolean attached = false;
+        int nonSpacingMarks = 0;
+        for ( int i = 0; i < name.length(); )
+        {
+            final int cp = name.codePointAt( i );
+            final int type = Character.getType( cp );
+            if ( isMark( type ) )
+            {
+                if ( isInvisibleMark( cp ) )
+                {
+                    return "name contains invisible mark " + toUCode( cp );
+                }
+                if ( !attached )
+                {
+                    return "name contains unattached mark " + toUCode( cp );
+                }
+                if ( type == Character.NON_SPACING_MARK && ++nonSpacingMarks > MAX_NON_SPACING_MARKS_PER_BASE )
+                {
+                    return "name contains more than " + MAX_NON_SPACING_MARKS_PER_BASE + " non-spacing marks per character";
+                }
+            }
+            else
+            {
+                attached = Character.isLetter( cp ) || type == Character.DECIMAL_DIGIT_NUMBER;
+                nonSpacingMarks = 0;
+            }
+            i += Character.charCount( cp );
+        }
+        return null;
+    }
+
+    private static boolean isMark( final int type )
+    {
+        return type == Character.NON_SPACING_MARK || type == Character.COMBINING_SPACING_MARK;
+    }
+
+    /**
+     * Marks (Mn) that are also Default_Ignorable_Code_Point:
+     * combining grapheme joiner, Khmer inherent vowels, Mongolian free variation selectors, variation selectors.
+     */
+    private static boolean isInvisibleMark( final int cp )
+    {
+        return cp == 0x034F || ( cp >= 0x17B4 && cp <= 0x17B5 ) || ( cp >= 0x180B && cp <= 0x180D ) || cp == 0x180F ||
+            ( cp >= 0xFE00 && cp <= 0xFE0F ) || ( cp >= 0xE0100 && cp <= 0xE01EF );
     }
 
     private static String toUCode( final int cp )
@@ -81,29 +141,7 @@ final class Xp8NodeNames
         {
             return "'" + (char) cp + "'";
         }
-        return String.format( "U+%04X", cp );
-    }
-
-    private static boolean containsMark( final String name )
-    {
-        return name.codePoints().anyMatch( cp -> {
-            final int type = Character.getType( cp );
-            return type == Character.NON_SPACING_MARK || type == Character.COMBINING_SPACING_MARK;
-        } );
-    }
-
-    private static boolean exceedsConsecutiveNonSpacingMarks( final String name )
-    {
-        int run = 0;
-        for ( final int cp : name.codePoints().toArray() )
-        {
-            run = Character.getType( cp ) == Character.NON_SPACING_MARK ? run + 1 : 0;
-            if ( run > MAX_CONSECUTIVE_NON_SPACING_MARKS )
-            {
-                return true;
-            }
-        }
-        return false;
+        return String.format( "'U+%04X'", cp );
     }
 
     private static boolean isInvalidChar( final int c )
