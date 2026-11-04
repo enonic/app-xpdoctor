@@ -65,7 +65,13 @@ public class NfcNodeNameExecutor
         final Node node = this.nodeService.getById( nodeId );
 
         // The root node has an empty name
-        if ( node.isRoot() || Xp8NodeNames.isValid( node.name().toString() ) )
+        if ( node.isRoot() )
+        {
+            return;
+        }
+
+        final String invalidReason = Xp8NodeNames.invalidReason( node.name().toString() );
+        if ( invalidReason == null )
         {
             return;
         }
@@ -77,7 +83,7 @@ public class NfcNodeNameExecutor
                                .timestamp( node.getTimestamp() )
                                .type( "Invalid name in XP 8" )
                                .validatorName( results.validatorName )
-                               .message( "Node name is not Unicode NFC normalized or contains characters not allowed in XP 8" )
+                               .message( "Node name is not valid in XP 8: " + invalidReason )
                                .repairResult( this.doctor.repairNode( nodeId, true ) ) );
     }
 }
