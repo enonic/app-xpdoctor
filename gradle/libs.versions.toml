@@ -2,7 +2,7 @@
 asset = "2.0.1"
 jackson = "2.22.4"
 junit = "4.13.2"
-thymeleaf = "3.0.0"
+thymeleaf = "3.0.1"
 
 [libraries]
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
